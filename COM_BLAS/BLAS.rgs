@@ -1,0 +1,26 @@
+HKCR
+{
+	MYBLAS.1 = s 'BLAS class'
+	{
+		CLSID = s '{e8f3aed3-eec4-48ab-9925-c13253d4c396}'
+	}
+	MYBLAS = s 'BLAS class'
+	{		
+		CurVer = s 'MYBLAS.1'
+	}
+	NoRemove CLSID
+	{
+		ForceRemove {e8f3aed3-eec4-48ab-9925-c13253d4c396} = s 'BLAS class'
+		{
+			ProgID = s 'MYBLAS.1'
+			VersionIndependentProgID = s 'MYBLAS'
+			ForceRemove Programmable
+			InprocServer32 = s '%MODULE%'
+			{
+				val ThreadingModel = s 'Apartment'
+			}
+			TypeLib = s '{5650ec59-f9dc-4d38-83b2-5828ff8c4d2a}'
+			Version = s '1.0'
+		}
+	}
+}

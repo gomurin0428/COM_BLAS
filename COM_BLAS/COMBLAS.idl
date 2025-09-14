@@ -1,0 +1,316 @@
+﻿// COM_BLAS.idl : COM_BLAS の IDL ソース
+//
+
+// このファイルは、タイプ ライブラリ ([!output SAFE_IDL_NAME].tlb) およびマーシャリング コードを
+// タイプ ライブラリ (COMBLAS.tlb) とマーシャリング コードを生成します。
+
+import "oaidl.idl";
+import "ocidl.idl";
+
+  // ===== Enumerations (COM-compatible v1_enum) =====
+typedef [v1_enum] enum BlasLayout {
+	RowMajor = 101,
+	ColumnMajor = 102
+} BlasLayout;
+
+typedef [v1_enum] enum BlasTranspose {
+	NoTrans = 111,
+	Trans = 112,
+	ConjTrans = 113  // reserved for future complex
+} BlasTranspose;
+
+typedef [v1_enum] enum BlasUplo {
+	Upper = 121,
+	Lower = 122
+} BlasUplo;
+
+typedef [v1_enum] enum BlasDiag {
+	NonUnit = 131,
+	Unit = 132
+} BlasDiag;
+
+typedef [v1_enum] enum BlasSide {
+	Left = 141,
+	Right = 142
+} BlasSide;
+
+
+[
+	object,
+	uuid(19ef5ee4-5e52-47fa-ba23-c9f70bef7faa),
+	dual,
+	nonextensible,
+	pointer_default(unique)
+]
+interface IBLAS : IDispatch
+{
+    // C ← alpha*op(A)*op(B) + beta*C
+    HRESULT GemmSimple(
+        [in] SAFEARRAY(double) A,
+        [in] SAFEARRAY(double) B,
+        [in, out] SAFEARRAY(double)* C,
+        [in, defaultvalue(1.0)] DOUBLE alpha,
+        [in, defaultvalue(0.0)] DOUBLE beta,
+        [in, defaultvalue(ColumnMajor)] BlasLayout layout,
+        [in, defaultvalue(NoTrans)] BlasTranspose transA,
+        [in, defaultvalue(NoTrans)] BlasTranspose transB
+    );
+
+    // C ← alpha*A*B + beta*C  (A is symmetric when side=Left; B symmetric when side=Right)
+    HRESULT SymmSimple(
+        [in] SAFEARRAY(double) A,   // symmetric
+        [in] SAFEARRAY(double) B,
+        [in, out] SAFEARRAY(double)* C,
+        [in, defaultvalue(1.0)] DOUBLE alpha,
+        [in, defaultvalue(0.0)] DOUBLE beta,
+        [in, defaultvalue(ColumnMajor)] BlasLayout layout,
+        [in, defaultvalue(Left)] BlasSide side,
+        [in, defaultvalue(Upper)] BlasUplo uplo
+    );
+
+    // C ← alpha*op(A)*op(A)^T + beta*C  (C symmetric)
+    HRESULT SyrkSimple(
+        [in] SAFEARRAY(double) A,
+        [in, out] SAFEARRAY(double)* C,  // symmetric
+        [in, defaultvalue(1.0)] DOUBLE alpha,
+        [in, defaultvalue(0.0)] DOUBLE beta,
+        [in, defaultvalue(ColumnMajor)] BlasLayout layout,
+        [in, defaultvalue(Upper)] BlasUplo uplo,
+        [in, defaultvalue(NoTrans)] BlasTranspose transA
+    );
+
+    // C ← alpha*op(A)*op(B)^T + alpha*op(B)*op(A)^T + beta*C  (C symmetric)
+    HRESULT Syr2kSimple(
+        [in] SAFEARRAY(double) A,
+        [in] SAFEARRAY(double) B,
+        [in, out] SAFEARRAY(double)* C,  // symmetric
+        [in, defaultvalue(1.0)] DOUBLE alpha,
+        [in, defaultvalue(0.0)] DOUBLE beta,
+        [in, defaultvalue(ColumnMajor)] BlasLayout layout,
+        [in, defaultvalue(Upper)] BlasUplo uplo,
+        [in, defaultvalue(NoTrans)] BlasTranspose trans
+    );
+
+    // B ← alpha*op(A)*B  (side=Left)  or  B ← alpha*B*op(A) (side=Right); A triangular
+    HRESULT TrmmSimple(
+        [in] SAFEARRAY(double) A,   // triangular
+        [in, out] SAFEARRAY(double)* B,
+        [in, defaultvalue(1.0)] DOUBLE alpha,
+        [in, defaultvalue(ColumnMajor)] BlasLayout layout,
+        [in, defaultvalue(Left)] BlasSide side,
+        [in, defaultvalue(Upper)] BlasUplo uplo,
+        [in, defaultvalue(NoTrans)] BlasTranspose transA,
+        [in, defaultvalue(NonUnit)] BlasDiag diag
+    );
+
+    // Solve op(A)*X = alpha*B (side=Left) or X*op(A) = alpha*B (side=Right); A triangular
+    HRESULT TrsmSimple(
+        [in] SAFEARRAY(double) A,   // triangular
+        [in, out] SAFEARRAY(double)* B, // overwritten with solution X
+        [in, defaultvalue(1.0)] DOUBLE alpha,
+        [in, defaultvalue(ColumnMajor)] BlasLayout layout,
+        [in, defaultvalue(Left)] BlasSide side,
+        [in, defaultvalue(Upper)] BlasUplo uplo,
+        [in, defaultvalue(NoTrans)] BlasTranspose transA,
+        [in, defaultvalue(NonUnit)] BlasDiag diag
+    );
+
+    // ---------- Level 2 ----------
+
+    // y ← alpha*op(A)*x + beta*y
+    HRESULT GemvSimple(
+        [in] SAFEARRAY(double) A,
+        [in] SAFEARRAY(double) x,
+        [in, out] SAFEARRAY(double)* y,
+        [in, defaultvalue(1.0)] DOUBLE alpha,
+        [in, defaultvalue(0.0)] DOUBLE beta,
+        [in, defaultvalue(ColumnMajor)] BlasLayout layout,
+        [in, defaultvalue(NoTrans)] BlasTranspose transA
+    );
+
+    // A ← A + alpha*x*y^T
+    HRESULT GerSimple(
+        [in] SAFEARRAY(double) x,
+        [in] SAFEARRAY(double) y,
+        [in, out] SAFEARRAY(double)* A,
+        [in, defaultvalue(1.0)] DOUBLE alpha,
+        [in, defaultvalue(ColumnMajor)] BlasLayout layout
+    );
+
+    // y ← alpha*A*x + beta*y  (A symmetric)
+    HRESULT SymvSimple(
+        [in] SAFEARRAY(double) A,
+        [in] SAFEARRAY(double) x,
+        [in, out] SAFEARRAY(double)* y,
+        [in, defaultvalue(1.0)] DOUBLE alpha,
+        [in, defaultvalue(0.0)] DOUBLE beta,
+        [in, defaultvalue(ColumnMajor)] BlasLayout layout,
+        [in, defaultvalue(Upper)] BlasUplo uplo
+    );
+
+    // A ← A + alpha*x*x^T  (rank-1 update, A symmetric)
+    HRESULT SyrSimple(
+        [in] SAFEARRAY(double) x,
+        [in, out] SAFEARRAY(double)* A,
+        [in, defaultvalue(1.0)] DOUBLE alpha,
+        [in, defaultvalue(ColumnMajor)] BlasLayout layout,
+        [in, defaultvalue(Upper)] BlasUplo uplo
+    );
+
+    // A ← A + alpha*x*y^T + alpha*y*x^T  (rank-2 update, A symmetric)
+    HRESULT Syr2Simple(
+        [in] SAFEARRAY(double) x,
+        [in] SAFEARRAY(double) y,
+        [in, out] SAFEARRAY(double)* A,
+        [in, defaultvalue(1.0)] DOUBLE alpha,
+        [in, defaultvalue(ColumnMajor)] BlasLayout layout,
+        [in, defaultvalue(Upper)] BlasUplo uplo
+    );
+
+    // x ← op(A)*x  (A triangular)
+    HRESULT TrmvSimple(
+        [in] SAFEARRAY(double) A,   // triangular
+        [in, out] SAFEARRAY(double)* x,
+        [in, defaultvalue(ColumnMajor)] BlasLayout layout,
+        [in, defaultvalue(Upper)] BlasUplo uplo,
+        [in, defaultvalue(NoTrans)] BlasTranspose transA,
+        [in, defaultvalue(NonUnit)] BlasDiag diag
+    );
+
+    // Solve op(A)*x = b  (A triangular; overwrites x with solution)
+    HRESULT TrsvSimple(
+        [in] SAFEARRAY(double) A,   // triangular
+        [in, out] SAFEARRAY(double)* x,
+        [in, defaultvalue(ColumnMajor)] BlasLayout layout,
+        [in, defaultvalue(Upper)] BlasUplo uplo,
+        [in, defaultvalue(NoTrans)] BlasTranspose transA,
+        [in, defaultvalue(NonUnit)] BlasDiag diag
+    );
+
+    // ---------- Level 1 ----------
+
+    // y ← alpha*x + y
+    HRESULT Axpy(
+        [in] LONG n,
+        [in] DOUBLE alpha,
+        [in] SAFEARRAY(double) x,
+        [in] LONG incX,
+        [in, out] SAFEARRAY(double)* y,
+        [in] LONG incY
+    );
+
+    // result ← x^T y
+    HRESULT Dot(
+        [in] LONG n,
+        [in] SAFEARRAY(double) x,
+        [in] LONG incX,
+        [in] SAFEARRAY(double) y,
+        [in] LONG incY,
+        [out, retval] DOUBLE* result
+    );
+
+    // result ← ||x||_2
+    HRESULT Nrm2(
+        [in] LONG n,
+        [in] SAFEARRAY(double) x,
+        [in] LONG incX,
+        [out, retval] DOUBLE* result
+    );
+
+    // result ← sum_i |x_i|
+    HRESULT Asum(
+        [in] LONG n,
+        [in] SAFEARRAY(double) x,
+        [in] LONG incX,
+        [out, retval] DOUBLE* result
+    );
+
+    // x ← alpha*x
+    HRESULT Scal(
+        [in] LONG n,
+        [in] DOUBLE alpha,
+        [in, out] SAFEARRAY(double)* x,
+        [in] LONG incX
+    );
+
+    // y ← x
+    HRESULT Copy(
+        [in] LONG n,
+        [in] SAFEARRAY(double) x,
+        [in] LONG incX,
+        [in, out] SAFEARRAY(double)* y,
+        [in] LONG incY
+    );
+
+    // swap(x, y)
+    HRESULT Swap(
+        [in] LONG n,
+        [in, out] SAFEARRAY(double)* x,
+        [in] LONG incX,
+        [in, out] SAFEARRAY(double)* y,
+        [in] LONG incY
+    );
+
+    // index of max |x_i| (1-based)
+    HRESULT Iamax(
+        [in] LONG n,
+        [in] SAFEARRAY(double) x,
+        [in] LONG incX,
+        [out, retval] LONG* index1based
+    );
+
+    // plane rotation: (x_i, y_i) ← ( c  s; -s  c ) * (x_i, y_i)
+    HRESULT Rot(
+        [in] LONG n,
+        [in, out] SAFEARRAY(double)* x,
+        [in] LONG incX,
+        [in, out] SAFEARRAY(double)* y,
+        [in] LONG incY,
+        [in] DOUBLE c,
+        [in] DOUBLE s
+    );
+
+    // construct Givens rotation (a,b) -> (r,0)
+    HRESULT Rotg(
+        [in, out] DOUBLE* a,
+        [in, out] DOUBLE* b,
+        [out] DOUBLE* c,
+        [out] DOUBLE* s
+    );
+
+    // modified plane rotation: param length=5 (flag in param[0])
+    HRESULT Rotm(
+        [in] LONG n,
+        [in, out] SAFEARRAY(double)* x,
+        [in] LONG incX,
+        [in, out] SAFEARRAY(double)* y,
+        [in] LONG incY,
+        [in] SAFEARRAY(double) param
+    );
+
+    // generate modified Givens parameters; outputs param length=5
+    HRESULT Rotmg(
+        [in, out] DOUBLE* d1,
+        [in, out] DOUBLE* d2,
+        [in, out] DOUBLE* x1,
+        [in] DOUBLE y1,
+        [out] SAFEARRAY(double)* param
+    );
+};
+[
+	uuid(5650ec59-f9dc-4d38-83b2-5828ff8c4d2a),
+	version(1.0),
+]
+library COMBLASLib
+{
+	importlib("stdole2.tlb");
+	[
+		uuid(e8f3aed3-eec4-48ab-9925-c13253d4c396)
+	]
+	coclass BLAS
+	{
+		[default] interface IBLAS;
+	};
+};
+
+import "shobjidl.idl";
