@@ -1,4 +1,4 @@
-﻿// BLAS.h : CBLAS の宣言
+// BLAS.h : CBLAS の宣言
 
 #pragma once
 
@@ -21,95 +21,95 @@ using namespace ATL;
 // CBLAS
 
 class ATL_NO_VTABLE CBLAS :
-	public CComObjectRootEx<CComSingleThreadModel>,
-	public CComCoClass<CBLAS, &CLSID_BLAS>,
-	public ISupportErrorInfo,
-	public IDispatchImpl<IBLAS, &IID_IBLAS, &LIBID_COMBLASLib, /*wMajor =*/ 1, /*wMinor =*/ 0>
+    public CComObjectRootEx<CComSingleThreadModel>,
+    public CComCoClass<CBLAS, &CLSID_BLAS>,
+    public ISupportErrorInfo,
+    public IDispatchImpl<IBLAS, &IID_IBLAS, &LIBID_COMBLASLib, /*wMajor =*/ 1, /*wMinor =*/ 1>
 {
 public:
-	CBLAS()
-	{
-	}
+    CBLAS()
+    {
+    }
 
-DECLARE_REGISTRY_RESOURCEID(106)
-
-
-BEGIN_COM_MAP(CBLAS)
-	COM_INTERFACE_ENTRY(IBLAS)
-	COM_INTERFACE_ENTRY(IDispatch)
-	COM_INTERFACE_ENTRY(ISupportErrorInfo)
-END_COM_MAP()
-
-// ISupportsErrorInfo
-	STDMETHOD(InterfaceSupportsErrorInfo)(REFIID riid);
+    DECLARE_REGISTRY_RESOURCEID(106)
 
 
+    BEGIN_COM_MAP(CBLAS)
+        COM_INTERFACE_ENTRY(IBLAS)
+        COM_INTERFACE_ENTRY(IDispatch)
+        COM_INTERFACE_ENTRY(ISupportErrorInfo)
+    END_COM_MAP()
 
-	DECLARE_PROTECT_FINAL_CONSTRUCT()
+    // ISupportsErrorInfo
+    STDMETHOD(InterfaceSupportsErrorInfo)(REFIID riid);
 
-	HRESULT FinalConstruct()
-	{
-		return S_OK;
-	}
 
-	void FinalRelease()
-	{
-	}
+
+    DECLARE_PROTECT_FINAL_CONSTRUCT()
+
+    HRESULT FinalConstruct()
+    {
+        return S_OK;
+    }
+
+    void FinalRelease()
+    {
+    }
 
 public:
 
 
 
-	// IDispatchImpl を介して継承されました
-	HRESULT __stdcall GemmSimple(SAFEARRAY* A, SAFEARRAY* B, SAFEARRAY** C, DOUBLE alpha, DOUBLE beta, BlasLayout layout, BlasTranspose transA, BlasTranspose transB) override;
+    // IDispatchImpl を介して継承されました
+    HRESULT __stdcall GemmSimple(SAFEARRAY* A, SAFEARRAY* B, SAFEARRAY** C, DOUBLE alpha, DOUBLE beta, BlasLayout layout, BlasTranspose transA, BlasTranspose transB) override;
 
-	HRESULT __stdcall SymmSimple(SAFEARRAY* A, SAFEARRAY* B, SAFEARRAY** C, DOUBLE alpha, DOUBLE beta, BlasLayout layout, BlasSide side, BlasUplo uplo) override;
+    HRESULT __stdcall SymmSimple(SAFEARRAY* A, SAFEARRAY* B, SAFEARRAY** C, DOUBLE alpha, DOUBLE beta, BlasLayout layout, BlasSide side, BlasUplo uplo) override;
 
-	HRESULT __stdcall SyrkSimple(SAFEARRAY* A, SAFEARRAY** C, DOUBLE alpha, DOUBLE beta, BlasLayout layout, BlasUplo uplo, BlasTranspose transA) override;
+    HRESULT __stdcall SyrkSimple(SAFEARRAY* A, SAFEARRAY** C, DOUBLE alpha, DOUBLE beta, BlasLayout layout, BlasUplo uplo, BlasTranspose transA) override;
 
-	HRESULT __stdcall Syr2kSimple(SAFEARRAY* A, SAFEARRAY* B, SAFEARRAY** C, DOUBLE alpha, DOUBLE beta, BlasLayout layout, BlasUplo uplo, BlasTranspose trans) override;
+    HRESULT __stdcall Syr2kSimple(SAFEARRAY* A, SAFEARRAY* B, SAFEARRAY** C, DOUBLE alpha, DOUBLE beta, BlasLayout layout, BlasUplo uplo, BlasTranspose trans) override;
 
-	HRESULT __stdcall TrmmSimple(SAFEARRAY* A, SAFEARRAY** B, DOUBLE alpha, BlasLayout layout, BlasSide side, BlasUplo uplo, BlasTranspose transA, BlasDiag diag) override;
+    HRESULT __stdcall TrmmSimple(SAFEARRAY* A, SAFEARRAY** B, DOUBLE alpha, BlasLayout layout, BlasSide side, BlasUplo uplo, BlasTranspose transA, BlasDiag diag) override;
 
-	HRESULT __stdcall TrsmSimple(SAFEARRAY* A, SAFEARRAY** B, DOUBLE alpha, BlasLayout layout, BlasSide side, BlasUplo uplo, BlasTranspose transA, BlasDiag diag) override;
+    HRESULT __stdcall TrsmSimple(SAFEARRAY* A, SAFEARRAY** B, DOUBLE alpha, BlasLayout layout, BlasSide side, BlasUplo uplo, BlasTranspose transA, BlasDiag diag) override;
 
-	HRESULT __stdcall GemvSimple(SAFEARRAY* A, SAFEARRAY* x, SAFEARRAY** y, DOUBLE alpha, DOUBLE beta, BlasLayout layout, BlasTranspose transA) override;
+    HRESULT __stdcall GemvSimple(SAFEARRAY* A, SAFEARRAY* x, SAFEARRAY** y, DOUBLE alpha, DOUBLE beta, BlasLayout layout, BlasTranspose transA) override;
 
-	HRESULT __stdcall GerSimple(SAFEARRAY* x, SAFEARRAY* y, SAFEARRAY** A, DOUBLE alpha, BlasLayout layout) override;
+    HRESULT __stdcall GerSimple(SAFEARRAY* x, SAFEARRAY* y, SAFEARRAY** A, DOUBLE alpha, BlasLayout layout) override;
 
-	HRESULT __stdcall SymvSimple(SAFEARRAY* A, SAFEARRAY* x, SAFEARRAY** y, DOUBLE alpha, DOUBLE beta, BlasLayout layout, BlasUplo uplo) override;
+    HRESULT __stdcall SymvSimple(SAFEARRAY* A, SAFEARRAY* x, SAFEARRAY** y, DOUBLE alpha, DOUBLE beta, BlasLayout layout, BlasUplo uplo) override;
 
-	HRESULT __stdcall SyrSimple(SAFEARRAY* x, SAFEARRAY** A, DOUBLE alpha, BlasLayout layout, BlasUplo uplo) override;
+    HRESULT __stdcall SyrSimple(SAFEARRAY* x, SAFEARRAY** A, DOUBLE alpha, BlasLayout layout, BlasUplo uplo) override;
 
-	HRESULT __stdcall Syr2Simple(SAFEARRAY* x, SAFEARRAY* y, SAFEARRAY** A, DOUBLE alpha, BlasLayout layout, BlasUplo uplo) override;
+    HRESULT __stdcall Syr2Simple(SAFEARRAY* x, SAFEARRAY* y, SAFEARRAY** A, DOUBLE alpha, BlasLayout layout, BlasUplo uplo) override;
 
-	HRESULT __stdcall TrmvSimple(SAFEARRAY* A, SAFEARRAY** x, BlasLayout layout, BlasUplo uplo, BlasTranspose transA, BlasDiag diag) override;
+    HRESULT __stdcall TrmvSimple(SAFEARRAY* A, SAFEARRAY** x, BlasLayout layout, BlasUplo uplo, BlasTranspose transA, BlasDiag diag) override;
 
-	HRESULT __stdcall TrsvSimple(SAFEARRAY* A, SAFEARRAY** x, BlasLayout layout, BlasUplo uplo, BlasTranspose transA, BlasDiag diag) override;
+    HRESULT __stdcall TrsvSimple(SAFEARRAY* A, SAFEARRAY** x, BlasLayout layout, BlasUplo uplo, BlasTranspose transA, BlasDiag diag) override;
 
-	HRESULT __stdcall Axpy(LONG n, DOUBLE alpha, SAFEARRAY* x, LONG incX, SAFEARRAY** y, LONG incY) override;
+    HRESULT __stdcall Axpy(LONG n, DOUBLE alpha, SAFEARRAY* x, LONG incX, SAFEARRAY** y, LONG incY) override;
 
-	HRESULT __stdcall Dot(LONG n, SAFEARRAY* x, LONG incX, SAFEARRAY* y, LONG incY, DOUBLE* result) override;
+    HRESULT __stdcall Dot(LONG n, SAFEARRAY* x, LONG incX, SAFEARRAY* y, LONG incY, DOUBLE* result) override;
 
-	HRESULT __stdcall Nrm2(LONG n, SAFEARRAY* x, LONG incX, DOUBLE* result) override;
+    HRESULT __stdcall Nrm2(LONG n, SAFEARRAY* x, LONG incX, DOUBLE* result) override;
 
-	HRESULT __stdcall Asum(LONG n, SAFEARRAY* x, LONG incX, DOUBLE* result) override;
+    HRESULT __stdcall Asum(LONG n, SAFEARRAY* x, LONG incX, DOUBLE* result) override;
 
-	HRESULT __stdcall Scal(LONG n, DOUBLE alpha, SAFEARRAY** x, LONG incX) override;
+    HRESULT __stdcall Scal(LONG n, DOUBLE alpha, SAFEARRAY** x, LONG incX) override;
 
-	HRESULT __stdcall Copy(LONG n, SAFEARRAY* x, LONG incX, SAFEARRAY** y, LONG incY) override;
+    HRESULT __stdcall Copy(LONG n, SAFEARRAY* x, LONG incX, SAFEARRAY** y, LONG incY) override;
 
-	HRESULT __stdcall Swap(LONG n, SAFEARRAY** x, LONG incX, SAFEARRAY** y, LONG incY) override;
+    HRESULT __stdcall Swap(LONG n, SAFEARRAY** x, LONG incX, SAFEARRAY** y, LONG incY) override;
 
-	HRESULT __stdcall Iamax(LONG n, SAFEARRAY* x, LONG incX, LONG* index1based) override;
+    HRESULT __stdcall Iamax(LONG n, SAFEARRAY* x, LONG incX, LONG* index1based) override;
 
-	HRESULT __stdcall Rot(LONG n, SAFEARRAY** x, LONG incX, SAFEARRAY** y, LONG incY, DOUBLE c, DOUBLE s) override;
+    HRESULT __stdcall Rot(LONG n, SAFEARRAY** x, LONG incX, SAFEARRAY** y, LONG incY, DOUBLE c, DOUBLE s) override;
 
-	HRESULT __stdcall Rotg(DOUBLE* a, DOUBLE* b, DOUBLE* c, DOUBLE* s) override;
+    HRESULT __stdcall Rotg(DOUBLE* a, DOUBLE* b, DOUBLE* c, DOUBLE* s) override;
 
-	HRESULT __stdcall Rotm(LONG n, SAFEARRAY** x, LONG incX, SAFEARRAY** y, LONG incY, SAFEARRAY* param) override;
+    HRESULT __stdcall Rotm(LONG n, SAFEARRAY** x, LONG incX, SAFEARRAY** y, LONG incY, SAFEARRAY* param) override;
 
-	HRESULT __stdcall Rotmg(DOUBLE* d1, DOUBLE* d2, DOUBLE* x1, DOUBLE y1, SAFEARRAY** param) override;
+    HRESULT __stdcall Rotmg(DOUBLE* d1, DOUBLE* d2, DOUBLE* x1, DOUBLE y1, SAFEARRAY** param) override;
 
 };
 

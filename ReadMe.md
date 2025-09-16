@@ -48,3 +48,49 @@
 - 異常系: 上表のチェックに対応する HRESULT を確認する 25 件のテストを追加し、戻り値 (例外の `HResult`) が仕様どおりであることを検証します。
 
 これらのテストは `msbuild COM_BLAS.sln /p:Configuration=Debug /p:Platform=x64` および `vstest.console.exe COM_BLAS_UnitTest_Managed\bin\Debug\net8.0-windows\COM_BLAS_UnitTest_Managed.dll /Platform:x64 /Framework:.NETCoreApp,Version=v8.0` で実行可能です。
+
+## VBA サンプルコード
+
+以下は VBA (Excel) から COM_BLAS コンポーネントの動作を確認するための例です。64bit Office を想定しています。
+
+`b
+Sub TestComBlas()
+    ' COM コンポーネントを生成
+    Dim blas As Object
+    Set blas = CreateObject(""COMBLAS.BLAS"")
+
+    ' 1x1 スカラーの GEMM: C = 1.5 * A*B + 0.2 * C
+    Dim A(1 To 1, 1 To 1) As Double
+    Dim B(1 To 1, 1 To 1) As Double
+    Dim C(1 To 1, 1 To 1) As Double
+
+    A(1, 1) = 2#
+    B(1, 1) = 3#
+    C(1, 1) = 4#
+
+    blas.GemmSimple A, B, C, 1.5, 0.2, 101, 111, 111 ' RowMajor/NoTrans
+
+    Debug.Print ""GemmSimple result:""; C(1, 1)
+
+    ' Level-1: y = alpha * x + y (AXPY)
+    Dim x(0 To 2) As Double
+    Dim y(0 To 2) As Double
+    x(0) = 1#: x(1) = 2#: x(2) = 3#
+    y(0) = 4#: y(1) = 5#: y(2) = 6#
+
+    blas.Axpy 3, 0.5, x, 1, y, 1
+    Debug.Print ""Axpy result:""; y(0); y(1); y(2)
+
+    ' 異常系: incX = 0 にすると E_INVALIDARG (HRESULT 0x80070057)
+    On Error Resume Next
+    blas.Axpy 3, 1#, x, 0, y, 1
+    If Err.Number <> 0 Then
+        Debug.Print ""Expected failure:""; Hex(Err.Number)
+        Err.Clear
+    End If
+
+    Set blas = Nothing
+End Sub
+`
+
+> **補足:** VBA から列挙値を指定する場合は、IDL で定義した定数値を直接指定しています (BlasLayout.RowMajor=101 など)。COM を参照設定して型ライブラリをインポートすれば、定数名をそのまま利用することも可能です。

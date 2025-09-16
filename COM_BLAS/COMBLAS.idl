@@ -1,4 +1,4 @@
-﻿// COM_BLAS.idl : COM_BLAS の IDL ソース
+// COM_BLAS.idl : COM_BLAS の IDL ソース
 //
 
 // このファイルは、タイプ ライブラリ ([!output SAFE_IDL_NAME].tlb) およびマーシャリング コードを
@@ -9,38 +9,38 @@ import "ocidl.idl";
 
   // ===== Enumerations (COM-compatible v1_enum) =====
 typedef [v1_enum] enum BlasLayout {
-	RowMajor = 101,
-	ColumnMajor = 102
+    RowMajor = 101,
+    ColumnMajor = 102
 } BlasLayout;
 
 typedef [v1_enum] enum BlasTranspose {
-	NoTrans = 111,
-	Trans = 112,
-	ConjTrans = 113  // reserved for future complex
+    NoTrans = 111,
+    Trans = 112,
+    ConjTrans = 113  // reserved for future complex
 } BlasTranspose;
 
 typedef [v1_enum] enum BlasUplo {
-	Upper = 121,
-	Lower = 122
+    Upper = 121,
+    Lower = 122
 } BlasUplo;
 
 typedef [v1_enum] enum BlasDiag {
-	NonUnit = 131,
-	Unit = 132
+    NonUnit = 131,
+    Unit = 132
 } BlasDiag;
 
 typedef [v1_enum] enum BlasSide {
-	Left = 141,
-	Right = 142
+    Left = 141,
+    Right = 142
 } BlasSide;
 
 
 [
-	object,
-	uuid(19ef5ee4-5e52-47fa-ba23-c9f70bef7faa),
-	dual,
-	nonextensible,
-	pointer_default(unique)
+    object,
+    uuid(19ef5ee4-5e52-47fa-ba23-c9f70bef7faa),
+    dual,
+    nonextensible,
+    pointer_default(unique)
 ]
 interface IBLAS : IDispatch
 {
@@ -298,19 +298,19 @@ interface IBLAS : IDispatch
     );
 };
 [
-	uuid(5650ec59-f9dc-4d38-83b2-5828ff8c4d2a),
-	version(1.0),
+    uuid(5650ec59-f9dc-4d38-83b2-5828ff8c4d2a),
+    version(1.1),
 ]
 library COMBLASLib
 {
-	importlib("stdole2.tlb");
-	[
-		uuid(e8f3aed3-eec4-48ab-9925-c13253d4c396)
-	]
-	coclass BLAS
-	{
-		[default] interface IBLAS;
-	};
+    importlib("stdole2.tlb");
+    [
+        uuid(e8f3aed3-eec4-48ab-9925-c13253d4c396)
+    ]
+        coclass BLAS
+    {
+        [default] interface IBLAS;
+    };
 };
 
 import "shobjidl.idl";
