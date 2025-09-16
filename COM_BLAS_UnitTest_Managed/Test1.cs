@@ -35,6 +35,7 @@ namespace COM_BLAS_UnitTest_Managed
         Left = 141,
         Right = 142,
     }
+
     [ComImport]
     [Guid("19ef5ee4-5e52-47fa-ba23-c9f70bef7faa")]
     [InterfaceType(ComInterfaceType.InterfaceIsDual)]
@@ -337,6 +338,10 @@ namespace COM_BLAS_UnitTest_Managed
     public sealed class BlasTests
     {
         private const double Tol = 1e-9;
+        private const int EInvalidArg = unchecked((int)0x80070057);
+        private const int EFail = unchecked((int)0x80004005);
+        private const int EPointer = unchecked((int)0x80004003);
+        private const int EBounds = unchecked((int)0x8000000B);
 
         [TestMethod]
         public void GemmSimple_ScalarCase()
@@ -725,10 +730,546 @@ namespace COM_BLAS_UnitTest_Managed
             AssertScalarEqual(x[0], expectedX[0]);
             AssertScalarEqual(y[0], expectedY[0]);
         }
+        [TestMethod]
+        public void GemmSimple_ReturnsInvalidArgWhenOutputSizeMismatch()
+        {
+            using var handle = new BlasHandle();
+            var blas = handle.Instance;
 
+            double[,] A = new double[,] { { 1.0 } };
+            double[,] B = new double[,] { { 2.0 } };
+            double[,] C = new double[,] { { 0.0, 0.0 } };
+
+            AssertComException(EInvalidArg, () => blas.GemmSimple(A, B, ref C, 1.0, 0.0, BlasLayout.RowMajor, BlasTranspose.NoTrans, BlasTranspose.NoTrans));
+        }
+
+        [TestMethod]
+        public void SymmSimple_ReturnsInvalidArgWhenAMismatch()
+        {
+            using var handle = new BlasHandle();
+            var blas = handle.Instance;
+
+            double[,] A = new double[,] { { 1.0, 2.0 } };
+            double[,] B = new double[,] { { 1.0 } };
+            double[,] C = new double[,] { { 0.0 } };
+
+            AssertComException(EInvalidArg, () => blas.SymmSimple(A, B, ref C, 1.0, 0.0, BlasLayout.RowMajor, BlasSide.Left, BlasUplo.Upper));
+        }
+
+        [TestMethod]
+        public void SyrkSimple_ReturnsInvalidArgWhenCNotSquare()
+        {
+            using var handle = new BlasHandle();
+            var blas = handle.Instance;
+
+            double[,] A = new double[,] { { 1.0 } };
+            double[,] C = new double[,] { { 1.0, 2.0 } };
+
+            AssertComException(EInvalidArg, () => blas.SyrkSimple(A, ref C, 1.0, 0.0, BlasLayout.RowMajor, BlasUplo.Upper, BlasTranspose.NoTrans));
+        }
+
+        [TestMethod]
+        public void Syr2kSimple_ReturnsInvalidArgWhenRowMismatch()
+        {
+            using var handle = new BlasHandle();
+            var blas = handle.Instance;
+
+            double[,] A = new double[,] { { 1.0 } };
+            double[,] B = new double[,] { { 2.0 }, { 3.0 } };
+            double[,] C = new double[,] { { 0.0 } };
+
+            AssertComException(EInvalidArg, () => blas.Syr2kSimple(A, B, ref C, 1.0, 0.0, BlasLayout.RowMajor, BlasUplo.Upper, BlasTranspose.NoTrans));
+        }
+
+        [TestMethod]
+        public void TrmmSimple_ReturnsPointerWhenBNull()
+        {
+            using var handle = new BlasHandle();
+            var blas = handle.Instance;
+
+            double[,] A = new double[,] { { 1.0 } };
+            double[,]? B = null;
+
+            AssertComException(EPointer, () => blas.TrmmSimple(A, ref B!, 1.0, BlasLayout.RowMajor, BlasSide.Left, BlasUplo.Upper, BlasTranspose.NoTrans, BlasDiag.NonUnit));
+        }
+
+        [TestMethod]
+        public void TrmmSimple_ReturnsInvalidArgWhenANotSquare()
+        {
+            using var handle = new BlasHandle();
+            var blas = handle.Instance;
+
+            double[,] A = new double[,] { { 1.0, 2.0 } };
+            double[,] B = new double[,] { { 1.0 } };
+
+            AssertComException(EInvalidArg, () => blas.TrmmSimple(A, ref B, 1.0, BlasLayout.RowMajor, BlasSide.Left, BlasUplo.Upper, BlasTranspose.NoTrans, BlasDiag.NonUnit));
+        }
+
+        [TestMethod]
+        public void TrsmSimple_ReturnsInvalidArgWhenANotSquare()
+        {
+            using var handle = new BlasHandle();
+            var blas = handle.Instance;
+
+            double[,] A = new double[,] { { 1.0, 2.0 } };
+            double[,] B = new double[,] { { 1.0 } };
+
+            AssertComException(EInvalidArg, () => blas.TrsmSimple(A, ref B, 1.0, BlasLayout.RowMajor, BlasSide.Left, BlasUplo.Upper, BlasTranspose.NoTrans, BlasDiag.NonUnit));
+        }
+
+        [TestMethod]
+        public void GemvSimple_ReturnsBoundsWhenVectorShort()
+        {
+            using var handle = new BlasHandle();
+            var blas = handle.Instance;
+
+            double[,] A = new double[,] { { 1.0 } };
+            double[] x = new double[] { 1.0 };
+            double[] y = Array.Empty<double>();
+
+            AssertComException(EBounds, () => blas.GemvSimple(A, x, ref y, 1.0, 0.0, BlasLayout.RowMajor, BlasTranspose.NoTrans));
+        }
+
+        [TestMethod]
+        public void GerSimple_ReturnsBoundsWhenVectorLengthsMismatch()
+        {
+            using var handle = new BlasHandle();
+            var blas = handle.Instance;
+
+            double[] x = new double[] { 1.0 };
+            double[] y = new double[] { 2.0, 3.0 };
+            double[,] A = new double[,] { { 0.0, 0.0 }, { 0.0, 0.0 } };
+
+            AssertComException(EBounds, () => blas.GerSimple(x, y, ref A, 1.0, BlasLayout.RowMajor));
+        }
+
+        [TestMethod]
+        public void SymvSimple_ReturnsInvalidArgWhenANotSquare()
+        {
+            using var handle = new BlasHandle();
+            var blas = handle.Instance;
+
+            double[,] A = new double[,] { { 1.0, 2.0 } };
+            double[] x = new double[] { 1.0, 2.0 };
+            double[] y = new double[] { 0.0, 0.0 };
+
+            AssertComException(EInvalidArg, () => blas.SymvSimple(A, x, ref y, 1.0, 0.0, BlasLayout.RowMajor, BlasUplo.Upper));
+        }
+
+        [TestMethod]
+        public void SyrSimple_ReturnsBoundsWhenVectorMismatch()
+        {
+            using var handle = new BlasHandle();
+            var blas = handle.Instance;
+
+            double[] x = new double[] { 1.0 };
+            double[,] A = new double[,] { { 0.0, 0.0 }, { 0.0, 0.0 } };
+
+            AssertComException(EBounds, () => blas.SyrSimple(x, ref A, 1.0, BlasLayout.RowMajor, BlasUplo.Upper));
+        }
+
+        [TestMethod]
+        public void Syr2Simple_ReturnsBoundsWhenVectorMismatch()
+        {
+            using var handle = new BlasHandle();
+            var blas = handle.Instance;
+
+            double[] x = new double[] { 1.0, 2.0 };
+            double[] y = new double[] { 3.0 };
+            double[,] A = new double[,] { { 0.0, 0.0 }, { 0.0, 0.0 } };
+
+            AssertComException(EBounds, () => blas.Syr2Simple(x, y, ref A, 1.0, BlasLayout.RowMajor, BlasUplo.Upper));
+        }
+
+        [TestMethod]
+        public void TrmvSimple_ReturnsInvalidArgWhenANotSquare()
+        {
+            using var handle = new BlasHandle();
+            var blas = handle.Instance;
+
+            double[,] A = new double[,] { { 1.0, 2.0 } };
+            double[] x = new double[] { 1.0, 2.0 };
+
+            AssertComException(EInvalidArg, () => blas.TrmvSimple(A, ref x, BlasLayout.RowMajor, BlasUplo.Upper, BlasTranspose.NoTrans, BlasDiag.NonUnit));
+        }
+
+        [TestMethod]
+        public void TrsvSimple_ReturnsInvalidArgWhenANotSquare()
+        {
+            using var handle = new BlasHandle();
+            var blas = handle.Instance;
+
+            double[,] A = new double[,] { { 1.0, 2.0 } };
+            double[] x = new double[] { 1.0, 2.0 };
+
+            AssertComException(EInvalidArg, () => blas.TrsvSimple(A, ref x, BlasLayout.RowMajor, BlasUplo.Upper, BlasTranspose.NoTrans, BlasDiag.NonUnit));
+        }
+
+        [TestMethod]
+        public void Axpy_ReturnsInvalidArgWhenIncrementZero()
+        {
+            using var handle = new BlasHandle();
+            var blas = handle.Instance;
+
+            double[] x = new double[] { 1.0 };
+            double[] y = new double[] { 2.0 };
+
+            AssertComException(EInvalidArg, () => blas.Axpy(1, 1.0, x, 0, ref y, 1));
+        }
+
+        [TestMethod]
+        public void Dot_ReturnsInvalidArgWhenIncZero()
+        {
+            using var handle = new BlasHandle();
+            var blas = handle.Instance;
+
+            double[] x = new double[] { 1.0 };
+            double[] y = new double[] { 2.0 };
+
+            AssertComException(EInvalidArg, () => blas.Dot(1, x, 0, y, 1));
+        }
+
+        [TestMethod]
+        public void Dot_ReturnsBoundsWhenVectorTooShort()
+        {
+            using var handle = new BlasHandle();
+            var blas = handle.Instance;
+
+            double[] x = Array.Empty<double>();
+            double[] y = new double[] { 1.0 };
+
+            AssertComException(EBounds, () => blas.Dot(1, x, 1, y, 1));
+        }
+
+        [TestMethod]
+        public void Nrm2_ReturnsInvalidArgWhenNegativeN()
+        {
+            using var handle = new BlasHandle();
+            var blas = handle.Instance;
+
+            double[] x = Array.Empty<double>();
+
+            AssertComException(EInvalidArg, () => blas.Nrm2(-1, x, 1));
+        }
+
+        [TestMethod]
+        public void Asum_ReturnsInvalidArgWhenNegativeN()
+        {
+            using var handle = new BlasHandle();
+            var blas = handle.Instance;
+
+            double[] x = Array.Empty<double>();
+
+            AssertComException(EInvalidArg, () => blas.Asum(-1, x, 1));
+        }
+
+        [TestMethod]
+        public void Scal_ReturnsInvalidArgWhenIncrementZero()
+        {
+            using var handle = new BlasHandle();
+            var blas = handle.Instance;
+
+            double[] x = new double[] { 1.0 };
+
+            AssertComException(EInvalidArg, () => blas.Scal(1, 1.0, ref x, 0));
+        }
+
+        [TestMethod]
+        public void Copy_ReturnsInvalidArgWhenIncrementZero()
+        {
+            using var handle = new BlasHandle();
+            var blas = handle.Instance;
+
+            double[] x = new double[] { 1.0 };
+            double[] y = new double[] { 0.0 };
+
+            AssertComException(EInvalidArg, () => blas.Copy(1, x, 0, ref y, 1));
+        }
+
+        [TestMethod]
+        public void Swap_ReturnsInvalidArgWhenIncrementZero()
+        {
+            using var handle = new BlasHandle();
+            var blas = handle.Instance;
+
+            double[] x = new double[] { 1.0 };
+            double[] y = new double[] { 2.0 };
+
+            AssertComException(EInvalidArg, () => blas.Swap(1, ref x, 0, ref y, 1));
+        }
+
+        [TestMethod]
+        public void Iamax_ReturnsInvalidArgWhenIncrementZero()
+        {
+            using var handle = new BlasHandle();
+            var blas = handle.Instance;
+
+            double[] x = new double[] { 1.0 };
+
+            AssertComException(EInvalidArg, () => blas.Iamax(1, x, 0));
+        }
+
+        [TestMethod]
+        public void Rot_ReturnsInvalidArgWhenIncrementZero()
+        {
+            using var handle = new BlasHandle();
+            var blas = handle.Instance;
+
+            double[] x = new double[] { 1.0 };
+            double[] y = new double[] { 2.0 };
+
+            AssertComException(EInvalidArg, () => blas.Rot(1, ref x, 0, ref y, 1, 1.0, 0.0));
+        }
+
+        [TestMethod]
+        public void Rotm_ReturnsBoundsWhenParamTooShort()
+        {
+            using var handle = new BlasHandle();
+            var blas = handle.Instance;
+
+            double[] x = new double[] { 1.0 };
+            double[] y = new double[] { 2.0 };
+            double[] param = new double[] { 0.0, 1.0, 2.0, 3.0 };
+
+            AssertComException(EBounds, () => blas.Rotm(1, ref x, 1, ref y, 1, param));
+        }
         private static void AssertScalarEqual(double actual, double expected)
         {
             Assert.AreEqual(expected, actual, Tol);
+        }
+
+        private static void AssertComException(int expectedHResult, Action action)
+        {
+            try
+            {
+                action();
+                Assert.Fail("Expected COM failure was not thrown.");
+            }
+            catch (Exception ex)
+            {
+                if (ex is not COMException && ex is not ArgumentException && ex is not NullReferenceException)
+                {
+                    throw;
+                }
+
+                Assert.AreEqual(expectedHResult, ex.HResult);
+            }
+        }
+
+        private static double[,] Outer(double[] x, double[] y)
+        {
+            var result = new double[x.Length, y.Length];
+            for (int i = 0; i < x.Length; i++)
+            {
+                for (int j = 0; j < y.Length; j++)
+                {
+                    result[i, j] = x[i] * y[j];
+                }
+            }
+            return result;
+        }
+
+        private static double[,] Multiply(double[,] left, double[,] right)
+        {
+            int m = left.GetLength(0);
+            int k = left.GetLength(1);
+            int n = right.GetLength(1);
+            var result = new double[m, n];
+            for (int i = 0; i < m; i++)
+            {
+                for (int j = 0; j < n; j++)
+                {
+                    double sum = 0.0;
+                    for (int p = 0; p < k; p++)
+                    {
+                        sum += left[i, p] * right[p, j];
+                    }
+                    result[i, j] = sum;
+                }
+            }
+            return result;
+        }
+
+        private static double[,] MultiplyScalar(double[,] matrix, double scalar)
+        {
+            var result = (double[,])matrix.Clone();
+            int rows = result.GetLength(0);
+            int cols = result.GetLength(1);
+            for (int i = 0; i < rows; i++)
+            {
+                for (int j = 0; j < cols; j++)
+                {
+                    result[i, j] *= scalar;
+                }
+            }
+            return result;
+        }
+
+        private static double[,] CombineMatrices(double alpha, double[,] left, double beta, double[,] right)
+        {
+            int rows = left.GetLength(0);
+            int cols = left.GetLength(1);
+            var result = new double[rows, cols];
+            for (int i = 0; i < rows; i++)
+            {
+                for (int j = 0; j < cols; j++)
+                {
+                    result[i, j] = alpha * left[i, j] + beta * right[i, j];
+                }
+            }
+            return result;
+        }
+
+        private static double[] CombineVectors(double alpha, double[] left, double beta, double[] right)
+        {
+            var result = new double[left.Length];
+            for (int i = 0; i < result.Length; i++)
+            {
+                result[i] = alpha * left[i] + beta * right[i];
+            }
+            return result;
+        }
+
+        private static double[,] Transpose(double[,] matrix)
+        {
+            int rows = matrix.GetLength(0);
+            int cols = matrix.GetLength(1);
+            var result = new double[cols, rows];
+            for (int i = 0; i < rows; i++)
+            {
+                for (int j = 0; j < cols; j++)
+                {
+                    result[j, i] = matrix[i, j];
+                }
+            }
+            return result;
+        }
+
+        private static double[] SolveTriangularVector(double[,] matrix, double[] rhs, BlasUplo uplo, BlasTranspose trans, BlasDiag diag)
+        {
+            int n = rhs.Length;
+            var result = new double[n];
+            if (trans == BlasTranspose.NoTrans)
+            {
+                if (uplo == BlasUplo.Upper)
+                {
+                    for (int row = n - 1; row >= 0; row--)
+                    {
+                        double sum = rhs[row];
+                        for (int col = row + 1; col < n; col++)
+                        {
+                            sum -= matrix[row, col] * result[col];
+                        }
+                        double diagValue = (diag == BlasDiag.Unit) ? 1.0 : matrix[row, row];
+                        result[row] = sum / diagValue;
+                    }
+                }
+                else
+                {
+                    for (int row = 0; row < n; row++)
+                    {
+                        double sum = rhs[row];
+                        for (int col = 0; col < row; col++)
+                        {
+                            sum -= matrix[row, col] * result[col];
+                        }
+                        double diagValue = (diag == BlasDiag.Unit) ? 1.0 : matrix[row, row];
+                        result[row] = sum / diagValue;
+                    }
+                }
+            }
+            else
+            {
+                var transposed = Transpose(matrix);
+                BlasUplo transformedUplo = uplo == BlasUplo.Upper ? BlasUplo.Lower : BlasUplo.Upper;
+                result = SolveTriangularVector(transposed, rhs, transformedUplo, BlasTranspose.NoTrans, diag);
+            }
+            return result;
+        }
+
+        private static double[,] SolveTriangularMatrix(double[,] matrix, double[,] rhs, BlasUplo uplo, BlasTranspose trans, BlasDiag diag)
+        {
+            int rows = rhs.GetLength(0);
+            int cols = rhs.GetLength(1);
+            var result = new double[rows, cols];
+            for (int col = 0; col < cols; col++)
+            {
+                var vector = new double[rows];
+                for (int row = 0; row < rows; row++)
+                {
+                    vector[row] = rhs[row, col];
+                }
+                var solved = SolveTriangularVector(matrix, vector, uplo, trans, diag);
+                for (int row = 0; row < rows; row++)
+                {
+                    result[row, col] = solved[row];
+                }
+            }
+            return result;
+        }
+
+        private static double[] TriangularMatrixVector(double[,] matrix, double[] vector, BlasUplo uplo, BlasTranspose trans, BlasDiag diag)
+        {
+            int n = vector.Length;
+            var result = new double[n];
+            for (int row = 0; row < n; row++)
+            {
+                double sum = 0.0;
+                for (int col = 0; col < n; col++)
+                {
+                    bool use = trans == BlasTranspose.NoTrans
+                        ? (uplo == BlasUplo.Upper ? col >= row : col <= row)
+                        : (uplo == BlasUplo.Upper ? row >= col : row <= col);
+                    if (!use)
+                    {
+                        continue;
+                    }
+
+                    int sourceRow = trans == BlasTranspose.NoTrans ? row : col;
+                    int sourceCol = trans == BlasTranspose.NoTrans ? col : row;
+                    double entry = matrix[sourceRow, sourceCol];
+                    if (diag == BlasDiag.Unit && sourceRow == sourceCol)
+                    {
+                        entry = 1.0;
+                    }
+                    sum += entry * vector[col];
+                }
+                result[row] = sum;
+            }
+            return result;
+        }
+
+        private static void ApplyRotm(double[] x, double[] y, double[] param)
+        {
+            double flag = param[0];
+            double h11 = param[1];
+            double h21 = param[2];
+            double h12 = param[3];
+            double h22 = param[4];
+
+            for (int i = 0; i < x.Length; i++)
+            {
+                double xi = x[i];
+                double yi = y[i];
+                if (flag == -2.0)
+                {
+                }
+                else if (flag == -1.0)
+                {
+                    x[i] = xi * h11 + yi * h12;
+                    y[i] = xi * h21 + yi * h22;
+                }
+                else if (flag == 0.0)
+                {
+                    x[i] = xi + yi * h12;
+                    y[i] = xi * h21 + yi;
+                }
+                else
+                {
+                    x[i] = xi * h11 + yi;
+                    y[i] = -xi + yi * h22;
+                }
+            }
         }
 
         private static (double r, double z, double c, double s) ComputeRotgExpected(double a, double b)
@@ -768,39 +1309,6 @@ namespace COM_BLAS_UnitTest_Managed
                 }
             }
             return (r, z, c, s);
-        }
-
-        private static void ApplyRotm(double[] x, double[] y, double[] param)
-        {
-            double flag = param[0];
-            double h11 = param[1];
-            double h21 = param[2];
-            double h12 = param[3];
-            double h22 = param[4];
-
-            for (int i = 0; i < x.Length; i++)
-            {
-                double xi = x[i];
-                double yi = y[i];
-                if (flag == -2.0)
-                {
-                }
-                else if (flag == -1.0)
-                {
-                    x[i] = xi * h11 + yi * h12;
-                    y[i] = xi * h21 + yi * h22;
-                }
-                else if (flag == 0.0)
-                {
-                    x[i] = xi + yi * h12;
-                    y[i] = xi * h21 + yi;
-                }
-                else
-                {
-                    x[i] = xi * h11 + yi;
-                    y[i] = -xi + yi * h22;
-                }
-            }
         }
     }
 }
