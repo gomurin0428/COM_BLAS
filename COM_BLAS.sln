@@ -61,6 +61,7 @@ Global
 		{E7BBE3DC-9EC9-EFA5-1A84-FF511D2ABA8B}.Debug|x86.ActiveCfg = Debug
 		{E7BBE3DC-9EC9-EFA5-1A84-FF511D2ABA8B}.Release|Any CPU.ActiveCfg = Release
 		{E7BBE3DC-9EC9-EFA5-1A84-FF511D2ABA8B}.Release|x64.ActiveCfg = Release
+		{E7BBE3DC-9EC9-EFA5-1A84-FF511D2ABA8B}.Release|x64.Build.0 = Release
 		{E7BBE3DC-9EC9-EFA5-1A84-FF511D2ABA8B}.Release|x86.ActiveCfg = Release
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
