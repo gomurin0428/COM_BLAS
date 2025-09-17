@@ -33,12 +33,6 @@
         }
         "Entry"
         {
-        "MsmKey" = "8:_4B5AA51BACAA459DBEFD66B4215AF794"
-        "OwnerKey" = "8:_UNDEFINED"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
         "MsmKey" = "8:_5D2EB79576394C12A2CC3BC635FE4CA6"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
@@ -59,6 +53,12 @@
         {
         "MsmKey" = "8:_A1FA37E89DFF77F4600F7AEC443F3F98"
         "OwnerKey" = "8:_5D2EB79576394C12A2CC3BC635FE4CA6"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_BE4F206CC89248889A1B05D989C7123E"
+        "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -198,26 +198,6 @@
             "IsDependency" = "11:TRUE"
             "IsolateTo" = "8:"
             }
-            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_4B5AA51BACAA459DBEFD66B4215AF794"
-            {
-            "SourcePath" = "8:..\\x64\\Release\\libopenblas.dll"
-            "TargetName" = "8:libopenblas.dll"
-            "Tag" = "8:"
-            "Folder" = "8:_1F6544DE7E5A4147B856B16BA7BAAB9A"
-            "Condition" = "8:"
-            "Transitive" = "11:FALSE"
-            "Vital" = "11:TRUE"
-            "ReadOnly" = "11:FALSE"
-            "Hidden" = "11:FALSE"
-            "System" = "11:FALSE"
-            "Permanent" = "11:FALSE"
-            "SharedLegacy" = "11:FALSE"
-            "PackageAs" = "3:1"
-            "Register" = "3:1"
-            "Exclude" = "11:FALSE"
-            "IsDependency" = "11:FALSE"
-            "IsolateTo" = "8:"
-            }
             "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_7C3274FE4D1E74D81B373F6267131114"
             {
             "SourcePath" = "8:libopenblas.dll"
@@ -278,6 +258,26 @@
             "IsDependency" = "11:TRUE"
             "IsolateTo" = "8:"
             }
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_BE4F206CC89248889A1B05D989C7123E"
+            {
+            "SourcePath" = "8:..\\COM_BLAS\\x64\\Release\\COMBLAS.tlb"
+            "TargetName" = "8:COMBLAS.tlb"
+            "Tag" = "8:"
+            "Folder" = "8:_1F6544DE7E5A4147B856B16BA7BAAB9A"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
             "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_FDB30D80073813332534ED092DACB1EB"
             {
             "SourcePath" = "8:VCRUNTIME140.dll"
@@ -306,7 +306,7 @@
         {
             "{3C67513D-01DD-4637-8A68-80971EB9504F}:_1F6544DE7E5A4147B856B16BA7BAAB9A"
             {
-            "DefaultLocation" = "8:[ProgramFilesFolder][Manufacturer]\\[ProductName]"
+            "DefaultLocation" = "8:[ProgramFiles64Folder][Manufacturer]\\[ProductName]"
             "Name" = "8:#1925"
             "AlwaysCreate" = "11:FALSE"
             "Condition" = "8:"
@@ -355,7 +355,7 @@
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:COM_BLAS.Setup"
         "ProductCode" = "8:{C359D55B-2D66-408D-A4A8-BA61D33CDF6B}"
-        "PackageCode" = "8:{21B8D1FC-E553-464D-9332-486A4E4E143B}"
+        "PackageCode" = "8:{78369F4E-1279-4F20-AB98-BDFB8E6703BC}"
         "UpgradeCode" = "8:{C92EF052-3E95-45FA-8A4D-946869BF253F}"
         "AspNetVersion" = "8:4.0.30319.0"
         "RestartWWWService" = "11:FALSE"
@@ -376,7 +376,7 @@
         "ARPIconIndex" = "3:0"
         "SearchPath" = "8:"
         "UseSystemSearchPath" = "11:TRUE"
-        "TargetPlatform" = "3:0"
+        "TargetPlatform" = "3:1"
         "PreBuildEvent" = "8:"
         "PostBuildEvent" = "8:"
         "RunPostBuildEvent" = "3:0"
