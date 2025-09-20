@@ -1,6 +1,7 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.IO;
+using System.Numerics;
 using System.Runtime.InteropServices;
 
 namespace COM_BLAS_UnitTest_Managed
@@ -236,6 +237,65 @@ namespace COM_BLAS_UnitTest_Managed
             double y1,
             [Out, MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] out double[] param);
     }
+
+    [ComImport]
+    [Guid("7795391b-e2f5-4f20-943e-14d2aeb5e8b8")]
+    [InterfaceType(ComInterfaceType.InterfaceIsDual)]
+    internal interface IBLASComplex
+    {
+        void ZGemmSimple(
+            [MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] double[,] AReal,
+            [MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] double[,] AImag,
+            [MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] double[,] BReal,
+            [MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] double[,] BImag,
+            [In, Out, MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] ref double[,] CReal,
+            [In, Out, MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] ref double[,] CImag,
+            double alphaReal,
+            double alphaImag,
+            double betaReal,
+            double betaImag,
+            BlasLayout layout,
+            BlasTranspose transA,
+            BlasTranspose transB);
+
+        void ZGemvSimple(
+            [MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] double[,] AReal,
+            [MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] double[,] AImag,
+            [MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] double[] xReal,
+            [MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] double[] xImag,
+            [In, Out, MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] ref double[] yReal,
+            [In, Out, MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] ref double[] yImag,
+            double alphaReal,
+            double alphaImag,
+            double betaReal,
+            double betaImag,
+            BlasLayout layout,
+            BlasTranspose transA);
+
+        void ZAxpy(
+            int n,
+            [MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] double[] xReal,
+            [MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] double[] xImag,
+            int incX,
+            [In, Out, MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] ref double[] yReal,
+            [In, Out, MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] ref double[] yImag,
+            int incY,
+            double alphaReal,
+            double alphaImag);
+
+        void ZDot(
+            int n,
+            [MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] double[] xReal,
+            [MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] double[] xImag,
+            int incX,
+            [MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] double[] yReal,
+            [MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] double[] yImag,
+            int incY,
+            out double resultReal,
+            out double resultImag,
+            [MarshalAs(UnmanagedType.VariantBool)] bool conjugate);
+    }
+
     internal static class ComBlasFactory
     {
         private static readonly string DllPath = ResolveDllPath();
@@ -244,6 +304,7 @@ namespace COM_BLAS_UnitTest_Managed
         private static readonly Guid CLSID_BLAS = new Guid("e8f3aed3-eec4-48ab-9925-c13253d4c396");
         private static readonly Guid IID_IClassFactory = new Guid("00000001-0000-0000-C000-000000000046");
         private static readonly Guid IID_IBLAS = typeof(IBLAS).GUID;
+        private static readonly Guid IID_IBLASComplex = typeof(IBLASComplex).GUID;
 
         [UnmanagedFunctionPointer(CallingConvention.StdCall)]
         private delegate int DllGetClassObjectDelegate(ref Guid clsid, ref Guid iid, out IntPtr ppv);
@@ -259,6 +320,16 @@ namespace COM_BLAS_UnitTest_Managed
 
         internal static IBLAS Create()
         {
+            return (IBLAS)CreateInternal(IID_IBLAS);
+        }
+
+        internal static IBLASComplex CreateComplex()
+        {
+            return (IBLASComplex)CreateInternal(IID_IBLASComplex);
+        }
+
+        private static object CreateInternal(Guid iid)
+        {
             IntPtr factoryPtr = IntPtr.Zero;
             Guid clsid = CLSID_BLAS;
             Guid iidFactory = IID_IClassFactory;
@@ -273,9 +344,9 @@ namespace COM_BLAS_UnitTest_Managed
                 var factory = (IClassFactoryInternal)Marshal.GetObjectForIUnknown(factoryPtr);
                 try
                 {
-                    Guid iid = IID_IBLAS;
-                    factory.CreateInstance(null, ref iid, out object instance);
-                    return (IBLAS)instance;
+                    Guid requestedIid = iid;
+                    factory.CreateInstance(null, ref requestedIid, out object instance);
+                    return instance;
                 }
                 finally
                 {
@@ -334,6 +405,25 @@ namespace COM_BLAS_UnitTest_Managed
             }
         }
     }
+
+    internal sealed class ComplexBlasHandle : IDisposable
+    {
+        public IBLASComplex Instance { get; }
+
+        public ComplexBlasHandle()
+        {
+            Instance = ComBlasFactory.CreateComplex();
+        }
+
+        public void Dispose()
+        {
+            if (Instance != null)
+            {
+                Marshal.ReleaseComObject(Instance);
+            }
+        }
+    }
+
     [TestClass]
     public sealed class BlasTests
     {
@@ -1311,4 +1401,268 @@ namespace COM_BLAS_UnitTest_Managed
             return (r, z, c, s);
         }
     }
+    [TestClass]
+    public sealed class ComplexBlasTests
+    {
+        private const double Tol = 1e-9;
+
+        [TestMethod]
+        public void ZGemmSimple_ComputesAlphaABPlusBetaC()
+        {
+            using var handle = new ComplexBlasHandle();
+            var blas = handle.Instance;
+
+            double[,] aReal = new double[,] { { 1.0, -2.0 }, { 0.5, 3.0 } };
+            double[,] aImag = new double[,] { { 1.5, 0.25 }, { -1.0, 2.0 } };
+            double[,] bReal = new double[,] { { -1.0, 4.5 }, { 2.0, 0.0 } };
+            double[,] bImag = new double[,] { { 0.5, -3.0 }, { 1.0, 2.5 } };
+            double[,] cReal = new double[,] { { 0.5, -1.0 }, { 1.0, 0.2 } };
+            double[,] cImag = new double[,] { { -0.75, 1.0 }, { 0.0, -1.5 } };
+            double[,] originalCReal = (double[,])cReal.Clone();
+            double[,] originalCImag = (double[,])cImag.Clone();
+
+            double alphaReal = 0.8;
+            double alphaImag = -0.6;
+            double betaReal = -0.3;
+            double betaImag = 0.25;
+
+            blas.ZGemmSimple(aReal, aImag, bReal, bImag, ref cReal, ref cImag, alphaReal, alphaImag, betaReal, betaImag, BlasLayout.RowMajor, BlasTranspose.NoTrans, BlasTranspose.NoTrans);
+
+            Complex[,] expected = ComputeZGemmExpected(aReal, aImag, bReal, bImag, originalCReal, originalCImag, new Complex(alphaReal, alphaImag), new Complex(betaReal, betaImag));
+            AssertComplexMatrixEqual(expected, cReal, cImag);
+        }
+
+        [TestMethod]
+        public void ZGemvSimple_ComputesAlphaAxPlusBetaY()
+        {
+            using var handle = new ComplexBlasHandle();
+            var blas = handle.Instance;
+
+            double[,] aReal = new double[,] { { 1.0, 2.0 }, { -1.5, 0.5 } };
+            double[,] aImag = new double[,] { { 0.5, -0.25 }, { 1.0, 0.0 } };
+            double[] xReal = new double[] { 0.5, -1.0 };
+            double[] xImag = new double[] { 2.0, 0.0 };
+            double[] yReal = new double[] { 1.0, -0.5 };
+            double[] yImag = new double[] { 0.25, 1.5 };
+            double[] originalYReal = (double[])yReal.Clone();
+            double[] originalYImag = (double[])yImag.Clone();
+
+            double alphaReal = 1.2;
+            double alphaImag = -0.3;
+            double betaReal = -0.4;
+            double betaImag = 0.8;
+
+            blas.ZGemvSimple(aReal, aImag, xReal, xImag, ref yReal, ref yImag, alphaReal, alphaImag, betaReal, betaImag, BlasLayout.RowMajor, BlasTranspose.NoTrans);
+
+            Complex[] expected = ComputeZGemvExpected(aReal, aImag, xReal, xImag, originalYReal, originalYImag, new Complex(alphaReal, alphaImag), new Complex(betaReal, betaImag));
+            AssertComplexVectorEqual(expected, yReal, yImag);
+        }
+
+        [TestMethod]
+        public void ZAxpy_AddsScaledVector()
+        {
+            using var handle = new ComplexBlasHandle();
+            var blas = handle.Instance;
+
+            int n = 3;
+            double[] xReal = new double[] { 1.0, -0.5, 2.0, 0.0, -1.0 };
+            double[] xImag = new double[] { 0.5, 1.0, -1.5, 0.0, 0.0 };
+            int incX = 2;
+            double[] yReal = new double[] { -1.0, 0.5, 2.0 };
+            double[] yImag = new double[] { 0.25, -0.75, 1.5 };
+            double[] originalYReal = (double[])yReal.Clone();
+            double[] originalYImag = (double[])yImag.Clone();
+            int incY = 1;
+
+            double alphaReal = -0.5;
+            double alphaImag = 1.0;
+
+            blas.ZAxpy(n, xReal, xImag, incX, ref yReal, ref yImag, incY, alphaReal, alphaImag);
+
+            Complex[] expected = ComputeZAxpyExpected(n, xReal, xImag, incX, originalYReal, originalYImag, incY, new Complex(alphaReal, alphaImag));
+            AssertComplexVectorEqual(expected, yReal, yImag);
+        }
+
+        [TestMethod]
+        public void ZDot_ComputesConjugatedDot()
+        {
+            using var handle = new ComplexBlasHandle();
+            var blas = handle.Instance;
+
+            int n = 3;
+            double[] xReal = new double[] { 1.0, -0.5, 2.0, 0.0, -1.0 };
+            double[] xImag = new double[] { 0.5, 1.0, -1.5, 0.0, 0.0 };
+            int incX = 2;
+            double[] yReal = new double[] { -0.5, 1.0, 0.25 };
+            double[] yImag = new double[] { 1.5, -0.75, 0.0 };
+            int incY = 1;
+
+            blas.ZDot(n, xReal, xImag, incX, yReal, yImag, incY, out double resultReal, out double resultImag, true);
+
+            Complex expected = ComputeZDotExpected(n, xReal, xImag, incX, yReal, yImag, incY, true);
+            AssertNearlyEqual(expected.Real, resultReal);
+            AssertNearlyEqual(expected.Imaginary, resultImag);
+        }
+
+        [TestMethod]
+        public void ZDot_ComputesUnconjugatedDot()
+        {
+            using var handle = new ComplexBlasHandle();
+            var blas = handle.Instance;
+
+            int n = 3;
+            double[] xReal = new double[] { 1.0, -0.5, 2.0, 0.0, -1.0 };
+            double[] xImag = new double[] { 0.5, 1.0, -1.5, 0.0, 0.0 };
+            int incX = 2;
+            double[] yReal = new double[] { -0.5, 1.0, 0.25 };
+            double[] yImag = new double[] { 1.5, -0.75, 0.0 };
+            int incY = 1;
+
+            blas.ZDot(n, xReal, xImag, incX, yReal, yImag, incY, out double resultReal, out double resultImag, false);
+
+            Complex expected = ComputeZDotExpected(n, xReal, xImag, incX, yReal, yImag, incY, false);
+            AssertNearlyEqual(expected.Real, resultReal);
+            AssertNearlyEqual(expected.Imaginary, resultImag);
+        }
+
+        private static Complex[,] ToComplexMatrix(double[,] real, double[,] imag)
+        {
+            int rows = real.GetLength(0);
+            int cols = real.GetLength(1);
+            var result = new Complex[rows, cols];
+            for (int i = 0; i < rows; i++)
+            {
+                for (int j = 0; j < cols; j++)
+                {
+                    result[i, j] = new Complex(real[i, j], imag[i, j]);
+                }
+            }
+            return result;
+        }
+
+        private static Complex[] ToComplexVector(double[] real, double[] imag)
+        {
+            var result = new Complex[real.Length];
+            for (int i = 0; i < real.Length; i++)
+            {
+                result[i] = new Complex(real[i], imag[i]);
+            }
+            return result;
+        }
+
+        private static Complex[,] ComputeZGemmExpected(double[,] aReal, double[,] aImag, double[,] bReal, double[,] bImag, double[,] cReal, double[,] cImag, Complex alpha, Complex beta)
+        {
+            var a = ToComplexMatrix(aReal, aImag);
+            var b = ToComplexMatrix(bReal, bImag);
+            var c = ToComplexMatrix(cReal, cImag);
+            int rows = a.GetLength(0);
+            int cols = b.GetLength(1);
+            int shared = a.GetLength(1);
+            var result = new Complex[rows, cols];
+            for (int i = 0; i < rows; i++)
+            {
+                for (int j = 0; j < cols; j++)
+                {
+                    Complex sum = Complex.Zero;
+                    for (int k = 0; k < shared; k++)
+                    {
+                        sum += a[i, k] * b[k, j];
+                    }
+                    result[i, j] = alpha * sum + beta * c[i, j];
+                }
+            }
+            return result;
+        }
+
+        private static Complex[] ComputeZGemvExpected(double[,] aReal, double[,] aImag, double[] xReal, double[] xImag, double[] yReal, double[] yImag, Complex alpha, Complex beta)
+        {
+            var a = ToComplexMatrix(aReal, aImag);
+            var x = ToComplexVector(xReal, xImag);
+            var y = ToComplexVector(yReal, yImag);
+            int rows = a.GetLength(0);
+            int cols = a.GetLength(1);
+            var result = new Complex[rows];
+            for (int i = 0; i < rows; i++)
+            {
+                Complex sum = Complex.Zero;
+                for (int j = 0; j < cols; j++)
+                {
+                    sum += a[i, j] * x[j];
+                }
+                result[i] = alpha * sum + beta * y[i];
+            }
+            return result;
+        }
+
+        private static Complex[] ComputeZAxpyExpected(int n, double[] xReal, double[] xImag, int incX, double[] yReal, double[] yImag, int incY, Complex alpha)
+        {
+            var x = ToComplexVector(xReal, xImag);
+            var y = ToComplexVector(yReal, yImag);
+            var result = new Complex[y.Length];
+            Array.Copy(y, result, y.Length);
+            for (int i = 0; i < n; i++)
+            {
+                int xi = i * incX;
+                int yi = i * incY;
+                result[yi] = y[yi] + alpha * x[xi];
+            }
+            return result;
+        }
+
+        private static Complex ComputeZDotExpected(int n, double[] xReal, double[] xImag, int incX, double[] yReal, double[] yImag, int incY, bool conjugate)
+        {
+            var x = ToComplexVector(xReal, xImag);
+            var y = ToComplexVector(yReal, yImag);
+            Complex sum = Complex.Zero;
+            for (int i = 0; i < n; i++)
+            {
+                Complex xi = x[i * incX];
+                if (conjugate)
+                {
+                    xi = Complex.Conjugate(xi);
+                }
+                sum += xi * y[i * incY];
+            }
+            return sum;
+        }
+
+        private static void AssertComplexMatrixEqual(Complex[,] expected, double[,] actualReal, double[,] actualImag)
+        {
+            int rows = expected.GetLength(0);
+            int cols = expected.GetLength(1);
+            Assert.AreEqual(rows, actualReal.GetLength(0));
+            Assert.AreEqual(cols, actualReal.GetLength(1));
+            Assert.AreEqual(rows, actualImag.GetLength(0));
+            Assert.AreEqual(cols, actualImag.GetLength(1));
+            for (int i = 0; i < rows; i++)
+            {
+                for (int j = 0; j < cols; j++)
+                {
+                    AssertNearlyEqual(expected[i, j].Real, actualReal[i, j]);
+                    AssertNearlyEqual(expected[i, j].Imaginary, actualImag[i, j]);
+                }
+            }
+        }
+
+        private static void AssertComplexVectorEqual(Complex[] expected, double[] actualReal, double[] actualImag)
+        {
+            Assert.AreEqual(expected.Length, actualReal.Length);
+            Assert.AreEqual(expected.Length, actualImag.Length);
+            for (int i = 0; i < expected.Length; i++)
+            {
+                AssertNearlyEqual(expected[i].Real, actualReal[i]);
+                AssertNearlyEqual(expected[i].Imaginary, actualImag[i]);
+            }
+        }
+
+        private static void AssertNearlyEqual(double expected, double actual)
+        {
+            Assert.AreEqual(expected, actual, Tol);
+        }
+    }
+
 }
+
+
+
+
