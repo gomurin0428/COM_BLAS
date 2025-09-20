@@ -1,4 +1,4 @@
-﻿// BLAS.cpp : CBLAS の実装
+﻿
 
 #include "pch.h"
 #include "BLAS.h"
@@ -7,11 +7,11 @@
 #include <string>
 #include <sstream>
 #include <algorithm>
-
+#include <vector>
+#include <complex>
 
 namespace {
 
-    // IErrorInfo を設定して hr を返す
     HRESULT SetComError(const std::wstring& msg, HRESULT hr = E_INVALIDARG) noexcept {
         CComPtr<ICreateErrorInfo> cei;
         if (SUCCEEDED(CreateErrorInfo(&cei)) && cei) {
@@ -24,7 +24,6 @@ namespace {
         return hr;
     }
 
-    // 1 次元 SAFEARRAY の長さを取得（VT は厳密チェックせず、IDL に従って double 前提で扱う）
     HRESULT Get1DLength(SAFEARRAY* sa, size_t& len) noexcept {
         if (!sa) return SetComError(L"SAFEARRAY が NULL です。", E_INVALIDARG);
         if (sa->cDims != 1) return SetComError(L"1 次元の SAFEARRAY を渡してください。", E_INVALIDARG);
@@ -249,6 +248,97 @@ namespace {
         return S_OK;
     }
 
+    HRESULT ValidateComplexMatrixPair(const MatrixView& realView, const MatrixView& imagView, const wchar_t* name) noexcept {
+        if (realView.rows != imagView.rows || realView.cols != imagView.cols) {
+            std::wostringstream oss;
+            oss << L"real and imaginary parts have mismatched dimensions (" << realView.rows << L"x" << realView.cols
+                << L" vs " << imagView.rows << L"x" << imagView.cols << L").";
+            return ParameterError(name, oss.str());
+        }
+        size_t total = realView.rows * realView.cols;
+        if (total > 0 && (!realView.accessor.ptr || !imagView.accessor.ptr)) {
+            return ParameterError(name, L"Failed to access real or imaginary SAFEARRAY data.", E_FAIL);
+        }
+        return S_OK;
+    }
+
+    HRESULT ValidateComplexVectorPair(const VectorView& realView, const VectorView& imagView, LONG n, const wchar_t* name) noexcept {
+        if (realView.length != imagView.length) {
+            std::wostringstream oss;
+            oss << L"real and imaginary parts differ in length (" << realView.length << L" vs " << imagView.length << L").";
+            return ParameterError(name, oss.str());
+        }
+        if (realView.inc != imagView.inc) {
+            return ParameterError(name, L"real and imaginary parts must use the same increment.");
+        }
+        if (n > 0 && (!realView.data || !imagView.data)) {
+            return ParameterError(name, L"Failed to access real or imaginary SAFEARRAY data.", E_FAIL);
+        }
+        return S_OK;
+    }
+
+    void GatherComplexMatrix(const MatrixView& realView, const MatrixView& imagView, std::vector<std::complex<double>>& out) {
+        const size_t total = realView.rows * realView.cols;
+        out.resize(total);
+        if (total == 0) {
+            return;
+        }
+        const double* realPtr = realView.accessor.ptr;
+        const double* imagPtr = imagView.accessor.ptr;
+        for (size_t i = 0; i < total; ++i) {
+            out[i] = std::complex<double>(realPtr[i], imagPtr[i]);
+        }
+    }
+
+    void ScatterComplexMatrix(const std::vector<std::complex<double>>& data, MatrixView& realView, MatrixView& imagView) {
+        const size_t total = realView.rows * realView.cols;
+        if (total == 0) {
+            return;
+        }
+        double* realPtr = realView.accessor.ptr;
+        double* imagPtr = imagView.accessor.ptr;
+        for (size_t i = 0; i < total; ++i) {
+            realPtr[i] = data[i].real();
+            imagPtr[i] = data[i].imag();
+        }
+    }
+
+    void GatherComplexVector(const VectorView& realView, const VectorView& imagView, LONG n, std::vector<std::complex<double>>& out) {
+        if (n < 0) {
+            out.clear();
+            return;
+        }
+        out.resize(static_cast<size_t>(n));
+        if (n == 0) {
+            return;
+        }
+        const double* realPtr = realView.data;
+        const double* imagPtr = imagView.data;
+        LONG incReal = realView.inc;
+        LONG incImag = imagView.inc;
+        for (LONG i = 0; i < n; ++i) {
+            out[static_cast<size_t>(i)] = std::complex<double>(*realPtr, *imagPtr);
+            realPtr += incReal;
+            imagPtr += incImag;
+        }
+    }
+
+    void ScatterComplexVector(const std::vector<std::complex<double>>& data, LONG n, VectorView& realView, VectorView& imagView) {
+        if (n <= 0) {
+            return;
+        }
+        double* realPtr = realView.data;
+        double* imagPtr = imagView.data;
+        LONG incReal = realView.inc;
+        LONG incImag = imagView.inc;
+        for (LONG i = 0; i < n; ++i) {
+            const auto& value = data[static_cast<size_t>(i)];
+            *realPtr = value.real();
+            *imagPtr = value.imag();
+            realPtr += incReal;
+            imagPtr += incImag;
+        }
+    }
     size_t GetLeadingDimension(CBLAS_LAYOUT layout, const MatrixView& view) noexcept {
         size_t ld = (layout == CblasRowMajor) ? view.cols : view.rows;
         return ld == 0 ? 1 : ld;
@@ -1501,22 +1591,316 @@ HRESULT __stdcall CBLAS::Rotmg(DOUBLE* d1, DOUBLE* d2, DOUBLE* x1, DOUBLE y1, SA
 
 HRESULT __stdcall CBLAS::ZGemmSimple(SAFEARRAY* AReal, SAFEARRAY* AImag, SAFEARRAY* BReal, SAFEARRAY* BImag, SAFEARRAY** CReal, SAFEARRAY** CImag, DOUBLE alphaReal, DOUBLE alphaImag, DOUBLE betaReal, DOUBLE betaImag, BlasLayout layout, BlasTranspose transA, BlasTranspose transB)
 {
-    return E_NOTIMPL;
+    MatrixView aRealView;
+    HRESULT hr = PrepareMatrixView(AReal, L"AReal", aRealView);
+    if (FAILED(hr)) return hr;
+    MatrixView aImagView;
+    hr = PrepareMatrixView(AImag, L"AImag", aImagView);
+    if (FAILED(hr)) return hr;
+    hr = ValidateComplexMatrixPair(aRealView, aImagView, L"A");
+    if (FAILED(hr)) return hr;
+
+    MatrixView bRealView;
+    hr = PrepareMatrixView(BReal, L"BReal", bRealView);
+    if (FAILED(hr)) return hr;
+    MatrixView bImagView;
+    hr = PrepareMatrixView(BImag, L"BImag", bImagView);
+    if (FAILED(hr)) return hr;
+    hr = ValidateComplexMatrixPair(bRealView, bImagView, L"B");
+    if (FAILED(hr)) return hr;
+
+    hr = EnsureArrayPointer(CReal, L"CReal");
+    if (FAILED(hr)) return hr;
+    hr = EnsureArrayPointer(CImag, L"CImag");
+    if (FAILED(hr)) return hr;
+    MatrixView cRealView;
+    hr = PrepareMatrixView(*CReal, L"CReal", cRealView);
+    if (FAILED(hr)) return hr;
+    MatrixView cImagView;
+    hr = PrepareMatrixView(*CImag, L"CImag", cImagView);
+    if (FAILED(hr)) return hr;
+    hr = ValidateComplexMatrixPair(cRealView, cImagView, L"C");
+    if (FAILED(hr)) return hr;
+
+    CBLAS_LAYOUT order;
+    hr = ToLayout(L"layout", layout, order);
+    if (FAILED(hr)) return hr;
+    CBLAS_TRANSPOSE transAFlag;
+    hr = ToTranspose(L"transA", transA, transAFlag);
+    if (FAILED(hr)) return hr;
+    CBLAS_TRANSPOSE transBFlag;
+    hr = ToTranspose(L"transB", transB, transBFlag);
+    if (FAILED(hr)) return hr;
+
+    size_t m = (transAFlag == CblasNoTrans) ? aRealView.rows : aRealView.cols;
+    size_t kA = (transAFlag == CblasNoTrans) ? aRealView.cols : aRealView.rows;
+    size_t kB = (transBFlag == CblasNoTrans) ? bRealView.rows : bRealView.cols;
+    size_t n = (transBFlag == CblasNoTrans) ? bRealView.cols : bRealView.rows;
+
+    if (kA != kB) {
+        std::wostringstream oss;
+        oss << L"Incompatible inner dimensions: " << kA << L" vs " << kB << L".";
+        return SetComError(oss.str(), E_INVALIDARG);
+    }
+    if (cRealView.rows != m || cRealView.cols != n) {
+        std::wostringstream oss;
+        oss << L"Output matrix has size " << cRealView.rows << L"x" << cRealView.cols
+            << L" but expected " << m << L"x" << n << L".";
+        return SetComError(oss.str(), E_INVALIDARG);
+    }
+
+    int M, N, K, lda, ldb, ldc;
+    hr = ToIntChecked(m, L"M", M);
+    if (FAILED(hr)) return hr;
+    hr = ToIntChecked(n, L"N", N);
+    if (FAILED(hr)) return hr;
+    hr = ToIntChecked(kA, L"K", K);
+    if (FAILED(hr)) return hr;
+    hr = ToIntChecked(GetLeadingDimension(order, aRealView), L"lda", lda);
+    if (FAILED(hr)) return hr;
+    hr = ToIntChecked(GetLeadingDimension(order, bRealView), L"ldb", ldb);
+    if (FAILED(hr)) return hr;
+    hr = ToIntChecked(GetLeadingDimension(order, cRealView), L"ldc", ldc);
+    if (FAILED(hr)) return hr;
+
+    std::vector<std::complex<double>> aData;
+    std::vector<std::complex<double>> bData;
+    std::vector<std::complex<double>> cData;
+    GatherComplexMatrix(aRealView, aImagView, aData);
+    GatherComplexMatrix(bRealView, bImagView, bData);
+    GatherComplexMatrix(cRealView, cImagView, cData);
+
+    std::complex<double> alpha(alphaReal, alphaImag);
+    std::complex<double> beta(betaReal, betaImag);
+    std::complex<double> dummy(0.0, 0.0);
+
+    if (M > 0 && N > 0) {
+        const void* aPtr = aData.empty() ? static_cast<const void*>(&dummy) : static_cast<const void*>(aData.data());
+        const void* bPtr = bData.empty() ? static_cast<const void*>(&dummy) : static_cast<const void*>(bData.data());
+        void* cPtr = cData.data();
+        cblas_zgemm(order, transAFlag, transBFlag, M, N, K,
+                    reinterpret_cast<const void*>(&alpha),
+                    aPtr, lda,
+                    bPtr, ldb,
+                    reinterpret_cast<const void*>(&beta),
+                    cPtr, ldc);
+    }
+
+    ScatterComplexMatrix(cData, cRealView, cImagView);
+    return S_OK;
 }
 
 HRESULT __stdcall CBLAS::ZGemvSimple(SAFEARRAY* AReal, SAFEARRAY* AImag, SAFEARRAY* xReal, SAFEARRAY* xImag, SAFEARRAY** yReal, SAFEARRAY** yImag, DOUBLE alphaReal, DOUBLE alphaImag, DOUBLE betaReal, DOUBLE betaImag, BlasLayout layout, BlasTranspose transA)
 {
-    return E_NOTIMPL;
+    MatrixView aRealView;
+    HRESULT hr = PrepareMatrixView(AReal, L"AReal", aRealView);
+    if (FAILED(hr)) return hr;
+    MatrixView aImagView;
+    hr = PrepareMatrixView(AImag, L"AImag", aImagView);
+    if (FAILED(hr)) return hr;
+    hr = ValidateComplexMatrixPair(aRealView, aImagView, L"A");
+    if (FAILED(hr)) return hr;
+
+    hr = EnsureArrayPointer(yReal, L"yReal");
+    if (FAILED(hr)) return hr;
+    hr = EnsureArrayPointer(yImag, L"yImag");
+    if (FAILED(hr)) return hr;
+
+    CBLAS_LAYOUT order;
+    hr = ToLayout(L"layout", layout, order);
+    if (FAILED(hr)) return hr;
+    CBLAS_TRANSPOSE transFlag;
+    hr = ToTranspose(L"transA", transA, transFlag);
+    if (FAILED(hr)) return hr;
+
+    size_t m = aRealView.rows;
+    size_t n = aRealView.cols;
+    size_t expectedX = (transFlag == CblasNoTrans) ? n : m;
+    size_t expectedY = (transFlag == CblasNoTrans) ? m : n;
+
+    if (expectedX > static_cast<size_t>((std::numeric_limits<LONG>::max)()) ||
+        expectedY > static_cast<size_t>((std::numeric_limits<LONG>::max)())) {
+        return SetComError(L"Vector length is too large.", E_INVALIDARG);
+    }
+
+    LONG lenX = static_cast<LONG>(expectedX);
+    LONG lenY = static_cast<LONG>(expectedY);
+
+    VectorView xRealView;
+    hr = PrepareVectorView(xReal, lenX, 1, L"xReal", xRealView);
+    if (FAILED(hr)) return hr;
+    VectorView xImagView;
+    hr = PrepareVectorView(xImag, lenX, 1, L"xImag", xImagView);
+    if (FAILED(hr)) return hr;
+    hr = ValidateComplexVectorPair(xRealView, xImagView, lenX, L"x");
+    if (FAILED(hr)) return hr;
+
+    VectorView yRealView;
+    hr = PrepareVectorView(*yReal, lenY, 1, L"yReal", yRealView);
+    if (FAILED(hr)) return hr;
+    VectorView yImagView;
+    hr = PrepareVectorView(*yImag, lenY, 1, L"yImag", yImagView);
+    if (FAILED(hr)) return hr;
+    hr = ValidateComplexVectorPair(yRealView, yImagView, lenY, L"y");
+    if (FAILED(hr)) return hr;
+
+    int M, N, lda;
+    hr = ToIntChecked(m, L"M", M);
+    if (FAILED(hr)) return hr;
+    hr = ToIntChecked(n, L"N", N);
+    if (FAILED(hr)) return hr;
+    hr = ToIntChecked(GetLeadingDimension(order, aRealView), L"lda", lda);
+    if (FAILED(hr)) return hr;
+
+    std::vector<std::complex<double>> aData;
+    std::vector<std::complex<double>> xData;
+    std::vector<std::complex<double>> yData;
+    GatherComplexMatrix(aRealView, aImagView, aData);
+    GatherComplexVector(xRealView, xImagView, lenX, xData);
+    GatherComplexVector(yRealView, yImagView, lenY, yData);
+
+    std::complex<double> alpha(alphaReal, alphaImag);
+    std::complex<double> beta(betaReal, betaImag);
+    std::complex<double> dummy(0.0, 0.0);
+
+    if (lenY > 0) {
+        const void* aPtr = aData.empty() ? static_cast<const void*>(&dummy) : static_cast<const void*>(aData.data());
+        const void* xPtr = xData.empty() ? static_cast<const void*>(&dummy) : static_cast<const void*>(xData.data());
+        void* yPtr = yData.data();
+        cblas_zgemv(order, transFlag, M, N,
+                    reinterpret_cast<const void*>(&alpha),
+                    aPtr, lda,
+                    xPtr, 1,
+                    reinterpret_cast<const void*>(&beta),
+                    yPtr, 1);
+    }
+
+    ScatterComplexVector(yData, lenY, yRealView, yImagView);
+    return S_OK;
 }
 
 HRESULT __stdcall CBLAS::ZAxpy(LONG n, SAFEARRAY* xReal, SAFEARRAY* xImag, LONG incX, SAFEARRAY** yReal, SAFEARRAY** yImag, LONG incY, DOUBLE alphaReal, DOUBLE alphaImag)
 {
-    return E_NOTIMPL;
+    if (n < 0) {
+        return ParameterError(L"n", L"must be non-negative.");
+    }
+    HRESULT hr = EnsureArrayPointer(yReal, L"yReal");
+    if (FAILED(hr)) return hr;
+    hr = EnsureArrayPointer(yImag, L"yImag");
+    if (FAILED(hr)) return hr;
+    if (n == 0) {
+        return S_OK;
+    }
+    if (incX == 0 || incY == 0) {
+        return SetComError(L"Increments must not be zero.", E_INVALIDARG);
+    }
+
+    VectorView xRealView;
+    hr = PrepareVectorView(xReal, n, incX, L"xReal", xRealView);
+    if (FAILED(hr)) return hr;
+    VectorView xImagView;
+    hr = PrepareVectorView(xImag, n, incX, L"xImag", xImagView);
+    if (FAILED(hr)) return hr;
+    hr = ValidateComplexVectorPair(xRealView, xImagView, n, L"x");
+    if (FAILED(hr)) return hr;
+
+    VectorView yRealView;
+    hr = PrepareVectorView(*yReal, n, incY, L"yReal", yRealView);
+    if (FAILED(hr)) return hr;
+    VectorView yImagView;
+    hr = PrepareVectorView(*yImag, n, incY, L"yImag", yImagView);
+    if (FAILED(hr)) return hr;
+    hr = ValidateComplexVectorPair(yRealView, yImagView, n, L"y");
+    if (FAILED(hr)) return hr;
+
+    if (incX < (std::numeric_limits<int>::min)() || incX > (std::numeric_limits<int>::max)()) {
+        return SetComError(L"incX is out of supported range.", E_INVALIDARG);
+    }
+    if (incY < (std::numeric_limits<int>::min)() || incY > (std::numeric_limits<int>::max)()) {
+        return SetComError(L"incY is out of supported range.", E_INVALIDARG);
+    }
+
+    std::vector<std::complex<double>> xData;
+    std::vector<std::complex<double>> yData;
+    GatherComplexVector(xRealView, xImagView, n, xData);
+    GatherComplexVector(yRealView, yImagView, n, yData);
+
+    std::complex<double> alpha(alphaReal, alphaImag);
+    cblas_zaxpy(static_cast<int>(n),
+                reinterpret_cast<const void*>(&alpha),
+                xData.data(), 1,
+                yData.data(), 1);
+
+    ScatterComplexVector(yData, n, yRealView, yImagView);
+    return S_OK;
 }
 
 HRESULT __stdcall CBLAS::ZDot(LONG n, SAFEARRAY* xReal, SAFEARRAY* xImag, LONG incX, SAFEARRAY* yReal, SAFEARRAY* yImag, LONG incY, DOUBLE* resultReal, DOUBLE* resultImag, VARIANT_BOOL conjugate)
 {
-    return E_NOTIMPL;
+    if (!resultReal || !resultImag) {
+        return SetComError(L"Result pointers must not be null.", E_POINTER);
+    }
+    *resultReal = 0.0;
+    *resultImag = 0.0;
+
+    if (n < 0) {
+        return ParameterError(L"n", L"must be non-negative.");
+    }
+    if (n == 0) {
+        return S_OK;
+    }
+    if (incX == 0 || incY == 0) {
+        return SetComError(L"Increments must not be zero.", E_INVALIDARG);
+    }
+
+    VectorView xRealView;
+    HRESULT hr = PrepareVectorView(xReal, n, incX, L"xReal", xRealView);
+    if (FAILED(hr)) return hr;
+    VectorView xImagView;
+    hr = PrepareVectorView(xImag, n, incX, L"xImag", xImagView);
+    if (FAILED(hr)) return hr;
+    hr = ValidateComplexVectorPair(xRealView, xImagView, n, L"x");
+    if (FAILED(hr)) return hr;
+
+    VectorView yRealView;
+    hr = PrepareVectorView(yReal, n, incY, L"yReal", yRealView);
+    if (FAILED(hr)) return hr;
+    VectorView yImagView;
+    hr = PrepareVectorView(yImag, n, incY, L"yImag", yImagView);
+    if (FAILED(hr)) return hr;
+    hr = ValidateComplexVectorPair(yRealView, yImagView, n, L"y");
+    if (FAILED(hr)) return hr;
+
+    if (incX < (std::numeric_limits<int>::min)() || incX > (std::numeric_limits<int>::max)()) {
+        return SetComError(L"incX is out of supported range.", E_INVALIDARG);
+    }
+    if (incY < (std::numeric_limits<int>::min)() || incY > (std::numeric_limits<int>::max)()) {
+        return SetComError(L"incY is out of supported range.", E_INVALIDARG);
+    }
+
+    std::vector<std::complex<double>> xData;
+    std::vector<std::complex<double>> yData;
+    GatherComplexVector(xRealView, xImagView, n, xData);
+    GatherComplexVector(yRealView, yImagView, n, yData);
+
+    std::complex<double> result(0.0, 0.0);
+    if (conjugate != VARIANT_FALSE) {
+        cblas_zdotc_sub(static_cast<int>(n),
+                        xData.data(), 1,
+                        yData.data(), 1,
+                        &result);
+    } else {
+        cblas_zdotu_sub(static_cast<int>(n),
+                        xData.data(), 1,
+                        yData.data(), 1,
+                        &result);
+    }
+
+    *resultReal = result.real();
+    *resultImag = result.imag();
+    return S_OK;
 }
+
+
 
 
