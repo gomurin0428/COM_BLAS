@@ -25,8 +25,8 @@ class ATL_NO_VTABLE CBLAS :
     public CComObjectRootEx<CComSingleThreadModel>,
     public CComCoClass<CBLAS, &CLSID_BLAS>,
     public ISupportErrorInfo,
-    public IDispatchImpl<IBLAS, &IID_IBLAS, &LIBID_COMBLASLib, /*wMajor =*/ 1, /*wMinor =*/ 2>,
-    public IDispatchImpl<IBLASComplex, &IID_IBLASComplex, &LIBID_COMBLASLib, /*wMajor =*/ 1, /*wMinor =*/ 2>
+    public IDispatchImpl<IBLAS, &IID_IBLAS, &LIBID_COMBLASLib, /*wMajor =*/ 1, /*wMinor =*/ 3>,
+    public IDispatchImpl<IBLASComplex, &IID_IBLASComplex, &LIBID_COMBLASLib, /*wMajor =*/ 1, /*wMinor =*/ 3>
 {
 public:
     CBLAS()

@@ -306,6 +306,12 @@ interface IBLAS : IDispatch
 ]
 interface IBLASComplex : IDispatch
 {
+    // SAFEARRAY usage notes for complex routines:
+    // - Matrices must be 2D SAFEARRAY(double) instances. Dimension 1 enumerates columns and dimension 2 enumerates rows;
+    //   the real and imaginary arrays must share identical bounds. Data is consumed as stored in the SAFEARRAY, and
+    //   BlasLayout describes the logical interpretation (ColumnMajor by default).
+    // - Vectors must be 1D SAFEARRAY(double) instances with matching bounds for real and imaginary parts.
+    //   The implementation honors positive or negative increments when gathering data.
     // C = alpha*op(A)*op(B) + beta*C, in complex double precision
     HRESULT ZGemmSimple(
         [in] SAFEARRAY(double) AReal,
@@ -363,13 +369,13 @@ interface IBLASComplex : IDispatch
         [in] LONG incY,
         [out] DOUBLE* resultReal,
         [out] DOUBLE* resultImag,
-        [in, defaultvalue(-1)] VARIANT_BOOL conjugate
+        [in, defaultvalue(0)] VARIANT_BOOL conjugate
     );
 };
 
 [
     uuid(5650ec59-f9dc-4d38-83b2-5828ff8c4d2a),
-    version(1.2),
+    version(1.3),
 ]
 library COMBLASLib
 {

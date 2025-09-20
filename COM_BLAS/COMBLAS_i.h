@@ -8,7 +8,7 @@
  */
 /* Compiler settings for COMBLAS.idl:
     Oicf, W1, Zp8, env=Win64 (32b run), target_arch=AMD64 8.01.0628 
-    protocol : all , ms_ext, c_ext, robust
+    protocol : dce , ms_ext, c_ext, robust
     error checks: allocation ref bounds_check enum stub_data 
     VC __declspec() decoration level: 
          __declspec(uuid()), __declspec(selectany), __declspec(novtable)
@@ -847,7 +847,7 @@ EXTERN_C const IID IID_IBLASComplex;
             /* [in] */ LONG incY,
             /* [out] */ DOUBLE *resultReal,
             /* [out] */ DOUBLE *resultImag,
-            /* [defaultvalue][in] */ VARIANT_BOOL conjugate = -1) = 0;
+            /* [defaultvalue][in] */ VARIANT_BOOL conjugate = 0) = 0;
         
     };
     

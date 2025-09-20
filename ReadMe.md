@@ -143,7 +143,7 @@ double[,] outer = (double[,])blas.OuterProduct(unitX, y);
 - 複素スカラーは実数引数と虚数引数を別々に受け取る。戻り値が複素数の場合は `[out] DOUBLE* realPart` と `[out] DOUBLE* imagPart` をセットで返す。
 
 ### インターフェース構成
-- タイプライブラリのバージョンを `library COMBLASLib version(1.2)` に上げ、既存 CoClass `BLAS` に新しい dual インターフェース `IBLASComplex` を実装させる。
+- タイプライブラリのバージョンを `library COMBLASLib version(1.3)` に上げ、既存 CoClass `BLAS` に新しい dual インターフェース `IBLASComplex` を実装させる。
 - `IBLASComplex` の IID は `uuid(7795391b-e2f5-4f20-943e-14d2aeb5e8b8)` を使用する。`LIBID_COMBLASLib` と CLSID (AppID) は変更しない。
 - 新インターフェースは Automation 互換 (`dual`, `oleautomation`) で、従来の列挙型 (`BlasLayout`, `BlasTranspose` など) をそのまま再利用する。
 
