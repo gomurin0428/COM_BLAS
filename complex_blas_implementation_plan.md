@@ -14,29 +14,29 @@
 4. バージョン属性 (`library COMBLASLib` の version, `BLAS.rgs` など) を 1.2 → 1.3 へ更新するか検討。
 
 ## 2. ネイティブ実装準備 (COM_BLAS/BLAS.cpp)
-1. 複素数向けユーティリティ整備
-   - `ValidateComplexMatrixPair`, `ValidateComplexVectorPair` で実部 SAFEARRAY と虚部 SAFEARRAY の整合チェックを実装。
-   - `GatherComplexMatrix/Vector`, `ScatterComplexMatrix/Vector` を追加し `std::vector<std::complex<double>>` と SAFEARRAY 間のコピーを実現。
-   - 行列／ベクトルの leading dimension 計算を `GetLeadingDimension` で再利用できるよう確認。
-2. 共通変換関数
-   - `ToLayout`, `ToTranspose` など既存の列挙型変換を流用し、異常値の場合は COM エラーに変換。
-   - `ToIntChecked` で BLAS API へ渡す int 変換の境界チェックを整備。
-3. 空配列用のダミー複素数 (0+0i) を用意し、ゼロ長 SAFEARRAY でも OpenBLAS 呼び出しがクラッシュしないようにする。
+1. ヘルパー関数の整備 - 完了 (2025-09-20)
+   - [x] `ValidateComplexMatrixPair`, `ValidateComplexVectorPair` で実配列と虚配列の整合性を確認。
+   - [x] `GatherComplexMatrix/Vector`, `ScatterComplexMatrix/Vector` で SAFEARRAY と `std::vector<std::complex<double>>` の相互コピーを実装。
+   - [x] `GetLeadingDimension` でレイアウトに応じた leading dimension を計算。
+2. 型変換関数 - 完了 (2025-09-20)
+   - [x] `ToLayout`, `ToTranspose` など列挙値の検証と COM エラー変換を整備。
+   - [x] `ToIntChecked` で BLAS API 向け int 変換時の範囲チェックを実装。
+3. ダミーの零初期化データ - 完了 (2025-09-20)
+   - [x] SAFEARRAY が空でも `std::complex<double>(0, 0)` ダミーを用意し、OpenBLAS 呼び出し時のヌルポインターを回避。
 
 ## 3. 個別メソッド実装
-1. `CBLAS::ZGemmSimple`
-   - `PrepareMatrixView` で A/B/C の実部・虚部 SAFEARRAY を読み込む。
-   - `ValidateComplexMatrixPair` でサイズ検証し、M×N×K を算出。
-   - `GatherComplexMatrix` で `std::vector<std::complex<double>>` を組み立て。
-   - `cblas_zgemm` に `alpha`, `beta` を `std::complex<double>` から `void*` にキャストして渡す。
-   - 戻り値を `ScatterComplexMatrix` で CReal/CImag SAFEARRAY に書き戻す。
-2. `CBLAS::ZGemvSimple`
-   - 行列サイズから期待するベクトル長を計算し、`PrepareVectorView` を使用。
-   - `GatherComplexVector` で入力を連続メモリにコピーし `cblas_zgemv` を実行。
-   - 出力ベクトルを `ScatterComplexVector` で更新。
-3. `CBLAS::ZAxpy`
-   - `incX/incY` の範囲チェックを行い、`GatherComplexVector` で一時バッファを作成。
-   - `cblas_zaxpy` の結果で yReal/yImag SAFEARRAY を更新。
+1. `CBLAS::ZGemmSimple` - 完了 (2025-09-20)
+   - [x] `PrepareMatrixView` で A/B/C の SAFEARRAY を読み込み済み。
+   - [x] `ValidateComplexMatrixPair` で実部・虚部のサイズ整合を検証。
+   - [x] `GatherComplexMatrix` で `std::vector<std::complex<double>>` を取得、`ScatterComplexMatrix` で結果を書き戻し。
+   - [x] `cblas_zgemm` を `alpha`/`beta` を `std::complex<double>` から `void*` にキャストして呼び出し。
+2. `CBLAS::ZGemvSimple` - 完了 (2025-09-20)
+   - [x] 行列サイズから期待するベクトル長を計算し、`PrepareVectorView` を使用。
+   - [x] `GatherComplexVector` で入力を連続メモリにコピーし `cblas_zgemv` を実行。
+   - [x] 出力ベクトルを `ScatterComplexVector` で更新。
+3. `CBLAS::ZAxpy` - 完了 (2025-09-20)
+   - [x] `incX/incY` の範囲チェックを行い、`GatherComplexVector` で一時バッファを作成。
+   - [x] `cblas_zaxpy` の結果で yReal/yImag SAFEARRAY を更新。
 4. `CBLAS::ZDot`
    - `resultReal/resultImag` の null チェックと初期化を実施。
    - `conjugate` パラメータで `cblas_zdotc_sub` (`VARIANT_TRUE`) と `cblas_zdotu_sub` (`VARIANT_FALSE`) を切り替え。
