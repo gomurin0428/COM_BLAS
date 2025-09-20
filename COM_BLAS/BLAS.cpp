@@ -331,7 +331,8 @@ STDMETHODIMP CBLAS::InterfaceSupportsErrorInfo(REFIID riid)
 {
 	static const IID* const arr[] = 
 	{
-		&IID_IBLAS
+		&IID_IBLAS,
+        &IID_IBLASComplex
 	};
 
 	for (int i=0; i < sizeof(arr) / sizeof(arr[0]); i++)
@@ -1496,4 +1497,26 @@ HRESULT __stdcall CBLAS::Rotmg(DOUBLE* d1, DOUBLE* d2, DOUBLE* x1, DOUBLE y1, SA
     *param = sa;
     return S_OK;
 }
+
+
+HRESULT __stdcall CBLAS::ZGemmSimple(SAFEARRAY* AReal, SAFEARRAY* AImag, SAFEARRAY* BReal, SAFEARRAY* BImag, SAFEARRAY** CReal, SAFEARRAY** CImag, DOUBLE alphaReal, DOUBLE alphaImag, DOUBLE betaReal, DOUBLE betaImag, BlasLayout layout, BlasTranspose transA, BlasTranspose transB)
+{
+    return E_NOTIMPL;
+}
+
+HRESULT __stdcall CBLAS::ZGemvSimple(SAFEARRAY* AReal, SAFEARRAY* AImag, SAFEARRAY* xReal, SAFEARRAY* xImag, SAFEARRAY** yReal, SAFEARRAY** yImag, DOUBLE alphaReal, DOUBLE alphaImag, DOUBLE betaReal, DOUBLE betaImag, BlasLayout layout, BlasTranspose transA)
+{
+    return E_NOTIMPL;
+}
+
+HRESULT __stdcall CBLAS::ZAxpy(LONG n, SAFEARRAY* xReal, SAFEARRAY* xImag, LONG incX, SAFEARRAY** yReal, SAFEARRAY** yImag, LONG incY, DOUBLE alphaReal, DOUBLE alphaImag)
+{
+    return E_NOTIMPL;
+}
+
+HRESULT __stdcall CBLAS::ZDot(LONG n, SAFEARRAY* xReal, SAFEARRAY* xImag, LONG incX, SAFEARRAY* yReal, SAFEARRAY* yImag, LONG incY, DOUBLE* resultReal, DOUBLE* resultImag, VARIANT_BOOL conjugate)
+{
+    return E_NOTIMPL;
+}
+
 

@@ -129,6 +129,68 @@ double[,] outer = (double[,])blas.OuterProduct(unitX, y);
 
 これらのテストは `msbuild COM_BLAS.sln /p:Configuration=Debug /p:Platform=x64` および `vstest.console.exe COM_BLAS_UnitTest_Managed\bin\Debug\net8.0-windows\COM_BLAS_UnitTest_Managed.dll /Platform:x64 /Framework:.NETCoreApp,Version=v8.0` で実行可能です。
 
+## 複素倍精度 API 仕様
+
+### 目的と方針
+- 既存の `IBLAS` は倍精度実数専用なので、複素倍精度を別インターフェースでカバーして自動化クライアントに提供する。
+- 実装負荷を抑えるため、複素版は行列積と基礎的なベクトル演算に限定し、下位 API から cblas の z 系関数にマップするだけにする。
+- 既存の `IBLAS` を壊さないように、COM の IID とタイプライブラリのバージョンを新設する。
+
+### データ表現 (ComplexArray)
+- 行列・ベクトルは実部と虚部の `SAFEARRAY(double)` を分離して受け渡しする。どちらも同じ次元・下限・上限を要求する。
+- 行列は 2 次元 `SAFEARRAY` (`double[,]` 相当)、ベクトルは 1 次元 `SAFEARRAY` (`double[]` 相当) を使用する。RowMajor/ColumnMajor の取り扱いは従来の列挙値を再利用する。
+- `incX` / `incY` などのストライド指定は実部配列に対するインデックスステップとみなし、虚部配列にも同じステップを適用する。
+- 複素スカラーは実数引数と虚数引数を別々に受け取る。戻り値が複素数の場合は `[out] DOUBLE* realPart` と `[out] DOUBLE* imagPart` をセットで返す。
+
+### インターフェース構成
+- タイプライブラリのバージョンを `library COMBLASLib version(1.2)` に上げ、既存 CoClass `BLAS` に新しい dual インターフェース `IBLASComplex` を実装させる。
+- `IBLASComplex` の IID は `uuid(7795391b-e2f5-4f20-943e-14d2aeb5e8b8)` を使用する。`LIBID_COMBLASLib` と CLSID (AppID) は変更しない。
+- 新インターフェースは Automation 互換 (`dual`, `oleautomation`) で、従来の列挙型 (`BlasLayout`, `BlasTranspose` など) をそのまま再利用する。
+
+IDL スケルトン例:
+```
+[
+    object,
+    uuid(7795391b-e2f5-4f20-943e-14d2aeb5e8b8),
+    dual,
+    nonextensible,
+    pointer_default(unique)
+]
+interface IBLASComplex : IDispatch {
+    HRESULT ZGemmSimple(...);
+    HRESULT ZGemvSimple(...);
+    HRESULT ZAxpy(...);
+    HRESULT ZDot([in] VARIANT_BOOL conjugate, ...);
+};
+```
+
+### 公開 API
+
+- **ZGemmSimple**  
+  `HRESULT ZGemmSimple([in] SAFEARRAY(double) AReal, [in] SAFEARRAY(double) AImag, [in] SAFEARRAY(double) BReal, [in] SAFEARRAY(double) BImag, [in, out] SAFEARRAY(double)* CReal, [in, out] SAFEARRAY(double)* CImag, [in, defaultvalue(1.0)] DOUBLE alphaReal, [in, defaultvalue(0.0)] DOUBLE alphaImag, [in, defaultvalue(0.0)] DOUBLE betaReal, [in, defaultvalue(0.0)] DOUBLE betaImag, [in, defaultvalue(ColumnMajor)] BlasLayout layout, [in, defaultvalue(NoTrans)] BlasTranspose transA, [in, defaultvalue(NoTrans)] BlasTranspose transB);`  
+  - `C = (alphaReal + i*alphaImag) * op(A) * op(B) + (betaReal + i*betaImag) * C` を計算する。内部で `cblas_zgemm` を呼び出す。`transA/transB` に `ConjTrans` を渡すと共役転置を適用。
+
+- **ZGemvSimple**  
+  `HRESULT ZGemvSimple([in] SAFEARRAY(double) AReal, [in] SAFEARRAY(double) AImag, [in] SAFEARRAY(double) xReal, [in] SAFEARRAY(double) xImag, [in, out] SAFEARRAY(double)* yReal, [in, out] SAFEARRAY(double)* yImag, [in, defaultvalue(1.0)] DOUBLE alphaReal, [in, defaultvalue(0.0)] DOUBLE alphaImag, [in, defaultvalue(0.0)] DOUBLE betaReal, [in, defaultvalue(0.0)] DOUBLE betaImag, [in, defaultvalue(ColumnMajor)] BlasLayout layout, [in, defaultvalue(NoTrans)] BlasTranspose transA);`  
+  - ベクトル `y` を `alpha*op(A)*x + beta*y` で更新する。内部で `cblas_zgemv` を呼び出す。
+
+- **ZAxpy**  
+  `HRESULT ZAxpy([in] LONG n, [in, defaultvalue(1.0)] DOUBLE alphaReal, [in, defaultvalue(0.0)] DOUBLE alphaImag, [in] SAFEARRAY(double) xReal, [in] SAFEARRAY(double) xImag, [in] LONG incX, [in, out] SAFEARRAY(double)* yReal, [in, out] SAFEARRAY(double)* yImag, [in] LONG incY);`  
+  - `y = y + alpha * x` を行う。`cblas_zaxpy` にマップする。`incX/incY` は実部配列のステップ。
+
+- **ZDot**  
+  `HRESULT ZDot([in] LONG n, [in] SAFEARRAY(double) xReal, [in] SAFEARRAY(double) xImag, [in] LONG incX, [in] SAFEARRAY(double) yReal, [in] SAFEARRAY(double) yImag, [in] LONG incY, [in, defaultvalue(VARIANT_TRUE)] VARIANT_BOOL conjugate, [out] DOUBLE* resultReal, [out] DOUBLE* resultImag);`  
+  - `conjugate` が `VARIANT_TRUE` のとき `cblas_zdotc_sub`、`VARIANT_FALSE` のとき `cblas_zdotu_sub` を呼び出し、結果を `resultReal` / `resultImag` に格納する。
+
+### エラーハンドリングと互換性
+- SAFEARRAY の検証は既存の `EnsureDoubleSafeArray` を流用し、実部/虚部で同じ境界になっていることを追加チェックする。
+- `QueryInterface(IBLASComplex)` が失敗した場合は `E_NOINTERFACE` を返し、旧バージョンのクライアントは従来どおり `IBLAS` のみを利用できる。
+- `BlasTranspose.ConjTrans` は本インターフェースで初めて有効になるので、IDL コメントから「reserved」を削除し、動作を README に記述しておく。
+
+### クライアント向け注意点
+- VBA / VB6 では `ReDim matrixReal(1 To m, 1 To n)` と `matrixImag` を別々に宣言することで本 API を利用できる。ストライドが 1 であれば `incX = incY = 1`。
+- .NET では `double[,]` として実部・虚部を別々に marshal できる。`SAFEARRAY` の下限値は 0 でも 1 でもよいが、両配列で合わせる必要がある。
+- 実数 API と同時に利用する場合は、必要なメソッドごとに `IBLAS` / `IBLASComplex` を明示的に `QueryInterface` する。
 ## VBA サンプルコード
 
 以下は VBA (Excel) から COM_BLAS コンポーネントの動作を確認するための例です。64bit Office を想定しています。
@@ -174,3 +236,4 @@ End Sub
 `
 
 > **補足:** VBA から列挙値を指定する場合は、IDL で定義した定数値を直接指定しています (BlasLayout.RowMajor=101 など)。COM を参照設定して型ライブラリをインポートすれば、定数名をそのまま利用することも可能です。
+

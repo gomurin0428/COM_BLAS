@@ -59,6 +59,13 @@ typedef interface IBLAS IBLAS;
 #endif 	/* __IBLAS_FWD_DEFINED__ */
 
 
+#ifndef __IBLASComplex_FWD_DEFINED__
+#define __IBLASComplex_FWD_DEFINED__
+typedef interface IBLASComplex IBLASComplex;
+
+#endif 	/* __IBLASComplex_FWD_DEFINED__ */
+
+
 #ifndef __BLAS_FWD_DEFINED__
 #define __BLAS_FWD_DEFINED__
 
@@ -773,6 +780,257 @@ EXTERN_C const IID IID_IBLAS;
 
 
 #endif 	/* __IBLAS_INTERFACE_DEFINED__ */
+
+
+#ifndef __IBLASComplex_INTERFACE_DEFINED__
+#define __IBLASComplex_INTERFACE_DEFINED__
+
+/* interface IBLASComplex */
+/* [unique][nonextensible][dual][uuid][object] */ 
+
+
+EXTERN_C const IID IID_IBLASComplex;
+
+#if defined(__cplusplus) && !defined(CINTERFACE)
+    
+    MIDL_INTERFACE("7795391b-e2f5-4f20-943e-14d2aeb5e8b8")
+    IBLASComplex : public IDispatch
+    {
+    public:
+        virtual HRESULT STDMETHODCALLTYPE ZGemmSimple( 
+            /* [in] */ SAFEARRAY * AReal,
+            /* [in] */ SAFEARRAY * AImag,
+            /* [in] */ SAFEARRAY * BReal,
+            /* [in] */ SAFEARRAY * BImag,
+            /* [out][in] */ SAFEARRAY * *CReal,
+            /* [out][in] */ SAFEARRAY * *CImag,
+            /* [defaultvalue][in] */ DOUBLE alphaReal = 1,
+            /* [defaultvalue][in] */ DOUBLE alphaImag = 0,
+            /* [defaultvalue][in] */ DOUBLE betaReal = 0,
+            /* [defaultvalue][in] */ DOUBLE betaImag = 0,
+            /* [defaultvalue][in] */ BlasLayout layout = ColumnMajor,
+            /* [defaultvalue][in] */ BlasTranspose transA = NoTrans,
+            /* [defaultvalue][in] */ BlasTranspose transB = NoTrans) = 0;
+        
+        virtual HRESULT STDMETHODCALLTYPE ZGemvSimple( 
+            /* [in] */ SAFEARRAY * AReal,
+            /* [in] */ SAFEARRAY * AImag,
+            /* [in] */ SAFEARRAY * xReal,
+            /* [in] */ SAFEARRAY * xImag,
+            /* [out][in] */ SAFEARRAY * *yReal,
+            /* [out][in] */ SAFEARRAY * *yImag,
+            /* [defaultvalue][in] */ DOUBLE alphaReal = 1,
+            /* [defaultvalue][in] */ DOUBLE alphaImag = 0,
+            /* [defaultvalue][in] */ DOUBLE betaReal = 0,
+            /* [defaultvalue][in] */ DOUBLE betaImag = 0,
+            /* [defaultvalue][in] */ BlasLayout layout = ColumnMajor,
+            /* [defaultvalue][in] */ BlasTranspose transA = NoTrans) = 0;
+        
+        virtual HRESULT STDMETHODCALLTYPE ZAxpy( 
+            /* [in] */ LONG n,
+            /* [in] */ SAFEARRAY * xReal,
+            /* [in] */ SAFEARRAY * xImag,
+            /* [in] */ LONG incX,
+            /* [out][in] */ SAFEARRAY * *yReal,
+            /* [out][in] */ SAFEARRAY * *yImag,
+            /* [in] */ LONG incY,
+            /* [defaultvalue][in] */ DOUBLE alphaReal = 1,
+            /* [defaultvalue][in] */ DOUBLE alphaImag = 0) = 0;
+        
+        virtual HRESULT STDMETHODCALLTYPE ZDot( 
+            /* [in] */ LONG n,
+            /* [in] */ SAFEARRAY * xReal,
+            /* [in] */ SAFEARRAY * xImag,
+            /* [in] */ LONG incX,
+            /* [in] */ SAFEARRAY * yReal,
+            /* [in] */ SAFEARRAY * yImag,
+            /* [in] */ LONG incY,
+            /* [out] */ DOUBLE *resultReal,
+            /* [out] */ DOUBLE *resultImag,
+            /* [defaultvalue][in] */ VARIANT_BOOL conjugate = -1) = 0;
+        
+    };
+    
+    
+#else 	/* C style interface */
+
+    typedef struct IBLASComplexVtbl
+    {
+        BEGIN_INTERFACE
+        
+        DECLSPEC_XFGVIRT(IUnknown, QueryInterface)
+        HRESULT ( STDMETHODCALLTYPE *QueryInterface )( 
+            IBLASComplex * This,
+            /* [in] */ REFIID riid,
+            /* [annotation][iid_is][out] */ 
+            _COM_Outptr_  void **ppvObject);
+        
+        DECLSPEC_XFGVIRT(IUnknown, AddRef)
+        ULONG ( STDMETHODCALLTYPE *AddRef )( 
+            IBLASComplex * This);
+        
+        DECLSPEC_XFGVIRT(IUnknown, Release)
+        ULONG ( STDMETHODCALLTYPE *Release )( 
+            IBLASComplex * This);
+        
+        DECLSPEC_XFGVIRT(IDispatch, GetTypeInfoCount)
+        HRESULT ( STDMETHODCALLTYPE *GetTypeInfoCount )( 
+            IBLASComplex * This,
+            /* [out] */ UINT *pctinfo);
+        
+        DECLSPEC_XFGVIRT(IDispatch, GetTypeInfo)
+        HRESULT ( STDMETHODCALLTYPE *GetTypeInfo )( 
+            IBLASComplex * This,
+            /* [in] */ UINT iTInfo,
+            /* [in] */ LCID lcid,
+            /* [out] */ ITypeInfo **ppTInfo);
+        
+        DECLSPEC_XFGVIRT(IDispatch, GetIDsOfNames)
+        HRESULT ( STDMETHODCALLTYPE *GetIDsOfNames )( 
+            IBLASComplex * This,
+            /* [in] */ REFIID riid,
+            /* [size_is][in] */ LPOLESTR *rgszNames,
+            /* [range][in] */ UINT cNames,
+            /* [in] */ LCID lcid,
+            /* [size_is][out] */ DISPID *rgDispId);
+        
+        DECLSPEC_XFGVIRT(IDispatch, Invoke)
+        /* [local] */ HRESULT ( STDMETHODCALLTYPE *Invoke )( 
+            IBLASComplex * This,
+            /* [annotation][in] */ 
+            _In_  DISPID dispIdMember,
+            /* [annotation][in] */ 
+            _In_  REFIID riid,
+            /* [annotation][in] */ 
+            _In_  LCID lcid,
+            /* [annotation][in] */ 
+            _In_  WORD wFlags,
+            /* [annotation][out][in] */ 
+            _In_  DISPPARAMS *pDispParams,
+            /* [annotation][out] */ 
+            _Out_opt_  VARIANT *pVarResult,
+            /* [annotation][out] */ 
+            _Out_opt_  EXCEPINFO *pExcepInfo,
+            /* [annotation][out] */ 
+            _Out_opt_  UINT *puArgErr);
+        
+        DECLSPEC_XFGVIRT(IBLASComplex, ZGemmSimple)
+        HRESULT ( STDMETHODCALLTYPE *ZGemmSimple )( 
+            IBLASComplex * This,
+            /* [in] */ SAFEARRAY * AReal,
+            /* [in] */ SAFEARRAY * AImag,
+            /* [in] */ SAFEARRAY * BReal,
+            /* [in] */ SAFEARRAY * BImag,
+            /* [out][in] */ SAFEARRAY * *CReal,
+            /* [out][in] */ SAFEARRAY * *CImag,
+            /* [defaultvalue][in] */ DOUBLE alphaReal,
+            /* [defaultvalue][in] */ DOUBLE alphaImag,
+            /* [defaultvalue][in] */ DOUBLE betaReal,
+            /* [defaultvalue][in] */ DOUBLE betaImag,
+            /* [defaultvalue][in] */ BlasLayout layout,
+            /* [defaultvalue][in] */ BlasTranspose transA,
+            /* [defaultvalue][in] */ BlasTranspose transB);
+        
+        DECLSPEC_XFGVIRT(IBLASComplex, ZGemvSimple)
+        HRESULT ( STDMETHODCALLTYPE *ZGemvSimple )( 
+            IBLASComplex * This,
+            /* [in] */ SAFEARRAY * AReal,
+            /* [in] */ SAFEARRAY * AImag,
+            /* [in] */ SAFEARRAY * xReal,
+            /* [in] */ SAFEARRAY * xImag,
+            /* [out][in] */ SAFEARRAY * *yReal,
+            /* [out][in] */ SAFEARRAY * *yImag,
+            /* [defaultvalue][in] */ DOUBLE alphaReal,
+            /* [defaultvalue][in] */ DOUBLE alphaImag,
+            /* [defaultvalue][in] */ DOUBLE betaReal,
+            /* [defaultvalue][in] */ DOUBLE betaImag,
+            /* [defaultvalue][in] */ BlasLayout layout,
+            /* [defaultvalue][in] */ BlasTranspose transA);
+        
+        DECLSPEC_XFGVIRT(IBLASComplex, ZAxpy)
+        HRESULT ( STDMETHODCALLTYPE *ZAxpy )( 
+            IBLASComplex * This,
+            /* [in] */ LONG n,
+            /* [in] */ SAFEARRAY * xReal,
+            /* [in] */ SAFEARRAY * xImag,
+            /* [in] */ LONG incX,
+            /* [out][in] */ SAFEARRAY * *yReal,
+            /* [out][in] */ SAFEARRAY * *yImag,
+            /* [in] */ LONG incY,
+            /* [defaultvalue][in] */ DOUBLE alphaReal,
+            /* [defaultvalue][in] */ DOUBLE alphaImag);
+        
+        DECLSPEC_XFGVIRT(IBLASComplex, ZDot)
+        HRESULT ( STDMETHODCALLTYPE *ZDot )( 
+            IBLASComplex * This,
+            /* [in] */ LONG n,
+            /* [in] */ SAFEARRAY * xReal,
+            /* [in] */ SAFEARRAY * xImag,
+            /* [in] */ LONG incX,
+            /* [in] */ SAFEARRAY * yReal,
+            /* [in] */ SAFEARRAY * yImag,
+            /* [in] */ LONG incY,
+            /* [out] */ DOUBLE *resultReal,
+            /* [out] */ DOUBLE *resultImag,
+            /* [defaultvalue][in] */ VARIANT_BOOL conjugate);
+        
+        END_INTERFACE
+    } IBLASComplexVtbl;
+
+    interface IBLASComplex
+    {
+        CONST_VTBL struct IBLASComplexVtbl *lpVtbl;
+    };
+
+    
+
+#ifdef COBJMACROS
+
+
+#define IBLASComplex_QueryInterface(This,riid,ppvObject)	\
+    ( (This)->lpVtbl -> QueryInterface(This,riid,ppvObject) ) 
+
+#define IBLASComplex_AddRef(This)	\
+    ( (This)->lpVtbl -> AddRef(This) ) 
+
+#define IBLASComplex_Release(This)	\
+    ( (This)->lpVtbl -> Release(This) ) 
+
+
+#define IBLASComplex_GetTypeInfoCount(This,pctinfo)	\
+    ( (This)->lpVtbl -> GetTypeInfoCount(This,pctinfo) ) 
+
+#define IBLASComplex_GetTypeInfo(This,iTInfo,lcid,ppTInfo)	\
+    ( (This)->lpVtbl -> GetTypeInfo(This,iTInfo,lcid,ppTInfo) ) 
+
+#define IBLASComplex_GetIDsOfNames(This,riid,rgszNames,cNames,lcid,rgDispId)	\
+    ( (This)->lpVtbl -> GetIDsOfNames(This,riid,rgszNames,cNames,lcid,rgDispId) ) 
+
+#define IBLASComplex_Invoke(This,dispIdMember,riid,lcid,wFlags,pDispParams,pVarResult,pExcepInfo,puArgErr)	\
+    ( (This)->lpVtbl -> Invoke(This,dispIdMember,riid,lcid,wFlags,pDispParams,pVarResult,pExcepInfo,puArgErr) ) 
+
+
+#define IBLASComplex_ZGemmSimple(This,AReal,AImag,BReal,BImag,CReal,CImag,alphaReal,alphaImag,betaReal,betaImag,layout,transA,transB)	\
+    ( (This)->lpVtbl -> ZGemmSimple(This,AReal,AImag,BReal,BImag,CReal,CImag,alphaReal,alphaImag,betaReal,betaImag,layout,transA,transB) ) 
+
+#define IBLASComplex_ZGemvSimple(This,AReal,AImag,xReal,xImag,yReal,yImag,alphaReal,alphaImag,betaReal,betaImag,layout,transA)	\
+    ( (This)->lpVtbl -> ZGemvSimple(This,AReal,AImag,xReal,xImag,yReal,yImag,alphaReal,alphaImag,betaReal,betaImag,layout,transA) ) 
+
+#define IBLASComplex_ZAxpy(This,n,xReal,xImag,incX,yReal,yImag,incY,alphaReal,alphaImag)	\
+    ( (This)->lpVtbl -> ZAxpy(This,n,xReal,xImag,incX,yReal,yImag,incY,alphaReal,alphaImag) ) 
+
+#define IBLASComplex_ZDot(This,n,xReal,xImag,incX,yReal,yImag,incY,resultReal,resultImag,conjugate)	\
+    ( (This)->lpVtbl -> ZDot(This,n,xReal,xImag,incX,yReal,yImag,incY,resultReal,resultImag,conjugate) ) 
+
+#endif /* COBJMACROS */
+
+
+#endif 	/* C style interface */
+
+
+
+
+#endif 	/* __IBLASComplex_INTERFACE_DEFINED__ */
 
 
 

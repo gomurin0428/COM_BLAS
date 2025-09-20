@@ -16,7 +16,7 @@ typedef [v1_enum] enum BlasLayout {
 typedef [v1_enum] enum BlasTranspose {
     NoTrans = 111,
     Trans = 112,
-    ConjTrans = 113  // reserved for future complex
+    ConjTrans = 113
 } BlasTranspose;
 
 typedef [v1_enum] enum BlasUplo {
@@ -298,8 +298,78 @@ interface IBLAS : IDispatch
     );
 };
 [
+    object,
+    uuid(7795391b-e2f5-4f20-943e-14d2aeb5e8b8),
+    dual,
+    nonextensible,
+    pointer_default(unique)
+]
+interface IBLASComplex : IDispatch
+{
+    // C = alpha*op(A)*op(B) + beta*C, in complex double precision
+    HRESULT ZGemmSimple(
+        [in] SAFEARRAY(double) AReal,
+        [in] SAFEARRAY(double) AImag,
+        [in] SAFEARRAY(double) BReal,
+        [in] SAFEARRAY(double) BImag,
+        [in, out] SAFEARRAY(double)* CReal,
+        [in, out] SAFEARRAY(double)* CImag,
+        [in, defaultvalue(1.0)] DOUBLE alphaReal,
+        [in, defaultvalue(0.0)] DOUBLE alphaImag,
+        [in, defaultvalue(0.0)] DOUBLE betaReal,
+        [in, defaultvalue(0.0)] DOUBLE betaImag,
+        [in, defaultvalue(ColumnMajor)] BlasLayout layout,
+        [in, defaultvalue(NoTrans)] BlasTranspose transA,
+        [in, defaultvalue(NoTrans)] BlasTranspose transB
+    );
+
+    // y = alpha*op(A)*x + beta*y, in complex double precision
+    HRESULT ZGemvSimple(
+        [in] SAFEARRAY(double) AReal,
+        [in] SAFEARRAY(double) AImag,
+        [in] SAFEARRAY(double) xReal,
+        [in] SAFEARRAY(double) xImag,
+        [in, out] SAFEARRAY(double)* yReal,
+        [in, out] SAFEARRAY(double)* yImag,
+        [in, defaultvalue(1.0)] DOUBLE alphaReal,
+        [in, defaultvalue(0.0)] DOUBLE alphaImag,
+        [in, defaultvalue(0.0)] DOUBLE betaReal,
+        [in, defaultvalue(0.0)] DOUBLE betaImag,
+        [in, defaultvalue(ColumnMajor)] BlasLayout layout,
+        [in, defaultvalue(NoTrans)] BlasTranspose transA
+    );
+
+    // y = y + alpha*x, in complex double precision
+    HRESULT ZAxpy(
+        [in] LONG n,
+        [in] SAFEARRAY(double) xReal,
+        [in] SAFEARRAY(double) xImag,
+        [in] LONG incX,
+        [in, out] SAFEARRAY(double)* yReal,
+        [in, out] SAFEARRAY(double)* yImag,
+        [in] LONG incY,
+        [in, defaultvalue(1.0)] DOUBLE alphaReal,
+        [in, defaultvalue(0.0)] DOUBLE alphaImag
+    );
+
+    // result = dot(x, y) or dot(conj(x), y), in complex double precision
+    HRESULT ZDot(
+        [in] LONG n,
+        [in] SAFEARRAY(double) xReal,
+        [in] SAFEARRAY(double) xImag,
+        [in] LONG incX,
+        [in] SAFEARRAY(double) yReal,
+        [in] SAFEARRAY(double) yImag,
+        [in] LONG incY,
+        [out] DOUBLE* resultReal,
+        [out] DOUBLE* resultImag,
+        [in, defaultvalue(-1)] VARIANT_BOOL conjugate
+    );
+};
+
+[
     uuid(5650ec59-f9dc-4d38-83b2-5828ff8c4d2a),
-    version(1.1),
+    version(1.2),
 ]
 library COMBLASLib
 {
@@ -310,7 +380,9 @@ library COMBLASLib
         coclass BLAS
     {
         [default] interface IBLAS;
+        interface IBLASComplex;
     };
 };
 
 import "shobjidl.idl";
+

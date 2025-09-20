@@ -1,8 +1,8 @@
-// BLAS.h : CBLAS の宣言
+
 
 #pragma once
 
-#include "resource.h"       // メイン シンボル
+#include "resource.h"   
 #include <atlbase.h>
 #include <atlcom.h>
 
@@ -11,8 +11,9 @@
 
 
 
+
 #if defined(_WIN32_WCE) && !defined(_CE_DCOM) && !defined(_CE_ALLOW_SINGLE_THREADED_OBJECTS_IN_MTA)
-#error "DCOM の完全サポートを含んでいない Windows Mobile プラットフォームのような Windows CE プラットフォームでは、単一スレッド COM オブジェクトは正しくサポートされていません。ATL が単一スレッド COM オブジェクトの作成をサポートすること、およびその単一スレッド COM オブジェクトの実装の使用を許可することを強制するには、_CE_ALLOW_SINGLE_THREADED_OBJECTS_IN_MTA を定義してください。ご使用の rgs ファイルのスレッド モデルは 'Free' に設定されており、DCOM Windows CE 以外のプラットフォームでサポートされる唯一のスレッド モデルと設定されていました。"
+#error "error"
 #endif
 
 using namespace ATL;
@@ -24,7 +25,8 @@ class ATL_NO_VTABLE CBLAS :
     public CComObjectRootEx<CComSingleThreadModel>,
     public CComCoClass<CBLAS, &CLSID_BLAS>,
     public ISupportErrorInfo,
-    public IDispatchImpl<IBLAS, &IID_IBLAS, &LIBID_COMBLASLib, /*wMajor =*/ 1, /*wMinor =*/ 1>
+    public IDispatchImpl<IBLAS, &IID_IBLAS, &LIBID_COMBLASLib, /*wMajor =*/ 1, /*wMinor =*/ 2>,
+    public IDispatchImpl<IBLASComplex, &IID_IBLASComplex, &LIBID_COMBLASLib, /*wMajor =*/ 1, /*wMinor =*/ 2>
 {
 public:
     CBLAS()
@@ -36,7 +38,8 @@ public:
 
     BEGIN_COM_MAP(CBLAS)
         COM_INTERFACE_ENTRY(IBLAS)
-        COM_INTERFACE_ENTRY(IDispatch)
+        COM_INTERFACE_ENTRY(IBLASComplex)
+        COM_INTERFACE_ENTRY2(IDispatch, IBLAS)
         COM_INTERFACE_ENTRY(ISupportErrorInfo)
     END_COM_MAP()
 
@@ -60,7 +63,6 @@ public:
 
 
 
-    // IDispatchImpl を介して継承されました
     HRESULT __stdcall GemmSimple(SAFEARRAY* A, SAFEARRAY* B, SAFEARRAY** C, DOUBLE alpha, DOUBLE beta, BlasLayout layout, BlasTranspose transA, BlasTranspose transB) override;
 
     HRESULT __stdcall SymmSimple(SAFEARRAY* A, SAFEARRAY* B, SAFEARRAY** C, DOUBLE alpha, DOUBLE beta, BlasLayout layout, BlasSide side, BlasUplo uplo) override;
@@ -111,6 +113,15 @@ public:
 
     HRESULT __stdcall Rotmg(DOUBLE* d1, DOUBLE* d2, DOUBLE* x1, DOUBLE y1, SAFEARRAY** param) override;
 
+    HRESULT __stdcall ZGemmSimple(SAFEARRAY* AReal, SAFEARRAY* AImag, SAFEARRAY* BReal, SAFEARRAY* BImag, SAFEARRAY** CReal, SAFEARRAY** CImag, DOUBLE alphaReal, DOUBLE alphaImag, DOUBLE betaReal, DOUBLE betaImag, BlasLayout layout, BlasTranspose transA, BlasTranspose transB) override;
+
+    HRESULT __stdcall ZGemvSimple(SAFEARRAY* AReal, SAFEARRAY* AImag, SAFEARRAY* xReal, SAFEARRAY* xImag, SAFEARRAY** yReal, SAFEARRAY** yImag, DOUBLE alphaReal, DOUBLE alphaImag, DOUBLE betaReal, DOUBLE betaImag, BlasLayout layout, BlasTranspose transA) override;
+
+    HRESULT __stdcall ZAxpy(LONG n, SAFEARRAY* xReal, SAFEARRAY* xImag, LONG incX, SAFEARRAY** yReal, SAFEARRAY** yImag, LONG incY, DOUBLE alphaReal, DOUBLE alphaImag) override;
+
+    HRESULT __stdcall ZDot(LONG n, SAFEARRAY* xReal, SAFEARRAY* xImag, LONG incX, SAFEARRAY* yReal, SAFEARRAY* yImag, LONG incY, DOUBLE* resultReal, DOUBLE* resultImag, VARIANT_BOOL conjugate) override;
+
 };
 
 OBJECT_ENTRY_AUTO(__uuidof(BLAS), CBLAS)
+
