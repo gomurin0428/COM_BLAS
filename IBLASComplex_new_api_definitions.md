@@ -1,5 +1,6 @@
 # IBLASComplex 新規API定義メモ
 ## Progress Notes (2025-09-21)
+- Implemented ZGerSimple, ZHemvSimple, and ZHerSimple in COM_BLAS along with managed tests, keeping documentation in sync.
 - Implemented ZSwap, ZIamax, and ZRot in COM_BLAS along with managed tests, updating TEXT_FILE_OVERVIEW.md accordingly.
 
 
