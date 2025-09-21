@@ -3,6 +3,7 @@
 ## 背景
 - 2025-09-21 時点で `IBLASComplex` が公開しているのは `ZGemmSimple` / `ZGemvSimple` / `ZAxpy` / `ZDot` / `ZSymmSimple` / `ZHemmSimple` / `ZSyrkSimple` の7件のみで、実数用 `IBLAS` が提供する残りの BLAS Level 1/2/3 に対応する複素数版が欠落している。
 - OpenBLAS には該当する `cblas_z*` 系関数が存在し、既に `GatherComplex*` / `ScatterComplex*` といった SAFEARRAY ヘルパーが揃っているため、追加のフォールバック実装は不要。
+- 第 1 軸を行、第 2 軸を列とする SAFEARRAY を前提に `PrepareMatrixView` / `ValidateComplexMatrixPair` で正規化し、.NET の `[row, column]` と一致させています。
 
 ## 設計方針
 - 既存の SAFEARRAY 2本 (実部/虚部) を受け取るスタイルと `BlasLayout` / `BlasTranspose` / `BlasSide` / `BlasUplo` / `BlasDiag` 列挙型をそのまま再利用する。

@@ -45,3 +45,4 @@
 - 修正済みコード一式と追加ユニットテスト。
 - 更新済みドキュメント。
 - 上記を反映したビルド／テスト結果ログ（`build_last.log` など）。
+\n## 実装結果メモ (2025-09-21)\n- PrepareMatrixView で第 1 軸=行、第 2 軸=列として行列サイズを算出。lboundRow / lboundCol も同じ順序に整理。\n- GemmSimple / ZGemmSimple の RowMajor 矩形ケースを MSTest でカバーし、SAFEARRAY 軸正規化の動作を検証。\n- ReadMe / IBLASComplex_new_api_definitions に軸解釈メモを追記済み。

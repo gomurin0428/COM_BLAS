@@ -5,7 +5,7 @@
 - `Agents.md` : エージェント運用に関するメモ。
 - `COM_BLAS.Setup/COM_BLAS.Setup.vdproj` : セットアッププロジェクト定義。
 - `COM_BLAS.sln` : ソリューションファイル。
-- `COM_BLAS/BLAS.cpp` : BLAS COM ラッパー本体実装。
+- `COM_BLAS/BLAS.cpp` : BLAS COM 実装本体。SAFEARRAY の行/列軸の正規化や leading dimension の検証を含むコアコードです。
 - `COM_BLAS/BLAS.h` : BLAS COM インターフェイス宣言。
 - `COM_BLAS/BLAS.rgs` : BLAS COM コンポーネント登録スクリプト。
 - `COM_BLAS/COMBLAS.idl` : COM インターフェイス IDL 定義。
@@ -29,11 +29,11 @@
 - `COM_BLAS_UnitTest_Managed/COM_BLAS_UnitTest_Managed.csproj` : ユニットテスト プロジェクトファイル。
 - `COM_BLAS_UnitTest_Managed/ComplexBlasTests.Additional.cs` : 追加複素数 BLAS テスト。
 - `COM_BLAS_UnitTest_Managed/MSTestSettings.cs` : MSTest 設定。
-- `COM_BLAS_UnitTest_Managed/Test1.cs` : メインテスト群。
-- `IBLASComplex_new_api_definitions.md` : 複素数 BLAS 新 API 仕様メモ。
+- `COM_BLAS_UnitTest_Managed/Test1.cs` : メインの MSTest スイート。RowMajor 矩形行列の GEMM/ZGEMM など動作確認ケースを保持。
+- `IBLASComplex_new_api_definitions.md` : 複素数系新 API の検討メモ。SAFEARRAY の行列軸前提と Gather/Scatter 方針を記載。
 - `Installer/COM_BLAS.Installer.wixproj` : WiX インストーラー プロジェクト。
 - `Installer/Package.wxs` : WiX インストール スクリプト。
-- `ReadMe.md` : プロジェクト概要ドキュメント。
+- `ReadMe.md` : プロジェクト概要ドキュメント。RowMajor 前提と SAFEARRAY 軸解釈の注意点を追記。
 - `include/cblas.h` : CBLAS API ヘッダー。
 - `include/f77blas.h` : Fortran BLAS ヘッダー。
 - `include/lapack.h` : LAPACK ヘッダー。
@@ -47,5 +47,5 @@
 - `lib/libopenblas.def` : OpenBLAS モジュール定義。
 - `lib/pkgconfig/openblas.pc` : pkg-config 用 OpenBLAS 設定。
 - `makingInstallerPlan.md` : インストーラー作業計画。
-- `PrepareMatrixView_fix_plan.md` : SAFEARRAY 軸整合対応の修正計画。
+- `PrepareMatrixView_fix_plan.md` : SAFEARRAY 軸調整プラン。実装結果メモを含め進捗をトラッキング。
 - `TEXT_FILE_OVERVIEW.md` : 本ファイル。

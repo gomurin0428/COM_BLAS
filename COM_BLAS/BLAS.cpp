@@ -181,17 +181,17 @@ namespace {
         hr = SafeArrayGetUBound(sa, 2, &ub2);
         if (FAILED(hr)) return hr;
         if (ub1 < lb1) {
-            view.cols = 0;
-        } else {
-            view.cols = static_cast<size_t>(static_cast<long long>(ub1) - static_cast<long long>(lb1) + 1);
-        }
-        if (ub2 < lb2) {
             view.rows = 0;
         } else {
-            view.rows = static_cast<size_t>(static_cast<long long>(ub2) - static_cast<long long>(lb2) + 1);
+            view.rows = static_cast<size_t>(static_cast<long long>(ub1) - static_cast<long long>(lb1) + 1);
         }
-        view.lboundCol = lb1;
-        view.lboundRow = lb2;
+        if (ub2 < lb2) {
+            view.cols = 0;
+        } else {
+            view.cols = static_cast<size_t>(static_cast<long long>(ub2) - static_cast<long long>(lb2) + 1);
+        }
+        view.lboundRow = lb1;
+        view.lboundCol = lb2;
         hr = view.accessor.Attach(sa);
         if (FAILED(hr)) return hr;
         if ((view.rows * view.cols) != 0 && !view.accessor.ptr) {
@@ -305,11 +305,12 @@ namespace {
         }
     }
 
-    void ConvertColumnMajorToRowMajor(size_t rows, size_t cols, std::vector<std::complex<double>>& data) {
+    template <typename T>
+    void ConvertColumnMajorToRowMajor(size_t rows, size_t cols, std::vector<T>& data) {
         if (rows <= 1 || cols <= 1) {
             return;
         }
-        std::vector<std::complex<double>> buffer(data.size());
+        std::vector<T> buffer(data.size());
         for (size_t col = 0; col < cols; ++col) {
             for (size_t row = 0; row < rows; ++row) {
                 const size_t src = col * rows + row;
@@ -320,11 +321,12 @@ namespace {
         data.swap(buffer);
     }
 
-    void ConvertRowMajorToColumnMajor(size_t rows, size_t cols, std::vector<std::complex<double>>& data) {
+    template <typename T>
+    void ConvertRowMajorToColumnMajor(size_t rows, size_t cols, std::vector<T>& data) {
         if (rows <= 1 || cols <= 1) {
             return;
         }
-        std::vector<std::complex<double>> buffer(data.size());
+        std::vector<T> buffer(data.size());
         for (size_t row = 0; row < rows; ++row) {
             for (size_t col = 0; col < cols; ++col) {
                 const size_t src = row * cols + col;
@@ -333,6 +335,50 @@ namespace {
             }
         }
         data.swap(buffer);
+    }
+
+    void GatherRealMatrix(const MatrixView& view, std::vector<double>& out) {
+        const size_t total = view.rows * view.cols;
+        out.resize(total);
+        if (total == 0) {
+            return;
+        }
+        const double* src = view.accessor.ptr;
+        std::copy(src, src + total, out.begin());
+    }
+
+    void ScatterRealMatrix(const std::vector<double>& data, MatrixView& view) {
+        const size_t total = view.rows * view.cols;
+        if (total == 0) {
+            return;
+        }
+        double* dst = view.accessor.ptr;
+        std::copy(data.begin(), data.begin() + total, dst);
+    }
+
+    const double* GetMatrixInputPointer(CBLAS_LAYOUT order, const MatrixView& view, std::vector<double>& buffer) {
+        if (order == CblasRowMajor) {
+            GatherRealMatrix(view, buffer);
+            ConvertColumnMajorToRowMajor(view.rows, view.cols, buffer);
+            return buffer.empty() ? nullptr : buffer.data();
+        }
+        return view.accessor.ptr;
+    }
+
+    double* GetMatrixOutputPointer(CBLAS_LAYOUT order, MatrixView& view, std::vector<double>& buffer) {
+        if (order == CblasRowMajor) {
+            GatherRealMatrix(view, buffer);
+            ConvertColumnMajorToRowMajor(view.rows, view.cols, buffer);
+            return buffer.empty() ? nullptr : buffer.data();
+        }
+        return view.accessor.ptr;
+    }
+
+    void CommitMatrixOutput(CBLAS_LAYOUT order, MatrixView& view, std::vector<double>& buffer) {
+        if (order == CblasRowMajor) {
+            ConvertRowMajorToColumnMajor(view.rows, view.cols, buffer);
+            ScatterRealMatrix(buffer, view);
+        }
     }
 
     void GatherComplexVector(const VectorView& realView, const VectorView& imagView, LONG n, std::vector<std::complex<double>>& out) {
@@ -524,12 +570,24 @@ HRESULT __stdcall CBLAS::GemmSimple(SAFEARRAY* A, SAFEARRAY* B, SAFEARRAY** C, D
         return SetComError(L"Failed to access matrix data.", E_FAIL);
     }
 
-    cblas_dgemm(order, transAFlag, transBFlag, M, N, K, alpha,
-                a.accessor.ptr, lda,
-                b.accessor.ptr, ldb,
-                beta,
-                c.accessor.ptr, ldc);
+    std::vector<double> aBuffer;
+    std::vector<double> bBuffer;
+    std::vector<double> cBuffer;
+    const double* aPtr = GetMatrixInputPointer(order, a, aBuffer);
+    const double* bPtr = GetMatrixInputPointer(order, b, bBuffer);
+    double* cPtr = GetMatrixOutputPointer(order, c, cBuffer);
 
+    if (((a.rows * a.cols) != 0 && !aPtr) || ((b.rows * b.cols) != 0 && !bPtr) || ((c.rows * c.cols) != 0 && !cPtr)) {
+        return SetComError(L"Failed to prepare matrix data.", E_FAIL);
+    }
+
+    cblas_dgemm(order, transAFlag, transBFlag, M, N, K, alpha,
+                aPtr ? aPtr : a.accessor.ptr, lda,
+                bPtr ? bPtr : b.accessor.ptr, ldb,
+                beta,
+                cPtr ? cPtr : c.accessor.ptr, ldc);
+
+    CommitMatrixOutput(order, c, cBuffer);
     return S_OK;
 }
 
@@ -596,12 +654,24 @@ HRESULT __stdcall CBLAS::SymmSimple(SAFEARRAY* A, SAFEARRAY* B, SAFEARRAY** C, D
         return SetComError(L"Failed to access matrix data.", E_FAIL);
     }
 
-    cblas_dsymm(order, sideFlag, uploFlag, M, N, alpha,
-                a.accessor.ptr, lda,
-                b.accessor.ptr, ldb,
-                beta,
-                c.accessor.ptr, ldc);
+    std::vector<double> aBuffer;
+    std::vector<double> bBuffer;
+    std::vector<double> cBuffer;
+    const double* aPtr = GetMatrixInputPointer(order, a, aBuffer);
+    const double* bPtr = GetMatrixInputPointer(order, b, bBuffer);
+    double* cPtr = GetMatrixOutputPointer(order, c, cBuffer);
 
+    if (((a.rows * a.cols) != 0 && !aPtr) || ((b.rows * b.cols) != 0 && !bPtr) || ((c.rows * c.cols) != 0 && !cPtr)) {
+        return SetComError(L"Failed to prepare matrix data.", E_FAIL);
+    }
+
+    cblas_dsymm(order, sideFlag, uploFlag, M, N, alpha,
+                aPtr ? aPtr : a.accessor.ptr, lda,
+                bPtr ? bPtr : b.accessor.ptr, ldb,
+                beta,
+                cPtr ? cPtr : c.accessor.ptr, ldc);
+
+    CommitMatrixOutput(order, c, cBuffer);
     return S_OK;
 }
 
@@ -664,11 +734,21 @@ HRESULT __stdcall CBLAS::SyrkSimple(SAFEARRAY* A, SAFEARRAY** C, DOUBLE alpha, D
         return SetComError(L"Failed to access matrix data.", E_FAIL);
     }
 
-    cblas_dsyrk(order, uploFlag, transFlag, N, K, alpha,
-                a.accessor.ptr, lda,
-                beta,
-                c.accessor.ptr, ldc);
+    std::vector<double> aBuffer;
+    std::vector<double> cBuffer;
+    const double* aPtr = GetMatrixInputPointer(order, a, aBuffer);
+    double* cPtr = GetMatrixOutputPointer(order, c, cBuffer);
 
+    if (((a.rows * a.cols) != 0 && !aPtr) || ((c.rows * c.cols) != 0 && !cPtr)) {
+        return SetComError(L"Failed to prepare matrix data.", E_FAIL);
+    }
+
+    cblas_dsyrk(order, uploFlag, transFlag, N, K, alpha,
+                aPtr ? aPtr : a.accessor.ptr, lda,
+                beta,
+                cPtr ? cPtr : c.accessor.ptr, ldc);
+
+    CommitMatrixOutput(order, c, cBuffer);
     return S_OK;
 }
 
@@ -738,12 +818,24 @@ HRESULT __stdcall CBLAS::Syr2kSimple(SAFEARRAY* A, SAFEARRAY* B, SAFEARRAY** C, 
         return SetComError(L"Failed to access matrix data.", E_FAIL);
     }
 
-    cblas_dsyr2k(order, uploFlag, transFlag, N, K, alpha,
-                 a.accessor.ptr, lda,
-                 b.accessor.ptr, ldb,
-                 beta,
-                 c.accessor.ptr, ldc);
+    std::vector<double> aBuffer;
+    std::vector<double> bBuffer;
+    std::vector<double> cBuffer;
+    const double* aPtr = GetMatrixInputPointer(order, a, aBuffer);
+    const double* bPtr = GetMatrixInputPointer(order, b, bBuffer);
+    double* cPtr = GetMatrixOutputPointer(order, c, cBuffer);
 
+    if (((a.rows * a.cols) != 0 && !aPtr) || ((b.rows * b.cols) != 0 && !bPtr) || ((c.rows * c.cols) != 0 && !cPtr)) {
+        return SetComError(L"Failed to prepare matrix data.", E_FAIL);
+    }
+
+    cblas_dsyr2k(order, uploFlag, transFlag, N, K, alpha,
+                 aPtr ? aPtr : a.accessor.ptr, lda,
+                 bPtr ? bPtr : b.accessor.ptr, ldb,
+                 beta,
+                 cPtr ? cPtr : c.accessor.ptr, ldc);
+
+    CommitMatrixOutput(order, c, cBuffer);
     return S_OK;
 }
 
@@ -800,10 +892,20 @@ HRESULT __stdcall CBLAS::TrmmSimple(SAFEARRAY* A, SAFEARRAY** B, DOUBLE alpha, B
         return SetComError(L"Failed to access matrix data.", E_FAIL);
     }
 
-    cblas_dtrmm(order, sideFlag, uploFlag, transFlag, diagFlag, M, N, alpha,
-                a.accessor.ptr, lda,
-                b.accessor.ptr, ldb);
+    std::vector<double> aBuffer;
+    std::vector<double> bBuffer;
+    const double* aPtr = GetMatrixInputPointer(order, a, aBuffer);
+    double* bPtr = GetMatrixOutputPointer(order, b, bBuffer);
 
+    if (((a.rows * a.cols) != 0 && !aPtr) || ((b.rows * b.cols) != 0 && !bPtr)) {
+        return SetComError(L"Failed to prepare matrix data.", E_FAIL);
+    }
+
+    cblas_dtrmm(order, sideFlag, uploFlag, transFlag, diagFlag, M, N, alpha,
+                aPtr ? aPtr : a.accessor.ptr, lda,
+                bPtr ? bPtr : b.accessor.ptr, ldb);
+
+    CommitMatrixOutput(order, b, bBuffer);
     return S_OK;
 }
 
@@ -860,10 +962,20 @@ HRESULT __stdcall CBLAS::TrsmSimple(SAFEARRAY* A, SAFEARRAY** B, DOUBLE alpha, B
         return SetComError(L"Failed to access matrix data.", E_FAIL);
     }
 
-    cblas_dtrsm(order, sideFlag, uploFlag, transFlag, diagFlag, M, N, alpha,
-                a.accessor.ptr, lda,
-                b.accessor.ptr, ldb);
+    std::vector<double> aBuffer;
+    std::vector<double> bBuffer;
+    const double* aPtr = GetMatrixInputPointer(order, a, aBuffer);
+    double* bPtr = GetMatrixOutputPointer(order, b, bBuffer);
 
+    if (((a.rows * a.cols) != 0 && !aPtr) || ((b.rows * b.cols) != 0 && !bPtr)) {
+        return SetComError(L"Failed to prepare matrix data.", E_FAIL);
+    }
+
+    cblas_dtrsm(order, sideFlag, uploFlag, transFlag, diagFlag, M, N, alpha,
+                aPtr ? aPtr : a.accessor.ptr, lda,
+                bPtr ? bPtr : b.accessor.ptr, ldb);
+
+    CommitMatrixOutput(order, b, bBuffer);
     return S_OK;
 }
 
@@ -911,12 +1023,18 @@ HRESULT __stdcall CBLAS::GemvSimple(SAFEARRAY* A, SAFEARRAY* x, SAFEARRAY** y, D
     hr = ToIntChecked(GetLeadingDimension(order, a), L"lda", lda);
     if (FAILED(hr)) return hr;
 
+    std::vector<double> aBuffer;
+    const double* aPtr = GetMatrixInputPointer(order, a, aBuffer);
+    if ((a.rows * a.cols) != 0 && !aPtr) {
+        return SetComError(L"Failed to prepare matrix data.", E_FAIL);
+    }
+
     double dummy = 0.0;
     double* xPtr = (expectedX == 0) ? &dummy : xView.data;
     double* yPtr = (expectedY == 0) ? &dummy : yView.data;
 
     cblas_dgemv(order, transFlag, M, N, alpha,
-                a.accessor.ptr, lda,
+                aPtr ? aPtr : a.accessor.ptr, lda,
                 xPtr, 1,
                 beta,
                 yPtr, 1);
@@ -954,6 +1072,12 @@ HRESULT __stdcall CBLAS::GerSimple(SAFEARRAY* x, SAFEARRAY* y, SAFEARRAY** A, DO
         return SetComError(L"Failed to access vector or matrix data.", E_FAIL);
     }
 
+    std::vector<double> matBuffer;
+    double* matPtr = GetMatrixOutputPointer(order, mat, matBuffer);
+    if ((mat.rows * mat.cols) != 0 && !matPtr) {
+        return SetComError(L"Failed to prepare matrix data.", E_FAIL);
+    }
+
     int M, N, lda;
     hr = ToIntChecked(m, L"M", M);
     if (FAILED(hr)) return hr;
@@ -966,8 +1090,9 @@ HRESULT __stdcall CBLAS::GerSimple(SAFEARRAY* x, SAFEARRAY* y, SAFEARRAY** A, DO
     double* xPtr = (m == 0) ? &dummy : xView.data;
     double* yPtr = (n == 0) ? &dummy : yView.data;
 
-    cblas_dger(order, M, N, alpha, xPtr, 1, yPtr, 1, mat.accessor.ptr, lda);
+    cblas_dger(order, M, N, alpha, xPtr, 1, yPtr, 1, matPtr ? matPtr : mat.accessor.ptr, lda);
 
+    CommitMatrixOutput(order, mat, matBuffer);
     return S_OK;
 }
 
@@ -1011,11 +1136,17 @@ HRESULT __stdcall CBLAS::SymvSimple(SAFEARRAY* A, SAFEARRAY* x, SAFEARRAY** y, D
     hr = ToIntChecked(GetLeadingDimension(order, mat), L"lda", lda);
     if (FAILED(hr)) return hr;
 
+    std::vector<double> matBuffer;
+    const double* matPtr = GetMatrixInputPointer(order, mat, matBuffer);
+    if ((mat.rows * mat.cols) != 0 && !matPtr) {
+        return SetComError(L"Failed to prepare matrix data.", E_FAIL);
+    }
+
     double dummy = 0.0;
     double* xPtr = (n == 0) ? &dummy : xView.data;
     double* yPtr = (n == 0) ? &dummy : yView.data;
 
-    cblas_dsymv(order, uploFlag, N, alpha, mat.accessor.ptr, lda, xPtr, 1, beta, yPtr, 1);
+    cblas_dsymv(order, uploFlag, N, alpha, matPtr ? matPtr : mat.accessor.ptr, lda, xPtr, 1, beta, yPtr, 1);
 
     return S_OK;
 }
@@ -1057,11 +1188,18 @@ HRESULT __stdcall CBLAS::SyrSimple(SAFEARRAY* x, SAFEARRAY** A, DOUBLE alpha, Bl
     hr = ToIntChecked(GetLeadingDimension(order, mat), L"lda", lda);
     if (FAILED(hr)) return hr;
 
+    std::vector<double> matBuffer;
+    double* matPtr = GetMatrixOutputPointer(order, mat, matBuffer);
+    if ((mat.rows * mat.cols) != 0 && !matPtr) {
+        return SetComError(L"Failed to prepare matrix data.", E_FAIL);
+    }
+
     double dummy = 0.0;
     double* xPtr = (n == 0) ? &dummy : xView.data;
 
-    cblas_dsyr(order, uploFlag, N, alpha, xPtr, 1, mat.accessor.ptr, lda);
+    cblas_dsyr(order, uploFlag, N, alpha, xPtr, 1, matPtr ? matPtr : mat.accessor.ptr, lda);
 
+    CommitMatrixOutput(order, mat, matBuffer);
     return S_OK;
 }
 
@@ -1105,12 +1243,19 @@ HRESULT __stdcall CBLAS::Syr2Simple(SAFEARRAY* x, SAFEARRAY* y, SAFEARRAY** A, D
     hr = ToIntChecked(GetLeadingDimension(order, mat), L"lda", lda);
     if (FAILED(hr)) return hr;
 
+    std::vector<double> matBuffer;
+    double* matPtr = GetMatrixOutputPointer(order, mat, matBuffer);
+    if ((mat.rows * mat.cols) != 0 && !matPtr) {
+        return SetComError(L"Failed to prepare matrix data.", E_FAIL);
+    }
+
     double dummy = 0.0;
     double* xPtr = (n == 0) ? &dummy : xView.data;
     double* yPtr = (n == 0) ? &dummy : yView.data;
 
-    cblas_dsyr2(order, uploFlag, N, alpha, xPtr, 1, yPtr, 1, mat.accessor.ptr, lda);
+    cblas_dsyr2(order, uploFlag, N, alpha, xPtr, 1, yPtr, 1, matPtr ? matPtr : mat.accessor.ptr, lda);
 
+    CommitMatrixOutput(order, mat, matBuffer);
     return S_OK;
 }
 
@@ -1157,10 +1302,16 @@ HRESULT __stdcall CBLAS::TrmvSimple(SAFEARRAY* A, SAFEARRAY** x, BlasLayout layo
     hr = ToIntChecked(GetLeadingDimension(order, mat), L"lda", lda);
     if (FAILED(hr)) return hr;
 
+    std::vector<double> matBuffer;
+    const double* matPtr = GetMatrixInputPointer(order, mat, matBuffer);
+    if ((mat.rows * mat.cols) != 0 && !matPtr) {
+        return SetComError(L"Failed to prepare matrix data.", E_FAIL);
+    }
+
     double dummy = 0.0;
     double* xPtr = (n == 0) ? &dummy : xView.data;
 
-    cblas_dtrmv(order, uploFlag, transFlag, diagFlag, N, mat.accessor.ptr, lda, xPtr, 1);
+    cblas_dtrmv(order, uploFlag, transFlag, diagFlag, N, matPtr ? matPtr : mat.accessor.ptr, lda, xPtr, 1);
 
     return S_OK;
 }
@@ -1208,10 +1359,16 @@ HRESULT __stdcall CBLAS::TrsvSimple(SAFEARRAY* A, SAFEARRAY** x, BlasLayout layo
     hr = ToIntChecked(GetLeadingDimension(order, mat), L"lda", lda);
     if (FAILED(hr)) return hr;
 
+    std::vector<double> matBuffer;
+    const double* matPtr = GetMatrixInputPointer(order, mat, matBuffer);
+    if ((mat.rows * mat.cols) != 0 && !matPtr) {
+        return SetComError(L"Failed to prepare matrix data.", E_FAIL);
+    }
+
     double dummy = 0.0;
     double* xPtr = (n == 0) ? &dummy : xView.data;
 
-    cblas_dtrsv(order, uploFlag, transFlag, diagFlag, N, mat.accessor.ptr, lda, xPtr, 1);
+    cblas_dtrsv(order, uploFlag, transFlag, diagFlag, N, matPtr ? matPtr : mat.accessor.ptr, lda, xPtr, 1);
 
     return S_OK;
 }

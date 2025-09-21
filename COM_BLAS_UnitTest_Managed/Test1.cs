@@ -700,6 +700,52 @@ internal partial interface IBLASComplex
         }
 
         [TestMethod]
+        public void GemmSimple_RowMajorRectangular()
+        {
+            using var handle = new BlasHandle();
+            var blas = handle.Instance;
+
+            double[,] A = new double[,]
+            {
+                { 1.0, 2.0, 3.0 },
+                { 4.0, 5.0, 6.0 },
+            };
+            double[,] B = new double[,]
+            {
+                { 7.0, 8.0 },
+                { 9.0, 10.0 },
+                { 11.0, 12.0 },
+            };
+            double[,] C = new double[,]
+            {
+                { 0.5, 1.0 },
+                { -1.5, 2.5 },
+            };
+            double[,] original = (double[,])C.Clone();
+
+            double alpha = 1.1;
+            double beta = -0.3;
+
+            blas.GemmSimple(A, B, ref C, alpha, beta, BlasLayout.RowMajor, BlasTranspose.NoTrans, BlasTranspose.NoTrans);
+
+            int rows = C.GetLength(0);
+            int cols = C.GetLength(1);
+            for (int i = 0; i < rows; i++)
+            {
+                for (int j = 0; j < cols; j++)
+                {
+                    double sum = 0.0;
+                    for (int k = 0; k < A.GetLength(1); k++)
+                    {
+                        sum += A[i, k] * B[k, j];
+                    }
+                    double expected = alpha * sum + beta * original[i, j];
+                    AssertScalarEqual(C[i, j], expected);
+                }
+            }
+        }
+
+        [TestMethod]
         public void SymmSimple_ScalarCase()
         {
             using var handle = new BlasHandle();
@@ -1776,6 +1822,58 @@ internal partial interface IBLASComplex
             Complex expected = ComputeZDotExpected(n, xReal, xImag, incX, yReal, yImag, incY, false);
             AssertNearlyEqual(expected.Real, resultReal);
             AssertNearlyEqual(expected.Imaginary, resultImag);
+        }
+
+        [TestMethod]
+        public void ZGemmSimple_RowMajorRectangular()
+        {
+            using var handle = new ComplexBlasHandle();
+            var blas = handle.Instance;
+
+            double[,] aReal = new double[,]
+            {
+                { 1.0, -2.0, 0.5 },
+                { 0.0, 3.0, -1.0 },
+            };
+            double[,] aImag = new double[,]
+            {
+                { 0.5, 1.0, -1.5 },
+                { 2.0, -0.5, 0.25 },
+            };
+            double[,] bReal = new double[,]
+            {
+                { 2.0, -3.0 },
+                { 1.5, 0.75 },
+                { -0.5, 2.5 },
+            };
+            double[,] bImag = new double[,]
+            {
+                { 1.0, 0.0 },
+                { -1.0, 1.5 },
+                { 0.5, -2.0 },
+            };
+            double[,] cReal = new double[,]
+            {
+                { 0.25, -1.0 },
+                { 1.5, 0.5 },
+            };
+            double[,] cImag = new double[,]
+            {
+                { 0.0, 0.75 },
+                { -0.25, -1.5 },
+            };
+            double[,] originalCReal = (double[,])cReal.Clone();
+            double[,] originalCImag = (double[,])cImag.Clone();
+
+            double alphaReal = 0.6;
+            double alphaImag = -0.4;
+            double betaReal = -0.3;
+            double betaImag = 0.2;
+
+            blas.ZGemmSimple(aReal, aImag, bReal, bImag, ref cReal, ref cImag, alphaReal, alphaImag, betaReal, betaImag, BlasLayout.RowMajor, BlasTranspose.NoTrans, BlasTranspose.NoTrans);
+
+            Complex[,] expected = ComputeZGemmExpected(aReal, aImag, bReal, bImag, originalCReal, originalCImag, new Complex(alphaReal, alphaImag), new Complex(betaReal, betaImag));
+            AssertComplexMatrixEqual(expected, cReal, cImag);
         }
 
         [TestMethod]
