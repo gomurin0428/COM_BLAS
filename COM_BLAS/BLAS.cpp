@@ -4001,17 +4001,21 @@ HRESULT __stdcall CBLAS::ZRotg(DOUBLE* aReal, DOUBLE* aImag, DOUBLE* bReal, DOUB
         return SetComError(L"Input and output pointers must not be null.", E_POINTER);
     }
 
-    std::complex<double> a(*aReal, *aImag);
-    std::complex<double> b(*bReal, *bImag);
+    const std::complex<double> originalA(*aReal, *aImag);
+    const std::complex<double> originalB(*bReal, *bImag);
+    std::complex<double> a = originalA;
+    std::complex<double> b = originalB;
     std::complex<double> s(0.0, 0.0);
     double cValue = 0.0;
 
     cblas_zrotg(&a, &b, &cValue, &s);
 
+    const std::complex<double> rotatedB = cValue * originalB - std::conj(s) * originalA;
+
     *aReal = a.real();
     *aImag = a.imag();
-    *bReal = b.real();
-    *bImag = b.imag();
+    *bReal = rotatedB.real();
+    *bImag = rotatedB.imag();
     *c = cValue;
     *sReal = s.real();
     *sImag = s.imag();

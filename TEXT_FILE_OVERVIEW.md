@@ -12,7 +12,7 @@
 
 - `COM_BLAS.sln` : ソリューションファイル、E
 
-- `COM_BLAS/BLAS.cpp` : Core COM BLAS implementation; complex coverage now includes rank-k/2k updates (ZSyrkSimple, ZSyr2kSimple, ZHerkSimple, ZHerk2kSimple), Hermitian rank-1/2 kernels (ZHerSimple, ZHer2Simple) plus Givens rotations (ZRot, ZRotg), and triangular matrix/vector routines (ZTrmvSimple, ZTrsvSimple, ZTrmmSimple, ZTrsmSimple) with SAFEARRAY gather/scatter helpers.
+- `COM_BLAS/BLAS.cpp` : Core COM BLAS implementation; complex coverage includes rank-k/2k updates (ZSyrkSimple, ZSyr2kSimple, ZHerkSimple, ZHerk2kSimple), Hermitian rank-1/2 kernels (ZHerSimple, ZHer2Simple), Givens rotations (ZRot handles plane updates; ZRotg now recomputes the rotated b component before scatter), and triangular matrix/vector routines (ZTrmvSimple, ZTrsvSimple, ZTrmmSimple, ZTrsmSimple) with SAFEARRAY gather/scatter helpers.
 
 - `COM_BLAS/BLAS.h` : BLAS COM インターフェイス宣言、E
 
@@ -100,5 +100,5 @@
 
 - `TEXT_FILE_OVERVIEW.md` : 本ファイル、E
 
-- `TROUBLESHOOTING.md` : Known build/test pitfalls (Hermitian + symmetric mirroring requirements, build configs) and notes on the current GemmSimple baseline test failures.
+- `TROUBLESHOOTING.md` : Known build/test pitfalls (Hermitian and symmetric mirroring, build configs), GemmSimple baseline failure notes, plus the reminder that cblas_zrotg leaves b untouched so the wrapper must recompute the rotated value.
 

@@ -38,3 +38,12 @@ Several MSTest cases (GemmSimple/ZGemmSimple families) currently fail with dimen
 
 - Filter to the specific complex tests you changed when smoke-testing (for example via `--filter ZHer2Simple_`), or review `TestResults/*.log` to confirm only the known Gemm variants failed.
 - Avoid using the aggregate test result as a deployment gate until the GemmSimple backlog is resolved.
+
+
+## ZRotg output keeps original b value
+
+OpenBLAS の cblas_zrotg は第 2 成分 (b) をゼロ化せず入力値を維持するため、COM_BLAS ラッパーがそのまま値を返すと管理側テストで回転結果が不整合になります。
+
+### Actions
+
+- cblas_zrotg 呼び出し後に元のベクトルと返却された c / s を用いて b' = c * b - conj(s) * a を再計算し、OUT パラメーターへ書き戻してから SAFEARRAY へ scatter してください。
