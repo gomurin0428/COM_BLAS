@@ -1,5 +1,6 @@
 # IBLASComplex 新規API定義メモ
 ## Progress Notes (2025-09-21)
+- Implemented ZHer2Simple, ZTrmvSimple, and ZTrsvSimple in COM_BLAS with managed coverage and mirrored SAFEARRAY handling.
 - Implemented ZGerSimple, ZHemvSimple, and ZHerSimple in COM_BLAS along with managed tests, keeping documentation in sync.
 - Implemented ZSwap, ZIamax, and ZRot in COM_BLAS along with managed tests, updating TEXT_FILE_OVERVIEW.md accordingly.
 - Implemented ZSyrkSimple, ZSyr2kSimple, and ZHerkSimple in COM_BLAS with symmetric/hermitian mirroring helpers and verified managed coverage.

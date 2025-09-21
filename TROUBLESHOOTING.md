@@ -29,3 +29,12 @@ OpenBLAS zsyrk/zsyr2k only touches the triangle indicated by CBLAS_UPLO, so the 
 
 - Call CompleteSymmetricMatrix immediately after the BLAS call so both triangles stay in sync before scattering back to the SAFEARRAY.
 - Ensure the output matrix is converted back to column-major order before scatter to match how C# double[,] data is laid out.
+
+## Managed test suite baseline failures
+
+Several MSTest cases (GemmSimple/ZGemmSimple families) currently fail with dimension mismatch assertions because the legacy simple wrappers have not been updated for non-square SAFEARRAY inputs yet. They run before the new complex routines execute, so `dotnet test` shows 18 failures even when recently added APIs are correct.
+
+### Actions
+
+- Filter to the specific complex tests you changed when smoke-testing (for example via `--filter ZHer2Simple_`), or review `TestResults/*.log` to confirm only the known Gemm variants failed.
+- Avoid using the aggregate test result as a deployment gate until the GemmSimple backlog is resolved.
