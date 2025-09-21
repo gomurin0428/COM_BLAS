@@ -2036,33 +2036,215 @@ HRESULT __stdcall CBLAS::ZTrsvSimple(SAFEARRAY* AReal, SAFEARRAY* AImag, SAFEARR
 
 HRESULT __stdcall CBLAS::ZNrm2(LONG n, SAFEARRAY* xReal, SAFEARRAY* xImag, LONG incX, DOUBLE* norm)
 {
-    IgnoreUnused(n, xReal, xImag, incX, norm);
-    return E_NOTIMPL;
+    if (!norm) {
+        return ParameterError(L"norm", L"must not be null.", E_POINTER);
+    }
+    if (n < 0) {
+        return ParameterError(L"n", L"must be non-negative.");
+    }
+    if (n == 0) {
+        *norm = 0.0;
+        return S_OK;
+    }
+    if (incX == 0) {
+        return SetComError(L"incX must not be zero.", E_INVALIDARG);
+    }
+
+    VectorView xRealView;
+    HRESULT hr = PrepareVectorView(xReal, n, incX, L"xReal", xRealView);
+    if (FAILED(hr)) return hr;
+    VectorView xImagView;
+    hr = PrepareVectorView(xImag, n, incX, L"xImag", xImagView);
+    if (FAILED(hr)) return hr;
+    hr = ValidateComplexVectorPair(xRealView, xImagView, n, L"x");
+    if (FAILED(hr)) return hr;
+
+    if (incX < (std::numeric_limits<int>::min)() || incX > (std::numeric_limits<int>::max)()) {
+        return SetComError(L"incX is out of supported range.", E_INVALIDARG);
+    }
+
+    std::vector<std::complex<double>> xData;
+    GatherComplexVector(xRealView, xImagView, n, xData);
+
+    *norm = cblas_dznrm2(static_cast<int>(n), xData.data(), 1);
+    return S_OK;
 }
+
+
 
 HRESULT __stdcall CBLAS::ZAsum(LONG n, SAFEARRAY* xReal, SAFEARRAY* xImag, LONG incX, DOUBLE* result)
 {
-    IgnoreUnused(n, xReal, xImag, incX, result);
-    return E_NOTIMPL;
+    if (!result) {
+        return ParameterError(L"result", L"must not be null.", E_POINTER);
+    }
+    if (n < 0) {
+        return ParameterError(L"n", L"must be non-negative.");
+    }
+    if (n == 0) {
+        *result = 0.0;
+        return S_OK;
+    }
+    if (incX == 0) {
+        return SetComError(L"incX must not be zero.", E_INVALIDARG);
+    }
+
+    VectorView xRealView;
+    HRESULT hr = PrepareVectorView(xReal, n, incX, L"xReal", xRealView);
+    if (FAILED(hr)) return hr;
+    VectorView xImagView;
+    hr = PrepareVectorView(xImag, n, incX, L"xImag", xImagView);
+    if (FAILED(hr)) return hr;
+    hr = ValidateComplexVectorPair(xRealView, xImagView, n, L"x");
+    if (FAILED(hr)) return hr;
+
+    if (incX < (std::numeric_limits<int>::min)() || incX > (std::numeric_limits<int>::max)()) {
+        return SetComError(L"incX is out of supported range.", E_INVALIDARG);
+    }
+
+    std::vector<std::complex<double>> xData;
+    GatherComplexVector(xRealView, xImagView, n, xData);
+
+    *result = cblas_dzasum(static_cast<int>(n), xData.data(), 1);
+    return S_OK;
 }
+
+
 
 HRESULT __stdcall CBLAS::ZScal(LONG n, SAFEARRAY** xReal, SAFEARRAY** xImag, LONG incX, DOUBLE alphaReal, DOUBLE alphaImag)
 {
-    IgnoreUnused(n, xReal, xImag, incX, alphaReal, alphaImag);
-    return E_NOTIMPL;
+    if (n < 0) {
+        return ParameterError(L"n", L"must be non-negative.");
+    }
+    HRESULT hr = EnsureArrayPointer(xReal, L"xReal");
+    if (FAILED(hr)) return hr;
+    hr = EnsureArrayPointer(xImag, L"xImag");
+    if (FAILED(hr)) return hr;
+    if (n == 0) {
+        return S_OK;
+    }
+    if (incX == 0) {
+        return SetComError(L"incX must not be zero.", E_INVALIDARG);
+    }
+
+    VectorView xRealView;
+    hr = PrepareVectorView(*xReal, n, incX, L"xReal", xRealView);
+    if (FAILED(hr)) return hr;
+    VectorView xImagView;
+    hr = PrepareVectorView(*xImag, n, incX, L"xImag", xImagView);
+    if (FAILED(hr)) return hr;
+    hr = ValidateComplexVectorPair(xRealView, xImagView, n, L"x");
+    if (FAILED(hr)) return hr;
+
+    if (incX < (std::numeric_limits<int>::min)() || incX > (std::numeric_limits<int>::max)()) {
+        return SetComError(L"incX is out of supported range.", E_INVALIDARG);
+    }
+
+    std::vector<std::complex<double>> xData;
+    GatherComplexVector(xRealView, xImagView, n, xData);
+
+    std::complex<double> alpha(alphaReal, alphaImag);
+    cblas_zscal(static_cast<int>(n),
+                reinterpret_cast<const void*>(&alpha),
+                xData.data(), 1);
+
+    ScatterComplexVector(xData, n, xRealView, xImagView);
+    return S_OK;
 }
+
+
 
 HRESULT __stdcall CBLAS::ZScalReal(LONG n, DOUBLE alphaReal, SAFEARRAY** xReal, SAFEARRAY** xImag, LONG incX)
 {
-    IgnoreUnused(n, alphaReal, xReal, xImag, incX);
-    return E_NOTIMPL;
+    if (n < 0) {
+        return ParameterError(L"n", L"must be non-negative.");
+    }
+    HRESULT hr = EnsureArrayPointer(xReal, L"xReal");
+    if (FAILED(hr)) return hr;
+    hr = EnsureArrayPointer(xImag, L"xImag");
+    if (FAILED(hr)) return hr;
+    if (n == 0) {
+        return S_OK;
+    }
+    if (incX == 0) {
+        return SetComError(L"incX must not be zero.", E_INVALIDARG);
+    }
+
+    VectorView xRealView;
+    hr = PrepareVectorView(*xReal, n, incX, L"xReal", xRealView);
+    if (FAILED(hr)) return hr;
+    VectorView xImagView;
+    hr = PrepareVectorView(*xImag, n, incX, L"xImag", xImagView);
+    if (FAILED(hr)) return hr;
+    hr = ValidateComplexVectorPair(xRealView, xImagView, n, L"x");
+    if (FAILED(hr)) return hr;
+
+    if (incX < (std::numeric_limits<int>::min)() || incX > (std::numeric_limits<int>::max)()) {
+        return SetComError(L"incX is out of supported range.", E_INVALIDARG);
+    }
+
+    std::vector<std::complex<double>> xData;
+    GatherComplexVector(xRealView, xImagView, n, xData);
+
+    cblas_zdscal(static_cast<int>(n), alphaReal, xData.data(), 1);
+
+    ScatterComplexVector(xData, n, xRealView, xImagView);
+    return S_OK;
 }
+
+
 
 HRESULT __stdcall CBLAS::ZCopy(LONG n, SAFEARRAY* xReal, SAFEARRAY* xImag, LONG incX, SAFEARRAY** yReal, SAFEARRAY** yImag, LONG incY)
 {
-    IgnoreUnused(n, xReal, xImag, incX, yReal, yImag, incY);
-    return E_NOTIMPL;
+    if (n < 0) {
+        return ParameterError(L"n", L"must be non-negative.");
+    }
+    HRESULT hr = EnsureArrayPointer(yReal, L"yReal");
+    if (FAILED(hr)) return hr;
+    hr = EnsureArrayPointer(yImag, L"yImag");
+    if (FAILED(hr)) return hr;
+    if (n == 0) {
+        return S_OK;
+    }
+    if (incX == 0 || incY == 0) {
+        return SetComError(L"Increments must not be zero.", E_INVALIDARG);
+    }
+
+    VectorView xRealView;
+    hr = PrepareVectorView(xReal, n, incX, L"xReal", xRealView);
+    if (FAILED(hr)) return hr;
+    VectorView xImagView;
+    hr = PrepareVectorView(xImag, n, incX, L"xImag", xImagView);
+    if (FAILED(hr)) return hr;
+    hr = ValidateComplexVectorPair(xRealView, xImagView, n, L"x");
+    if (FAILED(hr)) return hr;
+
+    VectorView yRealView;
+    hr = PrepareVectorView(*yReal, n, incY, L"yReal", yRealView);
+    if (FAILED(hr)) return hr;
+    VectorView yImagView;
+    hr = PrepareVectorView(*yImag, n, incY, L"yImag", yImagView);
+    if (FAILED(hr)) return hr;
+    hr = ValidateComplexVectorPair(yRealView, yImagView, n, L"y");
+    if (FAILED(hr)) return hr;
+
+    if (incX < (std::numeric_limits<int>::min)() || incX > (std::numeric_limits<int>::max)()) {
+        return SetComError(L"incX is out of supported range.", E_INVALIDARG);
+    }
+    if (incY < (std::numeric_limits<int>::min)() || incY > (std::numeric_limits<int>::max)()) {
+        return SetComError(L"incY is out of supported range.", E_INVALIDARG);
+    }
+
+    std::vector<std::complex<double>> xData;
+    GatherComplexVector(xRealView, xImagView, n, xData);
+
+    std::vector<std::complex<double>> yData(static_cast<size_t>(n));
+    cblas_zcopy(static_cast<int>(n), xData.data(), 1, yData.data(), 1);
+
+    ScatterComplexVector(yData, n, yRealView, yImagView);
+    return S_OK;
 }
+
+
 
 HRESULT __stdcall CBLAS::ZSwap(LONG n, SAFEARRAY** xReal, SAFEARRAY** xImag, LONG incX, SAFEARRAY** yReal, SAFEARRAY** yImag, LONG incY)
 {
