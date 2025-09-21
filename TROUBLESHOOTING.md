@@ -19,3 +19,13 @@ OpenBLAS hermitian kernels (zher, zher2, zhemv, etc.) only touch the triangle yo
 ### Actions
 - Call CompleteHermitianMatrix after the BLAS operation to mirror the updated triangle and zero the imaginary diagonal before scattering back.
 - When adding new Hermitian routines, double-check that the output SAFEARRAY carries both triangles and real-valued diagonal entries.
+
+
+## Symmetric complex rank-k updates need mirroring
+
+OpenBLAS zsyrk/zsyr2k only touches the triangle indicated by CBLAS_UPLO, so the other half of the SAFEARRAY keeps pre-update values and managed tests fail.
+
+### Actions
+
+- Call CompleteSymmetricMatrix immediately after the BLAS call so both triangles stay in sync before scattering back to the SAFEARRAY.
+- Ensure the output matrix is converted back to column-major order before scatter to match how C# double[,] data is laid out.
