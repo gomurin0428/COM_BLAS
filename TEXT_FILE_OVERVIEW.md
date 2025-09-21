@@ -29,7 +29,7 @@
 - `COM_BLAS_UnitTest_Managed/COM_BLAS_UnitTest_Managed.csproj` : ユニットテスト プロジェクトファイル。
 - `COM_BLAS_UnitTest_Managed/ComplexBlasTests.Additional.cs` : 追加複素数 BLAS テスト。
 - `COM_BLAS_UnitTest_Managed/MSTestSettings.cs` : MSTest 設定。
-- `COM_BLAS_UnitTest_Managed/Test1.cs` : メインの MSTest スイート。RowMajor 矩形行列の GEMM/ZGEMM など動作確認ケースを保持。
+- `COM_BLAS_UnitTest_Managed/Test1.cs` : メインの MSTest スイート。RowMajor/ColumnMajor 両対応で Syrk/Syr2k/Trmm/Trsm/Gemv などのデータ経路を再検証する追加テストを含む。
 - `IBLASComplex_new_api_definitions.md` : 複素数系新 API の検討メモ。SAFEARRAY の行列軸前提と Gather/Scatter 方針を記載。
 - `Installer/COM_BLAS.Installer.wixproj` : WiX インストーラー プロジェクト。
 - `Installer/Package.wxs` : WiX インストール スクリプト。

@@ -779,6 +779,95 @@ internal partial interface IBLASComplex
         }
 
         [TestMethod]
+        public void SyrkSimple_RowMajorRectangular()
+        {
+            using var handle = new BlasHandle();
+            var blas = handle.Instance;
+
+            double[,] A = new double[,]
+            {
+                { 1.0, 2.0, 3.0 },
+                { 4.0, 5.0, 6.0 },
+            };
+            double[,] C = new double[,]
+            {
+                { 1.0, 0.5 },
+                { 0.5, 2.0 },
+            };
+            double[,] original = (double[,])C.Clone();
+
+            double alpha = 0.75;
+            double beta = 0.25;
+
+            blas.SyrkSimple(A, ref C, alpha, beta, BlasLayout.RowMajor, BlasUplo.Upper, BlasTranspose.NoTrans);
+
+            int n = C.GetLength(0);
+            int k = A.GetLength(1);
+            for (int i = 0; i < n; i++)
+            {
+                for (int j = i; j < n; j++)
+                {
+                    double sum = 0.0;
+                    for (int p = 0; p < k; p++)
+                    {
+                        sum += A[i, p] * A[j, p];
+                    }
+                    double expected = alpha * sum + beta * original[i, j];
+                    AssertScalarEqual(C[i, j], expected);
+                    if (i != j)
+                    {
+                        AssertScalarEqual(C[j, i], original[j, i]);
+                    }
+                }
+            }
+        }
+
+        [TestMethod]
+        public void SyrkSimple_ColumnMajorRectangular()
+        {
+            using var handle = new BlasHandle();
+            var blas = handle.Instance;
+
+            double[,] A = new double[,]
+            {
+                { 1.0, 2.0, 3.0 },
+                { 4.0, 5.0, 6.0 },
+            };
+            double[,] C = new double[,]
+            {
+                { 1.0, 0.5 },
+                { 0.5, 2.0 },
+            };
+            double[,] original = (double[,])C.Clone();
+
+            double alpha = 0.75;
+            double beta = 0.25;
+
+            blas.SyrkSimple(A, ref C, alpha, beta, BlasLayout.ColumnMajor, BlasUplo.Upper, BlasTranspose.NoTrans);
+
+            int n = C.GetLength(0);
+            int k = A.GetLength(1);
+            for (int i = 0; i < n; i++)
+            {
+                for (int j = i; j < n; j++)
+                {
+                    double sum = 0.0;
+                    for (int p = 0; p < k; p++)
+                    {
+                        sum += A[i, p] * A[j, p];
+                    }
+                    double expected = alpha * sum + beta * original[i, j];
+                    AssertScalarEqual(C[i, j], expected);
+                    if (i != j)
+                    {
+                        AssertScalarEqual(C[j, i], original[j, i]);
+                    }
+                }
+            }
+        }
+
+
+        [TestMethod]
         public void Syr2kSimple_ScalarCase()
         {
             using var handle = new BlasHandle();
@@ -797,6 +886,105 @@ internal partial interface IBLASComplex
         }
 
         [TestMethod]
+        public void Syr2kSimple_RowMajorRectangular()
+        {
+            using var handle = new BlasHandle();
+            var blas = handle.Instance;
+
+            double[,] A = new double[,]
+            {
+                { 1.0, 2.0, 3.0 },
+                { 4.0, 5.0, 6.0 },
+            };
+            double[,] B = new double[,]
+            {
+                { -1.0, 0.5, 2.0 },
+                { 0.0, 1.5, -0.5 },
+            };
+            double[,] C = new double[,]
+            {
+                { 2.0, -1.0 },
+                { -1.0, 3.0 },
+            };
+            double[,] original = (double[,])C.Clone();
+
+            double alpha = 0.6;
+            double beta = -0.2;
+
+            blas.Syr2kSimple(A, B, ref C, alpha, beta, BlasLayout.RowMajor, BlasUplo.Upper, BlasTranspose.NoTrans);
+
+            int n = C.GetLength(0);
+            int k = A.GetLength(1);
+            for (int i = 0; i < n; i++)
+            {
+                for (int j = i; j < n; j++)
+                {
+                    double sum = 0.0;
+                    for (int p = 0; p < k; p++)
+                    {
+                        sum += A[i, p] * B[j, p] + B[i, p] * A[j, p];
+                    }
+                    double expected = alpha * sum + beta * original[i, j];
+                    AssertScalarEqual(C[i, j], expected);
+                    if (i != j)
+                    {
+                        AssertScalarEqual(C[j, i], original[j, i]);
+                    }
+                }
+            }
+        }
+
+        [TestMethod]
+        public void Syr2kSimple_ColumnMajorRectangular()
+        {
+            using var handle = new BlasHandle();
+            var blas = handle.Instance;
+
+            double[,] A = new double[,]
+            {
+                { 1.0, 2.0, 3.0 },
+                { 4.0, 5.0, 6.0 },
+            };
+            double[,] B = new double[,]
+            {
+                { -1.0, 0.5, 2.0 },
+                { 0.0, 1.5, -0.5 },
+            };
+            double[,] C = new double[,]
+            {
+                { 2.0, -1.0 },
+                { -1.0, 3.0 },
+            };
+            double[,] original = (double[,])C.Clone();
+
+            double alpha = 0.6;
+            double beta = -0.2;
+
+            blas.Syr2kSimple(A, B, ref C, alpha, beta, BlasLayout.ColumnMajor, BlasUplo.Upper, BlasTranspose.NoTrans);
+
+            int n = C.GetLength(0);
+            int k = A.GetLength(1);
+            for (int i = 0; i < n; i++)
+            {
+                for (int j = i; j < n; j++)
+                {
+                    double sum = 0.0;
+                    for (int p = 0; p < k; p++)
+                    {
+                        sum += A[i, p] * B[j, p] + B[i, p] * A[j, p];
+                    }
+                    double expected = alpha * sum + beta * original[i, j];
+                    AssertScalarEqual(C[i, j], expected);
+                    if (i != j)
+                    {
+                        AssertScalarEqual(C[j, i], original[j, i]);
+                    }
+                }
+            }
+        }
+
+
+        [TestMethod]
         public void TrmmSimple_ScalarCase()
         {
             using var handle = new BlasHandle();
@@ -810,6 +998,83 @@ internal partial interface IBLASComplex
             double expected = 1.5 * 2.0 * 5.0;
             AssertScalarEqual(B[0, 0], expected);
         }
+
+        [TestMethod]
+        public void TrmmSimple_RowMajorRectangular()
+        {
+            using var handle = new BlasHandle();
+            var blas = handle.Instance;
+
+            double[,] A = new double[,]
+            {
+                { 1.0, 2.0 },
+                { 0.0, 3.0 },
+            };
+            double[,] B = new double[,]
+            {
+                { 1.0, 0.0 },
+                { 2.0, 1.0 },
+            };
+            double[,] original = (double[,])B.Clone();
+            double alpha = 2.0;
+
+            blas.TrmmSimple(A, ref B, alpha, BlasLayout.RowMajor, BlasSide.Left, BlasUplo.Upper, BlasTranspose.NoTrans, BlasDiag.NonUnit);
+
+            int m = B.GetLength(0);
+            int n = B.GetLength(1);
+            for (int i = 0; i < m; i++)
+            {
+                for (int j = 0; j < n; j++)
+                {
+                    double sum = 0.0;
+                    for (int k = 0; k < m; k++)
+                    {
+                        sum += A[i, k] * original[k, j];
+                    }
+                    double expected = alpha * sum;
+                    AssertScalarEqual(B[i, j], expected);
+                }
+            }
+        }
+
+        [TestMethod]
+        public void TrmmSimple_ColumnMajorRectangular()
+        {
+            using var handle = new BlasHandle();
+            var blas = handle.Instance;
+
+            double[,] A = new double[,]
+            {
+                { 1.0, 2.0 },
+                { 0.0, 3.0 },
+            };
+            double[,] B = new double[,]
+            {
+                { 1.0, 0.0 },
+                { 2.0, 1.0 },
+            };
+            double[,] original = (double[,])B.Clone();
+            double alpha = 2.0;
+
+            blas.TrmmSimple(A, ref B, alpha, BlasLayout.ColumnMajor, BlasSide.Left, BlasUplo.Upper, BlasTranspose.NoTrans, BlasDiag.NonUnit);
+
+            int m = B.GetLength(0);
+            int n = B.GetLength(1);
+            for (int i = 0; i < m; i++)
+            {
+                for (int j = 0; j < n; j++)
+                {
+                    double sum = 0.0;
+                    for (int k = 0; k < m; k++)
+                    {
+                        sum += A[i, k] * original[k, j];
+                    }
+                    double expected = alpha * sum;
+                    AssertScalarEqual(B[i, j], expected);
+                }
+            }
+        }
+
 
         [TestMethod]
         public void TrsmSimple_ScalarCase()
@@ -827,6 +1092,117 @@ internal partial interface IBLASComplex
         }
 
         [TestMethod]
+        public void TrsmSimple_RowMajorRectangular()
+        {
+            using var handle = new BlasHandle();
+            var blas = handle.Instance;
+
+            double[,] A = new double[,]
+            {
+                { 1.0, 2.0 },
+                { 0.0, 3.0 },
+            };
+            double[,] B = new double[,]
+            {
+                { 1.0, 0.0 },
+                { 2.0, 1.0 },
+            };
+            double[,] original = (double[,])B.Clone();
+            double alpha = 1.5;
+
+            blas.TrsmSimple(A, ref B, alpha, BlasLayout.RowMajor, BlasSide.Left, BlasUplo.Upper, BlasTranspose.NoTrans, BlasDiag.NonUnit);
+
+            int m = B.GetLength(0);
+            int n = B.GetLength(1);
+            double[,] rhs = new double[m, n];
+            for (int i = 0; i < m; i++)
+            {
+                for (int j = 0; j < n; j++)
+                {
+                    rhs[i, j] = alpha * original[i, j];
+                }
+            }
+
+            double[,] expected = new double[m, n];
+            for (int j = 0; j < n; j++)
+            {
+                for (int i = m - 1; i >= 0; i--)
+                {
+                    double sum = rhs[i, j];
+                    for (int k = i + 1; k < m; k++)
+                    {
+                        sum -= A[i, k] * expected[k, j];
+                    }
+                    expected[i, j] = sum / A[i, i];
+                }
+            }
+
+            for (int i = 0; i < m; i++)
+            {
+                for (int j = 0; j < n; j++)
+                {
+                    AssertScalarEqual(B[i, j], expected[i, j]);
+                }
+            }
+        }
+
+        [TestMethod]
+        public void TrsmSimple_ColumnMajorRectangular()
+        {
+            using var handle = new BlasHandle();
+            var blas = handle.Instance;
+
+            double[,] A = new double[,]
+            {
+                { 1.0, 2.0 },
+                { 0.0, 3.0 },
+            };
+            double[,] B = new double[,]
+            {
+                { 1.0, 0.0 },
+                { 2.0, 1.0 },
+            };
+            double[,] original = (double[,])B.Clone();
+            double alpha = 1.5;
+
+            blas.TrsmSimple(A, ref B, alpha, BlasLayout.ColumnMajor, BlasSide.Left, BlasUplo.Upper, BlasTranspose.NoTrans, BlasDiag.NonUnit);
+
+            int m = B.GetLength(0);
+            int n = B.GetLength(1);
+            double[,] rhs = new double[m, n];
+            for (int i = 0; i < m; i++)
+            {
+                for (int j = 0; j < n; j++)
+                {
+                    rhs[i, j] = alpha * original[i, j];
+                }
+            }
+
+            double[,] expected = new double[m, n];
+            for (int j = 0; j < n; j++)
+            {
+                for (int i = m - 1; i >= 0; i--)
+                {
+                    double sum = rhs[i, j];
+                    for (int k = i + 1; k < m; k++)
+                    {
+                        sum -= A[i, k] * expected[k, j];
+                    }
+                    expected[i, j] = sum / A[i, i];
+                }
+            }
+
+            for (int i = 0; i < m; i++)
+            {
+                for (int j = 0; j < n; j++)
+                {
+                    AssertScalarEqual(B[i, j], expected[i, j]);
+                }
+            }
+        }
+
+
+        [TestMethod]
         public void GemvSimple_ScalarCase()
         {
             using var handle = new BlasHandle();
@@ -842,6 +1218,73 @@ internal partial interface IBLASComplex
             double expected = 1.2 * 3.0 * 4.0 + 0.4 * original;
             AssertScalarEqual(y[0], expected);
         }
+
+        [TestMethod]
+        public void GemvSimple_RowMajorRectangular()
+        {
+            using var handle = new BlasHandle();
+            var blas = handle.Instance;
+
+            double[,] A = new double[,]
+            {
+                { 1.0, 2.0, 3.0 },
+                { 4.0, 5.0, 6.0 },
+            };
+            double[] x = new double[] { 0.5, -1.0, 2.0 };
+            double[] y = new double[] { 1.0, -2.0 };
+            double[] original = (double[])y.Clone();
+            double alpha = 1.2;
+            double beta = 0.4;
+
+            blas.GemvSimple(A, x, ref y, alpha, beta, BlasLayout.RowMajor, BlasTranspose.NoTrans);
+
+            int m = y.Length;
+            int n = x.Length;
+            for (int i = 0; i < m; i++)
+            {
+                double sum = 0.0;
+                for (int j = 0; j < n; j++)
+                {
+                    sum += A[i, j] * x[j];
+                }
+                double expected = alpha * sum + beta * original[i];
+                AssertScalarEqual(y[i], expected);
+            }
+        }
+
+        [TestMethod]
+        public void GemvSimple_ColumnMajorRectangular()
+        {
+            using var handle = new BlasHandle();
+            var blas = handle.Instance;
+
+            double[,] A = new double[,]
+            {
+                { 1.0, 2.0, 3.0 },
+                { 4.0, 5.0, 6.0 },
+            };
+            double[] x = new double[] { 0.5, -1.0, 2.0 };
+            double[] y = new double[] { 1.0, -2.0 };
+            double[] original = (double[])y.Clone();
+            double alpha = 1.2;
+            double beta = 0.4;
+
+            blas.GemvSimple(A, x, ref y, alpha, beta, BlasLayout.ColumnMajor, BlasTranspose.NoTrans);
+
+            int m = y.Length;
+            int n = x.Length;
+            for (int i = 0; i < m; i++)
+            {
+                double sum = 0.0;
+                for (int j = 0; j < n; j++)
+                {
+                    sum += A[i, j] * x[j];
+                }
+                double expected = alpha * sum + beta * original[i];
+                AssertScalarEqual(y[i], expected);
+            }
+        }
+
 
         [TestMethod]
         public void GerSimple_ScalarCase()
