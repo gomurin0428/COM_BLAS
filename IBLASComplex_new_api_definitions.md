@@ -1,7 +1,7 @@
 # IBLASComplex 新規API定義メモ
 
 ## 背景
-- 2025-09-21 時点で `IBLASComplex` が公開しているのは `ZGemmSimple` / `ZGemvSimple` / `ZAxpy` / `ZDot` の4件のみで、実数用 `IBLAS` が提供する残りの BLAS Level 1/2/3 に対応する複素数版が欠落している。
+- 2025-09-21 時点で `IBLASComplex` が公開しているのは `ZGemmSimple` / `ZGemvSimple` / `ZAxpy` / `ZDot` / `ZSymmSimple` / `ZHemmSimple` / `ZSyrkSimple` の7件のみで、実数用 `IBLAS` が提供する残りの BLAS Level 1/2/3 に対応する複素数版が欠落している。
 - OpenBLAS には該当する `cblas_z*` 系関数が存在し、既に `GatherComplex*` / `ScatterComplex*` といった SAFEARRAY ヘルパーが揃っているため、追加のフォールバック実装は不要。
 
 ## 設計方針
