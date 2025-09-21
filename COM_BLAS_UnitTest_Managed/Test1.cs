@@ -805,6 +805,41 @@ internal partial interface IBLASComplex
         }
 
         [TestMethod]
+        public void GemmSimple_SupportsNonZeroLowerBounds()
+        {
+            using var handle = new BlasHandle();
+            var blas = handle.Instance;
+
+            int rowsA = 2;
+            int colsA = 3;
+            int rowsB = 3;
+            int colsB = 2;
+
+            var A = (double[,])Array.CreateInstance(typeof(double), new[] { rowsA, colsA }, new[] { 1, -2 });
+            var B = (double[,])Array.CreateInstance(typeof(double), new[] { rowsB, colsB }, new[] { -1, 4 });
+            var C = (double[,])Array.CreateInstance(typeof(double), new[] { rowsA, colsB }, new[] { 3, 7 });
+
+            FillMatrix(A, (i, j) => 1.0 + 0.25 * i - 0.1 * j);
+            FillMatrix(B, (i, j) => -0.5 + 0.2 * (i + j));
+            FillMatrix(C, (i, j) => 0.05 * (i - 2 * j));
+
+            double alpha = 1.3;
+            double beta = -0.6;
+
+            var aZero = CloneToZeroBased(A);
+            var bZero = CloneToZeroBased(B);
+            var originalCZero = CloneToZeroBased(C);
+
+            double[,] expected = ComputeGemmExpected(aZero, bZero, originalCZero, alpha, beta, BlasTranspose.NoTrans, BlasTranspose.NoTrans);
+
+            blas.GemmSimple(A, B, ref C, alpha, beta, BlasLayout.RowMajor, BlasTranspose.NoTrans, BlasTranspose.NoTrans);
+
+            var actual = CloneToZeroBased(C);
+            AssertMatrixNearlyEqual(expected, actual);
+        }
+
+
+        [TestMethod]
         public void GemmSimple_AllowsEmptyMatrices()
         {
             using var handle = new BlasHandle();
@@ -2053,6 +2088,38 @@ internal partial interface IBLASComplex
         }
 
 
+        private static double[,] CloneToZeroBased(double[,] source)
+        {
+            int rows = source.GetLength(0);
+            int cols = source.GetLength(1);
+            int rowLower = source.GetLowerBound(0);
+            int colLower = source.GetLowerBound(1);
+            var result = new double[rows, cols];
+            for (int i = 0; i < rows; i++)
+            {
+                for (int j = 0; j < cols; j++)
+                {
+                    result[i, j] = source[rowLower + i, colLower + j];
+                }
+            }
+            return result;
+        }
+
+        private static void FillMatrix(double[,] matrix, Func<int, int, double> generator)
+        {
+            int rowLower = matrix.GetLowerBound(0);
+            int rowUpper = matrix.GetUpperBound(0);
+            int colLower = matrix.GetLowerBound(1);
+            int colUpper = matrix.GetUpperBound(1);
+            for (int i = rowLower; i <= rowUpper; i++)
+            {
+                for (int j = colLower; j <= colUpper; j++)
+                {
+                    matrix[i, j] = generator(i, j);
+                }
+            }
+        }
+
         private static double[,] CreateMatrix(int rows, int cols, Func<int, int, double> generator)
         {
             var result = new double[rows, cols];
@@ -2352,6 +2419,37 @@ internal partial interface IBLASComplex
             Complex[] expected = ComputeZGemvExpected(aReal, aImag, xReal, xImag, originalYReal, originalYImag, new Complex(alphaReal, alphaImag), new Complex(betaReal, betaImag));
             AssertComplexVectorEqual(expected, yReal, yImag);
         }
+
+        [TestMethod]
+        public void ZGemvSimple_ColumnMajorMatchesExpected()
+        {
+            using var handle = new ComplexBlasHandle();
+            var blas = handle.Instance;
+
+            double[,] aReal = CreateMatrix(3, 2, (i, j) => 0.2 * (i + 1) - 0.1 * (j + 1));
+            double[,] aImag = CreateMatrix(3, 2, (i, j) => 0.05 * (2 * i + j + 1));
+            double[] xReal = new double[] { -0.3, 0.45 };
+            double[] xImag = new double[] { 0.25, -0.1 };
+            double[] yReal = new double[] { 0.4, 0.6, -0.2 };
+            double[] yImag = new double[] { -0.2, 0.15, 0.35 };
+            double[] originalYReal = (double[])yReal.Clone();
+            double[] originalYImag = (double[])yImag.Clone();
+
+            double alphaReal = 1.1;
+            double alphaImag = -0.6;
+            double betaReal = 0.3;
+            double betaImag = 0.5;
+
+            double[] yRealWorking = (double[])yReal.Clone();
+            double[] yImagWorking = (double[])yImag.Clone();
+
+            Complex[] expected = ComputeZGemvExpected(aReal, aImag, xReal, xImag, originalYReal, originalYImag, new Complex(alphaReal, alphaImag), new Complex(betaReal, betaImag));
+
+            blas.ZGemvSimple(aReal, aImag, xReal, xImag, ref yRealWorking, ref yImagWorking, alphaReal, alphaImag, betaReal, betaImag, BlasLayout.ColumnMajor, BlasTranspose.NoTrans);
+
+            AssertComplexVectorEqual(expected, yRealWorking, yImagWorking);
+        }
+
 
         [TestMethod]
         public void ZAxpy_AddsScaledVector()

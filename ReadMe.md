@@ -10,7 +10,7 @@ COM_BLAS は BLAS の各ルーチンを COM として公開していますが、
 
 ## シンプル API の設計原則
 - 2 次元 `SAFEARRAY(double)` は既定で RowMajor とみなし、.NET の `double[,]` と 1:1 で往復できる形を標準とする。
-- 第 1 軸を行、第 2 軸を列として `PrepareMatrixView` で正規化しているため、SAFEARRAY の下限値設定があっても `[row, column]` の対応が崩れません。
+- SAFEARRAY の次元 1 (COM API 上の index=1) は列、次元 2 は行に相当するが、`PrepareMatrixView` が `[row, column]` の順へ正規化するため .NET 側では従来どおり `matrix[row, column]` で扱える。SAFEARRAY の下限値が 0 以外でも正しく補正される。
 - 戻り値で結果配列を返し、呼び出し側でサイズを事前確保しなくても良いようにする (必要に応じてインプレース版を追加)。
 - スカラー係数は 0/1 を既定値とし、指定しない限り単純な演算に限定する。
 - 失敗時の HRESULT は既存の `Ensure*` 系ユーティリティを再利用して既存仕様と揃える。
@@ -196,7 +196,7 @@ interface IBLASComplex : IDispatch {
 
 以下は VBA (Excel) から COM_BLAS コンポーネントの動作を確認するための例です。64bit Office を想定しています。
 
-`b
+```vb
 Sub TestComBlas()
     ' COM コンポーネントを生成
     Dim blas As Object

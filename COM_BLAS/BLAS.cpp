@@ -171,27 +171,29 @@ namespace {
         if (sa->cDims != 2) {
             return ParameterError(name, L"SAFEARRAY must be two-dimensional.");
         }
-        LONG lb1 = 0, ub1 = -1, lb2 = 0, ub2 = -1;
-        hr = SafeArrayGetLBound(sa, 1, &lb1);
+        // SAFEARRAY の次元 1 (index=1) は行、次元 2 は列に対応する。
+        LONG lbRow = 0, ubRow = -1;
+        LONG lbCol = 0, ubCol = -1;
+        hr = SafeArrayGetLBound(sa, 1, &lbRow);
         if (FAILED(hr)) return hr;
-        hr = SafeArrayGetUBound(sa, 1, &ub1);
+        hr = SafeArrayGetUBound(sa, 1, &ubRow);
         if (FAILED(hr)) return hr;
-        hr = SafeArrayGetLBound(sa, 2, &lb2);
+        hr = SafeArrayGetLBound(sa, 2, &lbCol);
         if (FAILED(hr)) return hr;
-        hr = SafeArrayGetUBound(sa, 2, &ub2);
+        hr = SafeArrayGetUBound(sa, 2, &ubCol);
         if (FAILED(hr)) return hr;
-        if (ub1 < lb1) {
+        if (ubRow < lbRow) {
             view.rows = 0;
         } else {
-            view.rows = static_cast<size_t>(static_cast<long long>(ub1) - static_cast<long long>(lb1) + 1);
+            view.rows = static_cast<size_t>(static_cast<long long>(ubRow) - static_cast<long long>(lbRow) + 1);
         }
-        if (ub2 < lb2) {
+        if (ubCol < lbCol) {
             view.cols = 0;
         } else {
-            view.cols = static_cast<size_t>(static_cast<long long>(ub2) - static_cast<long long>(lb2) + 1);
+            view.cols = static_cast<size_t>(static_cast<long long>(ubCol) - static_cast<long long>(lbCol) + 1);
         }
-        view.lboundRow = lb1;
-        view.lboundCol = lb2;
+        view.lboundRow = lbRow;
+        view.lboundCol = lbCol;
         hr = view.accessor.Attach(sa);
         if (FAILED(hr)) return hr;
         if ((view.rows * view.cols) != 0 && !view.accessor.ptr) {
