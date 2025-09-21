@@ -303,6 +303,36 @@ namespace {
         }
     }
 
+    void ConvertColumnMajorToRowMajor(size_t rows, size_t cols, std::vector<std::complex<double>>& data) {
+        if (rows <= 1 || cols <= 1) {
+            return;
+        }
+        std::vector<std::complex<double>> buffer(data.size());
+        for (size_t col = 0; col < cols; ++col) {
+            for (size_t row = 0; row < rows; ++row) {
+                const size_t src = col * rows + row;
+                const size_t dst = row * cols + col;
+                buffer[dst] = data[src];
+            }
+        }
+        data.swap(buffer);
+    }
+
+    void ConvertRowMajorToColumnMajor(size_t rows, size_t cols, std::vector<std::complex<double>>& data) {
+        if (rows <= 1 || cols <= 1) {
+            return;
+        }
+        std::vector<std::complex<double>> buffer(data.size());
+        for (size_t row = 0; row < rows; ++row) {
+            for (size_t col = 0; col < cols; ++col) {
+                const size_t src = row * cols + col;
+                const size_t dst = col * rows + row;
+                buffer[dst] = data[src];
+            }
+        }
+        data.swap(buffer);
+    }
+
     void GatherComplexVector(const VectorView& realView, const VectorView& imagView, LONG n, std::vector<std::complex<double>>& out) {
         if (n < 0) {
             out.clear();
@@ -1670,6 +1700,12 @@ HRESULT __stdcall CBLAS::ZGemmSimple(SAFEARRAY* AReal, SAFEARRAY* AImag, SAFEARR
     GatherComplexMatrix(bRealView, bImagView, bData);
     GatherComplexMatrix(cRealView, cImagView, cData);
 
+    if (order == CblasRowMajor) {
+        ConvertColumnMajorToRowMajor(aRealView.rows, aRealView.cols, aData);
+        ConvertColumnMajorToRowMajor(bRealView.rows, bRealView.cols, bData);
+        ConvertColumnMajorToRowMajor(cRealView.rows, cRealView.cols, cData);
+    }
+
     std::complex<double> alpha(alphaReal, alphaImag);
     std::complex<double> beta(betaReal, betaImag);
     std::complex<double> dummy(0.0, 0.0);
@@ -1684,6 +1720,10 @@ HRESULT __stdcall CBLAS::ZGemmSimple(SAFEARRAY* AReal, SAFEARRAY* AImag, SAFEARR
                     bPtr, ldb,
                     reinterpret_cast<const void*>(&beta),
                     cPtr, ldc);
+    }
+
+    if (order == CblasRowMajor) {
+        ConvertRowMajorToColumnMajor(cRealView.rows, cRealView.cols, cData);
     }
 
     ScatterComplexMatrix(cData, cRealView, cImagView);
@@ -1756,6 +1796,9 @@ HRESULT __stdcall CBLAS::ZGemvSimple(SAFEARRAY* AReal, SAFEARRAY* AImag, SAFEARR
     std::vector<std::complex<double>> xData;
     std::vector<std::complex<double>> yData;
     GatherComplexMatrix(aRealView, aImagView, aData);
+    if (order == CblasRowMajor) {
+        ConvertColumnMajorToRowMajor(aRealView.rows, aRealView.cols, aData);
+    }
     GatherComplexVector(xRealView, xImagView, lenX, xData);
     GatherComplexVector(yRealView, yImagView, lenY, yData);
 

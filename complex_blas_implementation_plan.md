@@ -30,6 +30,7 @@
    - [x] `ValidateComplexMatrixPair` で実部・虚部のサイズ整合を検証。
    - [x] `GatherComplexMatrix` で `std::vector<std::complex<double>>` を取得、`ScatterComplexMatrix` で結果を書き戻し。
    - [x] `cblas_zgemm` を `alpha`/`beta` を `std::complex<double>` から `void*` にキャストして呼び出し。
+   - [x] RowMajor 指定時は SAFEARRAY (列メジャー) を行メジャーに並べ替えてから `cblas_zgemm` を呼び出し、結果を再び列メジャーに戻す変換を追加。
 2. `CBLAS::ZGemvSimple` - 完了 (2025-09-20)
    - [x] 行列サイズから期待するベクトル長を計算し、`PrepareVectorView` を使用。
    - [x] `GatherComplexVector` で入力を連続メモリにコピーし `cblas_zgemv` を実行。
@@ -37,18 +38,21 @@
 3. `CBLAS::ZAxpy` - 完了 (2025-09-20)
    - [x] `incX/incY` の範囲チェックを行い、`GatherComplexVector` で一時バッファを作成。
    - [x] `cblas_zaxpy` の結果で yReal/yImag SAFEARRAY を更新。
-4. `CBLAS::ZDot`
-   - `resultReal/resultImag` の null チェックと初期化を実施。
-   - `conjugate` パラメータで `cblas_zdotc_sub` (`VARIANT_TRUE`) と `cblas_zdotu_sub` (`VARIANT_FALSE`) を切り替え。
-   - 結果を `DOUBLE*` へ展開。
-5. すべてのメソッドで `FAILED(hr)` チェックと `SetComError` を統一し、例外パスを整理。
+4. `CBLAS::ZDot` - 完了 (2025-09-20)
+   - [x] `resultReal/resultImag` の null チェックと初期化を実施。
+   - [x] `conjugate` パラメータで `cblas_zdotc_sub` (`VARIANT_TRUE`) と `cblas_zdotu_sub` (`VARIANT_FALSE`) を切り替え。
+   - [x] 結果を `DOUBLE*` へ展開。
+5. すべてのメソッドで `FAILED(hr)` チェックと `SetComError` を統一し、例外パスを整理 - 確認済み (2025-09-20)。
 
 ## 4. ビルド設定・依存関係
-1. `COM_BLAS/COM_BLAS.vcxproj`
-   - 複素数対応で追加したソースをプロジェクトに含める。
-   - `AdditionalDependencies` に `libopenblas.lib` (または `openblas.lib`) が設定されているか確認。
-2. x86/x64 双方で `cblas_z*` シンボルが解決するかリンクを検証。
-3. `pch.h` に `<complex>` を追加してプリコンパイルヘッダーを更新。
+1. `COM_BLAS/COM_BLAS.vcxproj` - 完了 (2025-09-20)
+   - [x] 複素数対応のソース (`BLAS.cpp` など) が <ClCompile> に含まれていることを確認。
+   - [x] 全構成の `AdditionalDependencies` に `libopenblas.lib` が設定されていることを確認。
+2. x86/x64 双方で `cblas_z*` シンボルが解決する設定を確認 - 完了 (2025-09-20)
+   - [x] 各構成の `LibraryPath` に `$(SolutionDir)\lib` が含まれ、`libopenblas.lib` をリンクすることを確認。
+   - [x] ポストビルドで `libopenblas.dll` を配置する設定を確認。
+3. `pch.h` に `<complex>` を追加 - 完了 (2025-09-20)
+   - [x] `pch.h` に `<complex>` を含めてプリコンパイルヘッダーを更新。
 
 ## 5. テスト戦略
 1. マネージド単体テスト (`COM_BLAS_UnitTest_Managed/Test1.cs`)
