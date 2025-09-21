@@ -744,6 +744,100 @@ internal partial interface IBLASComplex
                 }
             }
         }
+        [TestMethod]
+        public void GemmSimple_ColumnMajorRectangular()
+        {
+            using var handle = new BlasHandle();
+            var blas = handle.Instance;
+
+            double[,] A = CreateMatrix(3, 2, (i, j) => 1.0 + 0.5 * i + 0.25 * j);
+            double[,] B = CreateMatrix(2, 4, (i, j) => -1.0 + 0.3 * (i + 2 * j));
+            double[,] C = CreateMatrix(3, 4, (i, j) => 0.2 * (i - j));
+            double[,] original = (double[,])C.Clone();
+
+            double alpha = 0.75;
+            double beta = -0.4;
+
+            blas.GemmSimple(A, B, ref C, alpha, beta, BlasLayout.ColumnMajor, BlasTranspose.NoTrans, BlasTranspose.NoTrans);
+
+            double[,] expected = ComputeGemmExpected(A, B, original, alpha, beta, BlasTranspose.NoTrans, BlasTranspose.NoTrans);
+            AssertMatrixNearlyEqual(expected, C);
+        }
+
+        [TestMethod]
+        public void GemmSimple_RowMajorWithTransposes()
+        {
+            using var handle = new BlasHandle();
+            var blas = handle.Instance;
+
+            double[,] A = CreateMatrix(4, 2, (i, j) => 0.5 * (i + 1) + 0.25 * (j + 1));
+            double[,] B = CreateMatrix(4, 3, (i, j) => 0.2 * (i + j + 1));
+            double[,] C = CreateMatrix(2, 3, (i, j) => -0.3 + 0.05 * (i * 3 + j));
+            double[,] original = (double[,])C.Clone();
+
+            double alpha = 1.25;
+            double beta = 0.6;
+
+            blas.GemmSimple(A, B, ref C, alpha, beta, BlasLayout.RowMajor, BlasTranspose.Trans, BlasTranspose.NoTrans);
+
+            double[,] expected = ComputeGemmExpected(A, B, original, alpha, beta, BlasTranspose.Trans, BlasTranspose.NoTrans);
+            AssertMatrixNearlyEqual(expected, C);
+        }
+
+        [TestMethod]
+        public void GemmSimple_ColumnMajorWithTransposes()
+        {
+            using var handle = new BlasHandle();
+            var blas = handle.Instance;
+
+            double[,] A = CreateMatrix(4, 3, (i, j) => 0.15 * (i + j + 1));
+            double[,] B = CreateMatrix(5, 4, (i, j) => 0.05 * (2 * i + j + 1));
+            double[,] C = CreateMatrix(3, 5, (i, j) => 0.1 * (i - 2 * j));
+            double[,] original = (double[,])C.Clone();
+
+            double alpha = -0.9;
+            double beta = 0.3;
+
+            blas.GemmSimple(A, B, ref C, alpha, beta, BlasLayout.ColumnMajor, BlasTranspose.Trans, BlasTranspose.Trans);
+
+            double[,] expected = ComputeGemmExpected(A, B, original, alpha, beta, BlasTranspose.Trans, BlasTranspose.Trans);
+            AssertMatrixNearlyEqual(expected, C);
+        }
+
+        [TestMethod]
+        public void GemmSimple_AllowsEmptyMatrices()
+        {
+            using var handle = new BlasHandle();
+            var blas = handle.Instance;
+
+            double[,] A = new double[0, 3];
+            double[,] B = CreateMatrix(3, 2, (i, j) => 0.1 * (i + j + 1));
+            double[,] C = new double[0, 2];
+
+            blas.GemmSimple(A, B, ref C, 1.0, 1.0, BlasLayout.RowMajor, BlasTranspose.NoTrans, BlasTranspose.NoTrans);
+
+            Assert.AreEqual(0, C.Length);
+        }
+
+        [TestMethod]
+        public void GemmSimple_ColumnMajorScalar()
+        {
+            using var handle = new BlasHandle();
+            var blas = handle.Instance;
+
+            double[,] A = new double[,] { { 2.0 } };
+            double[,] B = new double[,] { { -3.0 } };
+            double[,] C = new double[,] { { 1.5 } };
+            double[,] original = (double[,])C.Clone();
+
+            double alpha = 2.5;
+            double beta = -0.4;
+
+            blas.GemmSimple(A, B, ref C, alpha, beta, BlasLayout.ColumnMajor, BlasTranspose.NoTrans, BlasTranspose.NoTrans);
+
+            double expected = alpha * A[0, 0] * B[0, 0] + beta * original[0, 0];
+            AssertScalarEqual(C[0, 0], expected);
+        }
 
         [TestMethod]
         public void SymmSimple_ScalarCase()
@@ -1958,6 +2052,65 @@ internal partial interface IBLASComplex
             return result;
         }
 
+
+        private static double[,] CreateMatrix(int rows, int cols, Func<int, int, double> generator)
+        {
+            var result = new double[rows, cols];
+            for (int i = 0; i < rows; i++)
+            {
+                for (int j = 0; j < cols; j++)
+                {
+                    result[i, j] = generator(i, j);
+                }
+            }
+            return result;
+        }
+
+        private static void AssertMatrixNearlyEqual(double[,] expected, double[,] actual)
+        {
+            Assert.AreEqual(expected.GetLength(0), actual.GetLength(0));
+            Assert.AreEqual(expected.GetLength(1), actual.GetLength(1));
+            for (int i = 0; i < expected.GetLength(0); i++)
+            {
+                for (int j = 0; j < expected.GetLength(1); j++)
+                {
+                    AssertScalarEqual(actual[i, j], expected[i, j]);
+                }
+            }
+        }
+
+        private static double[,] ComputeGemmExpected(double[,] a, double[,] b, double[,] cOriginal, double alpha, double beta, BlasTranspose transA, BlasTranspose transB)
+        {
+            int m = transA == BlasTranspose.NoTrans ? a.GetLength(0) : a.GetLength(1);
+            int kA = transA == BlasTranspose.NoTrans ? a.GetLength(1) : a.GetLength(0);
+            int n = transB == BlasTranspose.NoTrans ? b.GetLength(1) : b.GetLength(0);
+            int kB = transB == BlasTranspose.NoTrans ? b.GetLength(0) : b.GetLength(1);
+            Assert.AreEqual(kA, kB, "Inner dimensions must match for expected GEMM calculation.");
+            var result = new double[m, n];
+            for (int i = 0; i < m; i++)
+            {
+                for (int j = 0; j < n; j++)
+                {
+                    double sum = 0.0;
+                    for (int kk = 0; kk < kA; kk++)
+                    {
+                        double aVal = GetMatrixElement(a, i, kk, transA);
+                        double bVal = GetMatrixElement(b, kk, j, transB);
+                        sum += aVal * bVal;
+                    }
+                    result[i, j] = alpha * sum + beta * cOriginal[i, j];
+                }
+            }
+            return result;
+        }
+
+        private static double GetMatrixElement(double[,] matrix, int row, int col, BlasTranspose transpose)
+        {
+            return transpose == BlasTranspose.NoTrans
+                ? matrix[row, col]
+                : matrix[col, row];
+        }
+
         private static double[,] Transpose(double[,] matrix)
         {
             int rows = matrix.GetLength(0);
@@ -2320,6 +2473,54 @@ internal partial interface IBLASComplex
         }
 
         [TestMethod]
+        public void ZGemmSimple_ColumnMajorRectangular()
+        {
+            using var handle = new ComplexBlasHandle();
+            var blas = handle.Instance;
+
+            double[,] aReal = CreateMatrix(2, 3, (i, j) => 0.2 * (i + 1) + 0.1 * (j + 1));
+            double[,] aImag = CreateMatrix(2, 3, (i, j) => -0.15 * (i + j + 1));
+            double[,] bReal = CreateMatrix(3, 2, (i, j) => 0.05 * (i + 2 * j + 1));
+            double[,] bImag = CreateMatrix(3, 2, (i, j) => 0.08 * (i - j));
+            double[,] cReal = CreateMatrix(2, 2, (i, j) => -0.1 * (i + 1) + 0.05 * j);
+            double[,] cImag = CreateMatrix(2, 2, (i, j) => 0.07 * (i - j));
+            double[,] originalCReal = (double[,])cReal.Clone();
+            double[,] originalCImag = (double[,])cImag.Clone();
+
+            Complex alpha = new Complex(0.6, -0.4);
+            Complex beta = new Complex(0.3, 0.2);
+
+            blas.ZGemmSimple(aReal, aImag, bReal, bImag, ref cReal, ref cImag, alpha.Real, alpha.Imaginary, beta.Real, beta.Imaginary, BlasLayout.ColumnMajor, BlasTranspose.NoTrans, BlasTranspose.NoTrans);
+
+            Complex[,] expected = ComputeZGemmExpected(aReal, aImag, bReal, bImag, originalCReal, originalCImag, alpha, beta, BlasTranspose.NoTrans, BlasTranspose.NoTrans);
+            AssertComplexMatrixEqual(expected, cReal, cImag);
+        }
+
+        [TestMethod]
+        public void ZGemmSimple_RowMajorWithTransposes()
+        {
+            using var handle = new ComplexBlasHandle();
+            var blas = handle.Instance;
+
+            double[,] aReal = CreateMatrix(4, 2, (i, j) => 0.12 * (i + 1) - 0.05 * (j + 1));
+            double[,] aImag = CreateMatrix(4, 2, (i, j) => 0.07 * (i - j));
+            double[,] bReal = CreateMatrix(5, 4, (i, j) => 0.09 * (i + j + 1));
+            double[,] bImag = CreateMatrix(5, 4, (i, j) => -0.04 * (i - 2 * j));
+            double[,] cReal = CreateMatrix(2, 5, (i, j) => 0.05 * (i + j + 1));
+            double[,] cImag = CreateMatrix(2, 5, (i, j) => -0.03 * (i + 2 * j));
+            double[,] originalCReal = (double[,])cReal.Clone();
+            double[,] originalCImag = (double[,])cImag.Clone();
+
+            Complex alpha = new Complex(-0.5, 0.75);
+            Complex beta = new Complex(0.4, -0.35);
+
+            blas.ZGemmSimple(aReal, aImag, bReal, bImag, ref cReal, ref cImag, alpha.Real, alpha.Imaginary, beta.Real, beta.Imaginary, BlasLayout.RowMajor, BlasTranspose.Trans, BlasTranspose.ConjTrans);
+
+            Complex[,] expected = ComputeZGemmExpected(aReal, aImag, bReal, bImag, originalCReal, originalCImag, alpha, beta, BlasTranspose.Trans, BlasTranspose.ConjTrans);
+            AssertComplexMatrixEqual(expected, cReal, cImag);
+        }
+
+        [TestMethod]
         public void ZGemmSimple_ReturnsInvalidArgWhenComplexAHasMismatchedDimensions()
         {
             using var handle = new ComplexBlasHandle();
@@ -2574,26 +2775,54 @@ internal partial interface IBLASComplex
             }
             return result;
         }
-
-        private static Complex[,] ComputeZGemmExpected(double[,] aReal, double[,] aImag, double[,] bReal, double[,] bImag, double[,] cReal, double[,] cImag, Complex alpha, Complex beta)
+        private static Complex GetComplexElement(Complex[,] matrix, int row, int col, BlasTranspose transpose)
         {
-            var a = ToComplexMatrix(aReal, aImag);
-            var b = ToComplexMatrix(bReal, bImag);
-            var c = ToComplexMatrix(cReal, cImag);
-            int rows = a.GetLength(0);
-            int cols = b.GetLength(1);
-            int shared = a.GetLength(1);
-            var result = new Complex[rows, cols];
+            return transpose switch
+            {
+                BlasTranspose.NoTrans => matrix[row, col],
+                BlasTranspose.Trans => matrix[col, row],
+                BlasTranspose.ConjTrans => Complex.Conjugate(matrix[col, row]),
+                _ => matrix[row, col],
+            };
+        }
+
+        private static double[,] CreateMatrix(int rows, int cols, Func<int, int, double> generator)
+        {
+            var result = new double[rows, cols];
             for (int i = 0; i < rows; i++)
             {
                 for (int j = 0; j < cols; j++)
                 {
+                    result[i, j] = generator(i, j);
+                }
+            }
+            return result;
+        }
+
+        private static Complex[,] ComputeZGemmExpected(double[,] aReal, double[,] aImag, double[,] bReal, double[,] bImag, double[,] cReal, double[,] cImag, Complex alpha, Complex beta, BlasTranspose transA = BlasTranspose.NoTrans, BlasTranspose transB = BlasTranspose.NoTrans)
+        {
+            var a = ToComplexMatrix(aReal, aImag);
+            var b = ToComplexMatrix(bReal, bImag);
+            var c = ToComplexMatrix(cReal, cImag);
+            int m = transA == BlasTranspose.NoTrans ? a.GetLength(0) : a.GetLength(1);
+            int kA = transA == BlasTranspose.NoTrans ? a.GetLength(1) : a.GetLength(0);
+            int n = transB == BlasTranspose.NoTrans ? b.GetLength(1) : b.GetLength(0);
+            int kB = transB == BlasTranspose.NoTrans ? b.GetLength(0) : b.GetLength(1);
+            Assert.AreEqual(kA, kB, "Inner dimensions must match for expected ZGEMM calculation.");
+            var result = new Complex[m, n];
+            for (int i = 0; i < m; i++)
+            {
+                for (int j = 0; j < n; j++)
+                {
                     Complex sum = Complex.Zero;
-                    for (int k = 0; k < shared; k++)
+                    for (int kk = 0; kk < kA; kk++)
                     {
-                        sum += a[i, k] * b[k, j];
+                        Complex aVal = GetComplexElement(a, i, kk, transA);
+                        Complex bVal = GetComplexElement(b, kk, j, transB);
+                        sum += aVal * bVal;
                     }
-                    result[i, j] = alpha * sum + beta * c[i, j];
+                    Complex cVal = c[i, j];
+                    result[i, j] = alpha * sum + beta * cVal;
                 }
             }
             return result;
