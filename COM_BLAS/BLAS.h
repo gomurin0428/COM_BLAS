@@ -1,4 +1,4 @@
-
+﻿
 
 #pragma once
 
@@ -121,7 +121,54 @@ public:
 
     HRESULT __stdcall ZDot(LONG n, SAFEARRAY* xReal, SAFEARRAY* xImag, LONG incX, SAFEARRAY* yReal, SAFEARRAY* yImag, LONG incY, DOUBLE* resultReal, DOUBLE* resultImag, VARIANT_BOOL conjugate) override;
 
+
+    HRESULT __stdcall ZSymmSimple(SAFEARRAY* AReal, SAFEARRAY* AImag, SAFEARRAY* BReal, SAFEARRAY* BImag, SAFEARRAY** CReal, SAFEARRAY** CImag, DOUBLE alphaReal, DOUBLE alphaImag, DOUBLE betaReal, DOUBLE betaImag, BlasLayout layout, BlasSide side, BlasUplo uplo) override;
+
+    HRESULT __stdcall ZHemmSimple(SAFEARRAY* AReal, SAFEARRAY* AImag, SAFEARRAY* BReal, SAFEARRAY* BImag, SAFEARRAY** CReal, SAFEARRAY** CImag, DOUBLE alphaReal, DOUBLE alphaImag, DOUBLE betaReal, DOUBLE betaImag, BlasLayout layout, BlasSide side, BlasUplo uplo) override;
+
+    HRESULT __stdcall ZSyrkSimple(SAFEARRAY* AReal, SAFEARRAY* AImag, SAFEARRAY** CReal, SAFEARRAY** CImag, DOUBLE alphaReal, DOUBLE alphaImag, DOUBLE betaReal, DOUBLE betaImag, BlasLayout layout, BlasUplo uplo, BlasTranspose transA) override;
+
+    HRESULT __stdcall ZSyr2kSimple(SAFEARRAY* AReal, SAFEARRAY* AImag, SAFEARRAY* BReal, SAFEARRAY* BImag, SAFEARRAY** CReal, SAFEARRAY** CImag, DOUBLE alphaReal, DOUBLE alphaImag, DOUBLE betaReal, DOUBLE betaImag, BlasLayout layout, BlasUplo uplo, BlasTranspose trans) override;
+
+    HRESULT __stdcall ZHerkSimple(SAFEARRAY* AReal, SAFEARRAY* AImag, SAFEARRAY** CReal, SAFEARRAY** CImag, DOUBLE alphaReal, DOUBLE betaReal, BlasLayout layout, BlasUplo uplo, BlasTranspose transA) override;
+
+    HRESULT __stdcall ZHerk2kSimple(SAFEARRAY* AReal, SAFEARRAY* AImag, SAFEARRAY* BReal, SAFEARRAY* BImag, SAFEARRAY** CReal, SAFEARRAY** CImag, DOUBLE alphaReal, DOUBLE alphaImag, DOUBLE betaReal, BlasLayout layout, BlasUplo uplo, BlasTranspose transA) override;
+
+    HRESULT __stdcall ZTrmmSimple(SAFEARRAY* AReal, SAFEARRAY* AImag, SAFEARRAY** BReal, SAFEARRAY** BImag, DOUBLE alphaReal, DOUBLE alphaImag, BlasLayout layout, BlasSide side, BlasUplo uplo, BlasTranspose transA, BlasDiag diag) override;
+
+    HRESULT __stdcall ZTrsmSimple(SAFEARRAY* AReal, SAFEARRAY* AImag, SAFEARRAY** BReal, SAFEARRAY** BImag, DOUBLE alphaReal, DOUBLE alphaImag, BlasLayout layout, BlasSide side, BlasUplo uplo, BlasTranspose transA, BlasDiag diag) override;
+
+    HRESULT __stdcall ZGerSimple(SAFEARRAY* xReal, SAFEARRAY* xImag, SAFEARRAY* yReal, SAFEARRAY* yImag, SAFEARRAY** AReal, SAFEARRAY** AImag, DOUBLE alphaReal, DOUBLE alphaImag, BlasLayout layout, VARIANT_BOOL conjugateX) override;
+
+    HRESULT __stdcall ZHemvSimple(SAFEARRAY* AReal, SAFEARRAY* AImag, SAFEARRAY* xReal, SAFEARRAY* xImag, SAFEARRAY** yReal, SAFEARRAY** yImag, DOUBLE alphaReal, DOUBLE alphaImag, DOUBLE betaReal, DOUBLE betaImag, BlasLayout layout, BlasUplo uplo) override;
+
+    HRESULT __stdcall ZHerSimple(SAFEARRAY* xReal, SAFEARRAY* xImag, SAFEARRAY** AReal, SAFEARRAY** AImag, DOUBLE alphaReal, BlasLayout layout, BlasUplo uplo) override;
+
+    HRESULT __stdcall ZHer2Simple(SAFEARRAY* xReal, SAFEARRAY* xImag, SAFEARRAY* yReal, SAFEARRAY* yImag, SAFEARRAY** AReal, SAFEARRAY** AImag, DOUBLE alphaReal, DOUBLE alphaImag, BlasLayout layout, BlasUplo uplo) override;
+
+    HRESULT __stdcall ZTrmvSimple(SAFEARRAY* AReal, SAFEARRAY* AImag, SAFEARRAY** xReal, SAFEARRAY** xImag, BlasLayout layout, BlasUplo uplo, BlasTranspose transA, BlasDiag diag) override;
+
+    HRESULT __stdcall ZTrsvSimple(SAFEARRAY* AReal, SAFEARRAY* AImag, SAFEARRAY** xReal, SAFEARRAY** xImag, BlasLayout layout, BlasUplo uplo, BlasTranspose transA, BlasDiag diag) override;
+
+    HRESULT __stdcall ZNrm2(LONG n, SAFEARRAY* xReal, SAFEARRAY* xImag, LONG incX, DOUBLE* norm) override;
+
+    HRESULT __stdcall ZAsum(LONG n, SAFEARRAY* xReal, SAFEARRAY* xImag, LONG incX, DOUBLE* result) override;
+
+    HRESULT __stdcall ZScal(LONG n, SAFEARRAY** xReal, SAFEARRAY** xImag, LONG incX, DOUBLE alphaReal, DOUBLE alphaImag) override;
+
+    HRESULT __stdcall ZScalReal(LONG n, DOUBLE alphaReal, SAFEARRAY** xReal, SAFEARRAY** xImag, LONG incX) override;
+
+    HRESULT __stdcall ZCopy(LONG n, SAFEARRAY* xReal, SAFEARRAY* xImag, LONG incX, SAFEARRAY** yReal, SAFEARRAY** yImag, LONG incY) override;
+
+    HRESULT __stdcall ZSwap(LONG n, SAFEARRAY** xReal, SAFEARRAY** xImag, LONG incX, SAFEARRAY** yReal, SAFEARRAY** yImag, LONG incY) override;
+
+    HRESULT __stdcall ZIamax(LONG n, SAFEARRAY* xReal, SAFEARRAY* xImag, LONG incX, LONG* index1based) override;
+
+    HRESULT __stdcall ZRot(LONG n, SAFEARRAY** xReal, SAFEARRAY** xImag, LONG incX, SAFEARRAY** yReal, SAFEARRAY** yImag, LONG incY, DOUBLE c, DOUBLE s) override;
+
+    HRESULT __stdcall ZRotg(DOUBLE* aReal, DOUBLE* aImag, DOUBLE* bReal, DOUBLE* bImag, DOUBLE* c, DOUBLE* sReal, DOUBLE* sImag) override;
 };
 
 OBJECT_ENTRY_AUTO(__uuidof(BLAS), CBLAS)
+
 

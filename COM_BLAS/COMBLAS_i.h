@@ -849,6 +849,256 @@ EXTERN_C const IID IID_IBLASComplex;
             /* [out] */ DOUBLE *resultImag,
             /* [defaultvalue][in] */ VARIANT_BOOL conjugate = 0) = 0;
         
+        virtual HRESULT STDMETHODCALLTYPE ZSymmSimple( 
+            /* [in] */ SAFEARRAY * AReal,
+            /* [in] */ SAFEARRAY * AImag,
+            /* [in] */ SAFEARRAY * BReal,
+            /* [in] */ SAFEARRAY * BImag,
+            /* [out][in] */ SAFEARRAY * *CReal,
+            /* [out][in] */ SAFEARRAY * *CImag,
+            /* [defaultvalue][in] */ DOUBLE alphaReal = 1,
+            /* [defaultvalue][in] */ DOUBLE alphaImag = 0,
+            /* [defaultvalue][in] */ DOUBLE betaReal = 0,
+            /* [defaultvalue][in] */ DOUBLE betaImag = 0,
+            /* [defaultvalue][in] */ BlasLayout layout = ColumnMajor,
+            /* [defaultvalue][in] */ BlasSide side = Left,
+            /* [defaultvalue][in] */ BlasUplo uplo = Upper) = 0;
+        
+        virtual HRESULT STDMETHODCALLTYPE ZHemmSimple( 
+            /* [in] */ SAFEARRAY * AReal,
+            /* [in] */ SAFEARRAY * AImag,
+            /* [in] */ SAFEARRAY * BReal,
+            /* [in] */ SAFEARRAY * BImag,
+            /* [out][in] */ SAFEARRAY * *CReal,
+            /* [out][in] */ SAFEARRAY * *CImag,
+            /* [defaultvalue][in] */ DOUBLE alphaReal = 1,
+            /* [defaultvalue][in] */ DOUBLE alphaImag = 0,
+            /* [defaultvalue][in] */ DOUBLE betaReal = 0,
+            /* [defaultvalue][in] */ DOUBLE betaImag = 0,
+            /* [defaultvalue][in] */ BlasLayout layout = ColumnMajor,
+            /* [defaultvalue][in] */ BlasSide side = Left,
+            /* [defaultvalue][in] */ BlasUplo uplo = Upper) = 0;
+        
+        virtual HRESULT STDMETHODCALLTYPE ZSyrkSimple( 
+            /* [in] */ SAFEARRAY * AReal,
+            /* [in] */ SAFEARRAY * AImag,
+            /* [out][in] */ SAFEARRAY * *CReal,
+            /* [out][in] */ SAFEARRAY * *CImag,
+            /* [defaultvalue][in] */ DOUBLE alphaReal = 1,
+            /* [defaultvalue][in] */ DOUBLE alphaImag = 0,
+            /* [defaultvalue][in] */ DOUBLE betaReal = 0,
+            /* [defaultvalue][in] */ DOUBLE betaImag = 0,
+            /* [defaultvalue][in] */ BlasLayout layout = ColumnMajor,
+            /* [defaultvalue][in] */ BlasUplo uplo = Upper,
+            /* [defaultvalue][in] */ BlasTranspose transA = NoTrans) = 0;
+        
+        virtual HRESULT STDMETHODCALLTYPE ZSyr2kSimple( 
+            /* [in] */ SAFEARRAY * AReal,
+            /* [in] */ SAFEARRAY * AImag,
+            /* [in] */ SAFEARRAY * BReal,
+            /* [in] */ SAFEARRAY * BImag,
+            /* [out][in] */ SAFEARRAY * *CReal,
+            /* [out][in] */ SAFEARRAY * *CImag,
+            /* [defaultvalue][in] */ DOUBLE alphaReal = 1,
+            /* [defaultvalue][in] */ DOUBLE alphaImag = 0,
+            /* [defaultvalue][in] */ DOUBLE betaReal = 0,
+            /* [defaultvalue][in] */ DOUBLE betaImag = 0,
+            /* [defaultvalue][in] */ BlasLayout layout = ColumnMajor,
+            /* [defaultvalue][in] */ BlasUplo uplo = Upper,
+            /* [defaultvalue][in] */ BlasTranspose trans = NoTrans) = 0;
+        
+        virtual HRESULT STDMETHODCALLTYPE ZHerkSimple( 
+            /* [in] */ SAFEARRAY * AReal,
+            /* [in] */ SAFEARRAY * AImag,
+            /* [out][in] */ SAFEARRAY * *CReal,
+            /* [out][in] */ SAFEARRAY * *CImag,
+            /* [defaultvalue][in] */ DOUBLE alphaReal = 1,
+            /* [defaultvalue][in] */ DOUBLE betaReal = 0,
+            /* [defaultvalue][in] */ BlasLayout layout = ColumnMajor,
+            /* [defaultvalue][in] */ BlasUplo uplo = Upper,
+            /* [defaultvalue][in] */ BlasTranspose transA = NoTrans) = 0;
+        
+        virtual HRESULT STDMETHODCALLTYPE ZHerk2kSimple( 
+            /* [in] */ SAFEARRAY * AReal,
+            /* [in] */ SAFEARRAY * AImag,
+            /* [in] */ SAFEARRAY * BReal,
+            /* [in] */ SAFEARRAY * BImag,
+            /* [out][in] */ SAFEARRAY * *CReal,
+            /* [out][in] */ SAFEARRAY * *CImag,
+            /* [defaultvalue][in] */ DOUBLE alphaReal = 1,
+            /* [defaultvalue][in] */ DOUBLE alphaImag = 0,
+            /* [defaultvalue][in] */ DOUBLE betaReal = 0,
+            /* [defaultvalue][in] */ BlasLayout layout = ColumnMajor,
+            /* [defaultvalue][in] */ BlasUplo uplo = Upper,
+            /* [defaultvalue][in] */ BlasTranspose transA = NoTrans) = 0;
+        
+        virtual HRESULT STDMETHODCALLTYPE ZTrmmSimple( 
+            /* [in] */ SAFEARRAY * AReal,
+            /* [in] */ SAFEARRAY * AImag,
+            /* [out][in] */ SAFEARRAY * *BReal,
+            /* [out][in] */ SAFEARRAY * *BImag,
+            /* [defaultvalue][in] */ DOUBLE alphaReal = 1,
+            /* [defaultvalue][in] */ DOUBLE alphaImag = 0,
+            /* [defaultvalue][in] */ BlasLayout layout = ColumnMajor,
+            /* [defaultvalue][in] */ BlasSide side = Left,
+            /* [defaultvalue][in] */ BlasUplo uplo = Upper,
+            /* [defaultvalue][in] */ BlasTranspose transA = NoTrans,
+            /* [defaultvalue][in] */ BlasDiag diag = NonUnit) = 0;
+        
+        virtual HRESULT STDMETHODCALLTYPE ZTrsmSimple( 
+            /* [in] */ SAFEARRAY * AReal,
+            /* [in] */ SAFEARRAY * AImag,
+            /* [out][in] */ SAFEARRAY * *BReal,
+            /* [out][in] */ SAFEARRAY * *BImag,
+            /* [defaultvalue][in] */ DOUBLE alphaReal = 1,
+            /* [defaultvalue][in] */ DOUBLE alphaImag = 0,
+            /* [defaultvalue][in] */ BlasLayout layout = ColumnMajor,
+            /* [defaultvalue][in] */ BlasSide side = Left,
+            /* [defaultvalue][in] */ BlasUplo uplo = Upper,
+            /* [defaultvalue][in] */ BlasTranspose transA = NoTrans,
+            /* [defaultvalue][in] */ BlasDiag diag = NonUnit) = 0;
+        
+        virtual HRESULT STDMETHODCALLTYPE ZGerSimple( 
+            /* [in] */ SAFEARRAY * xReal,
+            /* [in] */ SAFEARRAY * xImag,
+            /* [in] */ SAFEARRAY * yReal,
+            /* [in] */ SAFEARRAY * yImag,
+            /* [out][in] */ SAFEARRAY * *AReal,
+            /* [out][in] */ SAFEARRAY * *AImag,
+            /* [defaultvalue][in] */ DOUBLE alphaReal = 1,
+            /* [defaultvalue][in] */ DOUBLE alphaImag = 0,
+            /* [defaultvalue][in] */ BlasLayout layout = ColumnMajor,
+            /* [defaultvalue][in] */ VARIANT_BOOL conjugateX = 0) = 0;
+        
+        virtual HRESULT STDMETHODCALLTYPE ZHemvSimple( 
+            /* [in] */ SAFEARRAY * AReal,
+            /* [in] */ SAFEARRAY * AImag,
+            /* [in] */ SAFEARRAY * xReal,
+            /* [in] */ SAFEARRAY * xImag,
+            /* [out][in] */ SAFEARRAY * *yReal,
+            /* [out][in] */ SAFEARRAY * *yImag,
+            /* [defaultvalue][in] */ DOUBLE alphaReal = 1,
+            /* [defaultvalue][in] */ DOUBLE alphaImag = 0,
+            /* [defaultvalue][in] */ DOUBLE betaReal = 0,
+            /* [defaultvalue][in] */ DOUBLE betaImag = 0,
+            /* [defaultvalue][in] */ BlasLayout layout = ColumnMajor,
+            /* [defaultvalue][in] */ BlasUplo uplo = Upper) = 0;
+        
+        virtual HRESULT STDMETHODCALLTYPE ZHerSimple( 
+            /* [in] */ SAFEARRAY * xReal,
+            /* [in] */ SAFEARRAY * xImag,
+            /* [out][in] */ SAFEARRAY * *AReal,
+            /* [out][in] */ SAFEARRAY * *AImag,
+            /* [defaultvalue][in] */ DOUBLE alphaReal = 1,
+            /* [defaultvalue][in] */ BlasLayout layout = ColumnMajor,
+            /* [defaultvalue][in] */ BlasUplo uplo = Upper) = 0;
+        
+        virtual HRESULT STDMETHODCALLTYPE ZHer2Simple( 
+            /* [in] */ SAFEARRAY * xReal,
+            /* [in] */ SAFEARRAY * xImag,
+            /* [in] */ SAFEARRAY * yReal,
+            /* [in] */ SAFEARRAY * yImag,
+            /* [out][in] */ SAFEARRAY * *AReal,
+            /* [out][in] */ SAFEARRAY * *AImag,
+            /* [defaultvalue][in] */ DOUBLE alphaReal = 1,
+            /* [defaultvalue][in] */ DOUBLE alphaImag = 0,
+            /* [defaultvalue][in] */ BlasLayout layout = ColumnMajor,
+            /* [defaultvalue][in] */ BlasUplo uplo = Upper) = 0;
+        
+        virtual HRESULT STDMETHODCALLTYPE ZTrmvSimple( 
+            /* [in] */ SAFEARRAY * AReal,
+            /* [in] */ SAFEARRAY * AImag,
+            /* [out][in] */ SAFEARRAY * *xReal,
+            /* [out][in] */ SAFEARRAY * *xImag,
+            /* [defaultvalue][in] */ BlasLayout layout = ColumnMajor,
+            /* [defaultvalue][in] */ BlasUplo uplo = Upper,
+            /* [defaultvalue][in] */ BlasTranspose transA = NoTrans,
+            /* [defaultvalue][in] */ BlasDiag diag = NonUnit) = 0;
+        
+        virtual HRESULT STDMETHODCALLTYPE ZTrsvSimple( 
+            /* [in] */ SAFEARRAY * AReal,
+            /* [in] */ SAFEARRAY * AImag,
+            /* [out][in] */ SAFEARRAY * *xReal,
+            /* [out][in] */ SAFEARRAY * *xImag,
+            /* [defaultvalue][in] */ BlasLayout layout = ColumnMajor,
+            /* [defaultvalue][in] */ BlasUplo uplo = Upper,
+            /* [defaultvalue][in] */ BlasTranspose transA = NoTrans,
+            /* [defaultvalue][in] */ BlasDiag diag = NonUnit) = 0;
+        
+        virtual HRESULT STDMETHODCALLTYPE ZNrm2( 
+            /* [in] */ LONG n,
+            /* [in] */ SAFEARRAY * xReal,
+            /* [in] */ SAFEARRAY * xImag,
+            /* [in] */ LONG incX,
+            /* [retval][out] */ DOUBLE *norm) = 0;
+        
+        virtual HRESULT STDMETHODCALLTYPE ZAsum( 
+            /* [in] */ LONG n,
+            /* [in] */ SAFEARRAY * xReal,
+            /* [in] */ SAFEARRAY * xImag,
+            /* [in] */ LONG incX,
+            /* [retval][out] */ DOUBLE *result) = 0;
+        
+        virtual HRESULT STDMETHODCALLTYPE ZScal( 
+            /* [in] */ LONG n,
+            /* [out][in] */ SAFEARRAY * *xReal,
+            /* [out][in] */ SAFEARRAY * *xImag,
+            /* [in] */ LONG incX,
+            /* [defaultvalue][in] */ DOUBLE alphaReal = 1,
+            /* [defaultvalue][in] */ DOUBLE alphaImag = 0) = 0;
+        
+        virtual HRESULT STDMETHODCALLTYPE ZScalReal( 
+            /* [in] */ LONG n,
+            /* [in] */ DOUBLE alphaReal,
+            /* [out][in] */ SAFEARRAY * *xReal,
+            /* [out][in] */ SAFEARRAY * *xImag,
+            /* [in] */ LONG incX) = 0;
+        
+        virtual HRESULT STDMETHODCALLTYPE ZCopy( 
+            /* [in] */ LONG n,
+            /* [in] */ SAFEARRAY * xReal,
+            /* [in] */ SAFEARRAY * xImag,
+            /* [in] */ LONG incX,
+            /* [out][in] */ SAFEARRAY * *yReal,
+            /* [out][in] */ SAFEARRAY * *yImag,
+            /* [in] */ LONG incY) = 0;
+        
+        virtual HRESULT STDMETHODCALLTYPE ZSwap( 
+            /* [in] */ LONG n,
+            /* [out][in] */ SAFEARRAY * *xReal,
+            /* [out][in] */ SAFEARRAY * *xImag,
+            /* [in] */ LONG incX,
+            /* [out][in] */ SAFEARRAY * *yReal,
+            /* [out][in] */ SAFEARRAY * *yImag,
+            /* [in] */ LONG incY) = 0;
+        
+        virtual HRESULT STDMETHODCALLTYPE ZIamax( 
+            /* [in] */ LONG n,
+            /* [in] */ SAFEARRAY * xReal,
+            /* [in] */ SAFEARRAY * xImag,
+            /* [in] */ LONG incX,
+            /* [retval][out] */ LONG *index1based) = 0;
+        
+        virtual HRESULT STDMETHODCALLTYPE ZRot( 
+            /* [in] */ LONG n,
+            /* [out][in] */ SAFEARRAY * *xReal,
+            /* [out][in] */ SAFEARRAY * *xImag,
+            /* [in] */ LONG incX,
+            /* [out][in] */ SAFEARRAY * *yReal,
+            /* [out][in] */ SAFEARRAY * *yImag,
+            /* [in] */ LONG incY,
+            /* [in] */ DOUBLE c,
+            /* [in] */ DOUBLE s) = 0;
+        
+        virtual HRESULT STDMETHODCALLTYPE ZRotg( 
+            /* [out][in] */ DOUBLE *aReal,
+            /* [out][in] */ DOUBLE *aImag,
+            /* [out][in] */ DOUBLE *bReal,
+            /* [out][in] */ DOUBLE *bImag,
+            /* [out] */ DOUBLE *c,
+            /* [out] */ DOUBLE *sReal,
+            /* [out] */ DOUBLE *sImag) = 0;
+        
     };
     
     
@@ -974,6 +1224,302 @@ EXTERN_C const IID IID_IBLASComplex;
             /* [out] */ DOUBLE *resultImag,
             /* [defaultvalue][in] */ VARIANT_BOOL conjugate);
         
+        DECLSPEC_XFGVIRT(IBLASComplex, ZSymmSimple)
+        HRESULT ( STDMETHODCALLTYPE *ZSymmSimple )( 
+            IBLASComplex * This,
+            /* [in] */ SAFEARRAY * AReal,
+            /* [in] */ SAFEARRAY * AImag,
+            /* [in] */ SAFEARRAY * BReal,
+            /* [in] */ SAFEARRAY * BImag,
+            /* [out][in] */ SAFEARRAY * *CReal,
+            /* [out][in] */ SAFEARRAY * *CImag,
+            /* [defaultvalue][in] */ DOUBLE alphaReal,
+            /* [defaultvalue][in] */ DOUBLE alphaImag,
+            /* [defaultvalue][in] */ DOUBLE betaReal,
+            /* [defaultvalue][in] */ DOUBLE betaImag,
+            /* [defaultvalue][in] */ BlasLayout layout,
+            /* [defaultvalue][in] */ BlasSide side,
+            /* [defaultvalue][in] */ BlasUplo uplo);
+        
+        DECLSPEC_XFGVIRT(IBLASComplex, ZHemmSimple)
+        HRESULT ( STDMETHODCALLTYPE *ZHemmSimple )( 
+            IBLASComplex * This,
+            /* [in] */ SAFEARRAY * AReal,
+            /* [in] */ SAFEARRAY * AImag,
+            /* [in] */ SAFEARRAY * BReal,
+            /* [in] */ SAFEARRAY * BImag,
+            /* [out][in] */ SAFEARRAY * *CReal,
+            /* [out][in] */ SAFEARRAY * *CImag,
+            /* [defaultvalue][in] */ DOUBLE alphaReal,
+            /* [defaultvalue][in] */ DOUBLE alphaImag,
+            /* [defaultvalue][in] */ DOUBLE betaReal,
+            /* [defaultvalue][in] */ DOUBLE betaImag,
+            /* [defaultvalue][in] */ BlasLayout layout,
+            /* [defaultvalue][in] */ BlasSide side,
+            /* [defaultvalue][in] */ BlasUplo uplo);
+        
+        DECLSPEC_XFGVIRT(IBLASComplex, ZSyrkSimple)
+        HRESULT ( STDMETHODCALLTYPE *ZSyrkSimple )( 
+            IBLASComplex * This,
+            /* [in] */ SAFEARRAY * AReal,
+            /* [in] */ SAFEARRAY * AImag,
+            /* [out][in] */ SAFEARRAY * *CReal,
+            /* [out][in] */ SAFEARRAY * *CImag,
+            /* [defaultvalue][in] */ DOUBLE alphaReal,
+            /* [defaultvalue][in] */ DOUBLE alphaImag,
+            /* [defaultvalue][in] */ DOUBLE betaReal,
+            /* [defaultvalue][in] */ DOUBLE betaImag,
+            /* [defaultvalue][in] */ BlasLayout layout,
+            /* [defaultvalue][in] */ BlasUplo uplo,
+            /* [defaultvalue][in] */ BlasTranspose transA);
+        
+        DECLSPEC_XFGVIRT(IBLASComplex, ZSyr2kSimple)
+        HRESULT ( STDMETHODCALLTYPE *ZSyr2kSimple )( 
+            IBLASComplex * This,
+            /* [in] */ SAFEARRAY * AReal,
+            /* [in] */ SAFEARRAY * AImag,
+            /* [in] */ SAFEARRAY * BReal,
+            /* [in] */ SAFEARRAY * BImag,
+            /* [out][in] */ SAFEARRAY * *CReal,
+            /* [out][in] */ SAFEARRAY * *CImag,
+            /* [defaultvalue][in] */ DOUBLE alphaReal,
+            /* [defaultvalue][in] */ DOUBLE alphaImag,
+            /* [defaultvalue][in] */ DOUBLE betaReal,
+            /* [defaultvalue][in] */ DOUBLE betaImag,
+            /* [defaultvalue][in] */ BlasLayout layout,
+            /* [defaultvalue][in] */ BlasUplo uplo,
+            /* [defaultvalue][in] */ BlasTranspose trans);
+        
+        DECLSPEC_XFGVIRT(IBLASComplex, ZHerkSimple)
+        HRESULT ( STDMETHODCALLTYPE *ZHerkSimple )( 
+            IBLASComplex * This,
+            /* [in] */ SAFEARRAY * AReal,
+            /* [in] */ SAFEARRAY * AImag,
+            /* [out][in] */ SAFEARRAY * *CReal,
+            /* [out][in] */ SAFEARRAY * *CImag,
+            /* [defaultvalue][in] */ DOUBLE alphaReal,
+            /* [defaultvalue][in] */ DOUBLE betaReal,
+            /* [defaultvalue][in] */ BlasLayout layout,
+            /* [defaultvalue][in] */ BlasUplo uplo,
+            /* [defaultvalue][in] */ BlasTranspose transA);
+        
+        DECLSPEC_XFGVIRT(IBLASComplex, ZHerk2kSimple)
+        HRESULT ( STDMETHODCALLTYPE *ZHerk2kSimple )( 
+            IBLASComplex * This,
+            /* [in] */ SAFEARRAY * AReal,
+            /* [in] */ SAFEARRAY * AImag,
+            /* [in] */ SAFEARRAY * BReal,
+            /* [in] */ SAFEARRAY * BImag,
+            /* [out][in] */ SAFEARRAY * *CReal,
+            /* [out][in] */ SAFEARRAY * *CImag,
+            /* [defaultvalue][in] */ DOUBLE alphaReal,
+            /* [defaultvalue][in] */ DOUBLE alphaImag,
+            /* [defaultvalue][in] */ DOUBLE betaReal,
+            /* [defaultvalue][in] */ BlasLayout layout,
+            /* [defaultvalue][in] */ BlasUplo uplo,
+            /* [defaultvalue][in] */ BlasTranspose transA);
+        
+        DECLSPEC_XFGVIRT(IBLASComplex, ZTrmmSimple)
+        HRESULT ( STDMETHODCALLTYPE *ZTrmmSimple )( 
+            IBLASComplex * This,
+            /* [in] */ SAFEARRAY * AReal,
+            /* [in] */ SAFEARRAY * AImag,
+            /* [out][in] */ SAFEARRAY * *BReal,
+            /* [out][in] */ SAFEARRAY * *BImag,
+            /* [defaultvalue][in] */ DOUBLE alphaReal,
+            /* [defaultvalue][in] */ DOUBLE alphaImag,
+            /* [defaultvalue][in] */ BlasLayout layout,
+            /* [defaultvalue][in] */ BlasSide side,
+            /* [defaultvalue][in] */ BlasUplo uplo,
+            /* [defaultvalue][in] */ BlasTranspose transA,
+            /* [defaultvalue][in] */ BlasDiag diag);
+        
+        DECLSPEC_XFGVIRT(IBLASComplex, ZTrsmSimple)
+        HRESULT ( STDMETHODCALLTYPE *ZTrsmSimple )( 
+            IBLASComplex * This,
+            /* [in] */ SAFEARRAY * AReal,
+            /* [in] */ SAFEARRAY * AImag,
+            /* [out][in] */ SAFEARRAY * *BReal,
+            /* [out][in] */ SAFEARRAY * *BImag,
+            /* [defaultvalue][in] */ DOUBLE alphaReal,
+            /* [defaultvalue][in] */ DOUBLE alphaImag,
+            /* [defaultvalue][in] */ BlasLayout layout,
+            /* [defaultvalue][in] */ BlasSide side,
+            /* [defaultvalue][in] */ BlasUplo uplo,
+            /* [defaultvalue][in] */ BlasTranspose transA,
+            /* [defaultvalue][in] */ BlasDiag diag);
+        
+        DECLSPEC_XFGVIRT(IBLASComplex, ZGerSimple)
+        HRESULT ( STDMETHODCALLTYPE *ZGerSimple )( 
+            IBLASComplex * This,
+            /* [in] */ SAFEARRAY * xReal,
+            /* [in] */ SAFEARRAY * xImag,
+            /* [in] */ SAFEARRAY * yReal,
+            /* [in] */ SAFEARRAY * yImag,
+            /* [out][in] */ SAFEARRAY * *AReal,
+            /* [out][in] */ SAFEARRAY * *AImag,
+            /* [defaultvalue][in] */ DOUBLE alphaReal,
+            /* [defaultvalue][in] */ DOUBLE alphaImag,
+            /* [defaultvalue][in] */ BlasLayout layout,
+            /* [defaultvalue][in] */ VARIANT_BOOL conjugateX);
+        
+        DECLSPEC_XFGVIRT(IBLASComplex, ZHemvSimple)
+        HRESULT ( STDMETHODCALLTYPE *ZHemvSimple )( 
+            IBLASComplex * This,
+            /* [in] */ SAFEARRAY * AReal,
+            /* [in] */ SAFEARRAY * AImag,
+            /* [in] */ SAFEARRAY * xReal,
+            /* [in] */ SAFEARRAY * xImag,
+            /* [out][in] */ SAFEARRAY * *yReal,
+            /* [out][in] */ SAFEARRAY * *yImag,
+            /* [defaultvalue][in] */ DOUBLE alphaReal,
+            /* [defaultvalue][in] */ DOUBLE alphaImag,
+            /* [defaultvalue][in] */ DOUBLE betaReal,
+            /* [defaultvalue][in] */ DOUBLE betaImag,
+            /* [defaultvalue][in] */ BlasLayout layout,
+            /* [defaultvalue][in] */ BlasUplo uplo);
+        
+        DECLSPEC_XFGVIRT(IBLASComplex, ZHerSimple)
+        HRESULT ( STDMETHODCALLTYPE *ZHerSimple )( 
+            IBLASComplex * This,
+            /* [in] */ SAFEARRAY * xReal,
+            /* [in] */ SAFEARRAY * xImag,
+            /* [out][in] */ SAFEARRAY * *AReal,
+            /* [out][in] */ SAFEARRAY * *AImag,
+            /* [defaultvalue][in] */ DOUBLE alphaReal,
+            /* [defaultvalue][in] */ BlasLayout layout,
+            /* [defaultvalue][in] */ BlasUplo uplo);
+        
+        DECLSPEC_XFGVIRT(IBLASComplex, ZHer2Simple)
+        HRESULT ( STDMETHODCALLTYPE *ZHer2Simple )( 
+            IBLASComplex * This,
+            /* [in] */ SAFEARRAY * xReal,
+            /* [in] */ SAFEARRAY * xImag,
+            /* [in] */ SAFEARRAY * yReal,
+            /* [in] */ SAFEARRAY * yImag,
+            /* [out][in] */ SAFEARRAY * *AReal,
+            /* [out][in] */ SAFEARRAY * *AImag,
+            /* [defaultvalue][in] */ DOUBLE alphaReal,
+            /* [defaultvalue][in] */ DOUBLE alphaImag,
+            /* [defaultvalue][in] */ BlasLayout layout,
+            /* [defaultvalue][in] */ BlasUplo uplo);
+        
+        DECLSPEC_XFGVIRT(IBLASComplex, ZTrmvSimple)
+        HRESULT ( STDMETHODCALLTYPE *ZTrmvSimple )( 
+            IBLASComplex * This,
+            /* [in] */ SAFEARRAY * AReal,
+            /* [in] */ SAFEARRAY * AImag,
+            /* [out][in] */ SAFEARRAY * *xReal,
+            /* [out][in] */ SAFEARRAY * *xImag,
+            /* [defaultvalue][in] */ BlasLayout layout,
+            /* [defaultvalue][in] */ BlasUplo uplo,
+            /* [defaultvalue][in] */ BlasTranspose transA,
+            /* [defaultvalue][in] */ BlasDiag diag);
+        
+        DECLSPEC_XFGVIRT(IBLASComplex, ZTrsvSimple)
+        HRESULT ( STDMETHODCALLTYPE *ZTrsvSimple )( 
+            IBLASComplex * This,
+            /* [in] */ SAFEARRAY * AReal,
+            /* [in] */ SAFEARRAY * AImag,
+            /* [out][in] */ SAFEARRAY * *xReal,
+            /* [out][in] */ SAFEARRAY * *xImag,
+            /* [defaultvalue][in] */ BlasLayout layout,
+            /* [defaultvalue][in] */ BlasUplo uplo,
+            /* [defaultvalue][in] */ BlasTranspose transA,
+            /* [defaultvalue][in] */ BlasDiag diag);
+        
+        DECLSPEC_XFGVIRT(IBLASComplex, ZNrm2)
+        HRESULT ( STDMETHODCALLTYPE *ZNrm2 )( 
+            IBLASComplex * This,
+            /* [in] */ LONG n,
+            /* [in] */ SAFEARRAY * xReal,
+            /* [in] */ SAFEARRAY * xImag,
+            /* [in] */ LONG incX,
+            /* [retval][out] */ DOUBLE *norm);
+        
+        DECLSPEC_XFGVIRT(IBLASComplex, ZAsum)
+        HRESULT ( STDMETHODCALLTYPE *ZAsum )( 
+            IBLASComplex * This,
+            /* [in] */ LONG n,
+            /* [in] */ SAFEARRAY * xReal,
+            /* [in] */ SAFEARRAY * xImag,
+            /* [in] */ LONG incX,
+            /* [retval][out] */ DOUBLE *result);
+        
+        DECLSPEC_XFGVIRT(IBLASComplex, ZScal)
+        HRESULT ( STDMETHODCALLTYPE *ZScal )( 
+            IBLASComplex * This,
+            /* [in] */ LONG n,
+            /* [out][in] */ SAFEARRAY * *xReal,
+            /* [out][in] */ SAFEARRAY * *xImag,
+            /* [in] */ LONG incX,
+            /* [defaultvalue][in] */ DOUBLE alphaReal,
+            /* [defaultvalue][in] */ DOUBLE alphaImag);
+        
+        DECLSPEC_XFGVIRT(IBLASComplex, ZScalReal)
+        HRESULT ( STDMETHODCALLTYPE *ZScalReal )( 
+            IBLASComplex * This,
+            /* [in] */ LONG n,
+            /* [in] */ DOUBLE alphaReal,
+            /* [out][in] */ SAFEARRAY * *xReal,
+            /* [out][in] */ SAFEARRAY * *xImag,
+            /* [in] */ LONG incX);
+        
+        DECLSPEC_XFGVIRT(IBLASComplex, ZCopy)
+        HRESULT ( STDMETHODCALLTYPE *ZCopy )( 
+            IBLASComplex * This,
+            /* [in] */ LONG n,
+            /* [in] */ SAFEARRAY * xReal,
+            /* [in] */ SAFEARRAY * xImag,
+            /* [in] */ LONG incX,
+            /* [out][in] */ SAFEARRAY * *yReal,
+            /* [out][in] */ SAFEARRAY * *yImag,
+            /* [in] */ LONG incY);
+        
+        DECLSPEC_XFGVIRT(IBLASComplex, ZSwap)
+        HRESULT ( STDMETHODCALLTYPE *ZSwap )( 
+            IBLASComplex * This,
+            /* [in] */ LONG n,
+            /* [out][in] */ SAFEARRAY * *xReal,
+            /* [out][in] */ SAFEARRAY * *xImag,
+            /* [in] */ LONG incX,
+            /* [out][in] */ SAFEARRAY * *yReal,
+            /* [out][in] */ SAFEARRAY * *yImag,
+            /* [in] */ LONG incY);
+        
+        DECLSPEC_XFGVIRT(IBLASComplex, ZIamax)
+        HRESULT ( STDMETHODCALLTYPE *ZIamax )( 
+            IBLASComplex * This,
+            /* [in] */ LONG n,
+            /* [in] */ SAFEARRAY * xReal,
+            /* [in] */ SAFEARRAY * xImag,
+            /* [in] */ LONG incX,
+            /* [retval][out] */ LONG *index1based);
+        
+        DECLSPEC_XFGVIRT(IBLASComplex, ZRot)
+        HRESULT ( STDMETHODCALLTYPE *ZRot )( 
+            IBLASComplex * This,
+            /* [in] */ LONG n,
+            /* [out][in] */ SAFEARRAY * *xReal,
+            /* [out][in] */ SAFEARRAY * *xImag,
+            /* [in] */ LONG incX,
+            /* [out][in] */ SAFEARRAY * *yReal,
+            /* [out][in] */ SAFEARRAY * *yImag,
+            /* [in] */ LONG incY,
+            /* [in] */ DOUBLE c,
+            /* [in] */ DOUBLE s);
+        
+        DECLSPEC_XFGVIRT(IBLASComplex, ZRotg)
+        HRESULT ( STDMETHODCALLTYPE *ZRotg )( 
+            IBLASComplex * This,
+            /* [out][in] */ DOUBLE *aReal,
+            /* [out][in] */ DOUBLE *aImag,
+            /* [out][in] */ DOUBLE *bReal,
+            /* [out][in] */ DOUBLE *bImag,
+            /* [out] */ DOUBLE *c,
+            /* [out] */ DOUBLE *sReal,
+            /* [out] */ DOUBLE *sImag);
+        
         END_INTERFACE
     } IBLASComplexVtbl;
 
@@ -1021,6 +1567,75 @@ EXTERN_C const IID IID_IBLASComplex;
 
 #define IBLASComplex_ZDot(This,n,xReal,xImag,incX,yReal,yImag,incY,resultReal,resultImag,conjugate)	\
     ( (This)->lpVtbl -> ZDot(This,n,xReal,xImag,incX,yReal,yImag,incY,resultReal,resultImag,conjugate) ) 
+
+#define IBLASComplex_ZSymmSimple(This,AReal,AImag,BReal,BImag,CReal,CImag,alphaReal,alphaImag,betaReal,betaImag,layout,side,uplo)	\
+    ( (This)->lpVtbl -> ZSymmSimple(This,AReal,AImag,BReal,BImag,CReal,CImag,alphaReal,alphaImag,betaReal,betaImag,layout,side,uplo) ) 
+
+#define IBLASComplex_ZHemmSimple(This,AReal,AImag,BReal,BImag,CReal,CImag,alphaReal,alphaImag,betaReal,betaImag,layout,side,uplo)	\
+    ( (This)->lpVtbl -> ZHemmSimple(This,AReal,AImag,BReal,BImag,CReal,CImag,alphaReal,alphaImag,betaReal,betaImag,layout,side,uplo) ) 
+
+#define IBLASComplex_ZSyrkSimple(This,AReal,AImag,CReal,CImag,alphaReal,alphaImag,betaReal,betaImag,layout,uplo,transA)	\
+    ( (This)->lpVtbl -> ZSyrkSimple(This,AReal,AImag,CReal,CImag,alphaReal,alphaImag,betaReal,betaImag,layout,uplo,transA) ) 
+
+#define IBLASComplex_ZSyr2kSimple(This,AReal,AImag,BReal,BImag,CReal,CImag,alphaReal,alphaImag,betaReal,betaImag,layout,uplo,trans)	\
+    ( (This)->lpVtbl -> ZSyr2kSimple(This,AReal,AImag,BReal,BImag,CReal,CImag,alphaReal,alphaImag,betaReal,betaImag,layout,uplo,trans) ) 
+
+#define IBLASComplex_ZHerkSimple(This,AReal,AImag,CReal,CImag,alphaReal,betaReal,layout,uplo,transA)	\
+    ( (This)->lpVtbl -> ZHerkSimple(This,AReal,AImag,CReal,CImag,alphaReal,betaReal,layout,uplo,transA) ) 
+
+#define IBLASComplex_ZHerk2kSimple(This,AReal,AImag,BReal,BImag,CReal,CImag,alphaReal,alphaImag,betaReal,layout,uplo,transA)	\
+    ( (This)->lpVtbl -> ZHerk2kSimple(This,AReal,AImag,BReal,BImag,CReal,CImag,alphaReal,alphaImag,betaReal,layout,uplo,transA) ) 
+
+#define IBLASComplex_ZTrmmSimple(This,AReal,AImag,BReal,BImag,alphaReal,alphaImag,layout,side,uplo,transA,diag)	\
+    ( (This)->lpVtbl -> ZTrmmSimple(This,AReal,AImag,BReal,BImag,alphaReal,alphaImag,layout,side,uplo,transA,diag) ) 
+
+#define IBLASComplex_ZTrsmSimple(This,AReal,AImag,BReal,BImag,alphaReal,alphaImag,layout,side,uplo,transA,diag)	\
+    ( (This)->lpVtbl -> ZTrsmSimple(This,AReal,AImag,BReal,BImag,alphaReal,alphaImag,layout,side,uplo,transA,diag) ) 
+
+#define IBLASComplex_ZGerSimple(This,xReal,xImag,yReal,yImag,AReal,AImag,alphaReal,alphaImag,layout,conjugateX)	\
+    ( (This)->lpVtbl -> ZGerSimple(This,xReal,xImag,yReal,yImag,AReal,AImag,alphaReal,alphaImag,layout,conjugateX) ) 
+
+#define IBLASComplex_ZHemvSimple(This,AReal,AImag,xReal,xImag,yReal,yImag,alphaReal,alphaImag,betaReal,betaImag,layout,uplo)	\
+    ( (This)->lpVtbl -> ZHemvSimple(This,AReal,AImag,xReal,xImag,yReal,yImag,alphaReal,alphaImag,betaReal,betaImag,layout,uplo) ) 
+
+#define IBLASComplex_ZHerSimple(This,xReal,xImag,AReal,AImag,alphaReal,layout,uplo)	\
+    ( (This)->lpVtbl -> ZHerSimple(This,xReal,xImag,AReal,AImag,alphaReal,layout,uplo) ) 
+
+#define IBLASComplex_ZHer2Simple(This,xReal,xImag,yReal,yImag,AReal,AImag,alphaReal,alphaImag,layout,uplo)	\
+    ( (This)->lpVtbl -> ZHer2Simple(This,xReal,xImag,yReal,yImag,AReal,AImag,alphaReal,alphaImag,layout,uplo) ) 
+
+#define IBLASComplex_ZTrmvSimple(This,AReal,AImag,xReal,xImag,layout,uplo,transA,diag)	\
+    ( (This)->lpVtbl -> ZTrmvSimple(This,AReal,AImag,xReal,xImag,layout,uplo,transA,diag) ) 
+
+#define IBLASComplex_ZTrsvSimple(This,AReal,AImag,xReal,xImag,layout,uplo,transA,diag)	\
+    ( (This)->lpVtbl -> ZTrsvSimple(This,AReal,AImag,xReal,xImag,layout,uplo,transA,diag) ) 
+
+#define IBLASComplex_ZNrm2(This,n,xReal,xImag,incX,norm)	\
+    ( (This)->lpVtbl -> ZNrm2(This,n,xReal,xImag,incX,norm) ) 
+
+#define IBLASComplex_ZAsum(This,n,xReal,xImag,incX,result)	\
+    ( (This)->lpVtbl -> ZAsum(This,n,xReal,xImag,incX,result) ) 
+
+#define IBLASComplex_ZScal(This,n,xReal,xImag,incX,alphaReal,alphaImag)	\
+    ( (This)->lpVtbl -> ZScal(This,n,xReal,xImag,incX,alphaReal,alphaImag) ) 
+
+#define IBLASComplex_ZScalReal(This,n,alphaReal,xReal,xImag,incX)	\
+    ( (This)->lpVtbl -> ZScalReal(This,n,alphaReal,xReal,xImag,incX) ) 
+
+#define IBLASComplex_ZCopy(This,n,xReal,xImag,incX,yReal,yImag,incY)	\
+    ( (This)->lpVtbl -> ZCopy(This,n,xReal,xImag,incX,yReal,yImag,incY) ) 
+
+#define IBLASComplex_ZSwap(This,n,xReal,xImag,incX,yReal,yImag,incY)	\
+    ( (This)->lpVtbl -> ZSwap(This,n,xReal,xImag,incX,yReal,yImag,incY) ) 
+
+#define IBLASComplex_ZIamax(This,n,xReal,xImag,incX,index1based)	\
+    ( (This)->lpVtbl -> ZIamax(This,n,xReal,xImag,incX,index1based) ) 
+
+#define IBLASComplex_ZRot(This,n,xReal,xImag,incX,yReal,yImag,incY,c,s)	\
+    ( (This)->lpVtbl -> ZRot(This,n,xReal,xImag,incX,yReal,yImag,incY,c,s) ) 
+
+#define IBLASComplex_ZRotg(This,aReal,aImag,bReal,bImag,c,sReal,sImag)	\
+    ( (This)->lpVtbl -> ZRotg(This,aReal,aImag,bReal,bImag,c,sReal,sImag) ) 
 
 #endif /* COBJMACROS */
 

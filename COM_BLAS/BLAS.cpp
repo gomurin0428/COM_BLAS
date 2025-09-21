@@ -100,6 +100,8 @@ namespace {
     bool FitsInInt64(size_t v) noexcept {
         return v <= static_cast<size_t>((std::numeric_limits<long long>::max)());
     }
+    template <typename... Args>
+    void IgnoreUnused(Args&&...) noexcept {}
 
     HRESULT ParameterError(const wchar_t* name, const wchar_t* message, HRESULT hr = E_INVALIDARG) noexcept {
         std::wostringstream oss;
@@ -1946,4 +1948,143 @@ HRESULT __stdcall CBLAS::ZDot(LONG n, SAFEARRAY* xReal, SAFEARRAY* xImag, LONG i
 
 
 
+
+
+HRESULT __stdcall CBLAS::ZSymmSimple(SAFEARRAY* AReal, SAFEARRAY* AImag, SAFEARRAY* BReal, SAFEARRAY* BImag, SAFEARRAY** CReal, SAFEARRAY** CImag, DOUBLE alphaReal, DOUBLE alphaImag, DOUBLE betaReal, DOUBLE betaImag, BlasLayout layout, BlasSide side, BlasUplo uplo)
+{
+    IgnoreUnused(AReal, AImag, BReal, BImag, CReal, CImag, alphaReal, alphaImag, betaReal, betaImag, layout, side, uplo);
+    return E_NOTIMPL;
+}
+
+HRESULT __stdcall CBLAS::ZHemmSimple(SAFEARRAY* AReal, SAFEARRAY* AImag, SAFEARRAY* BReal, SAFEARRAY* BImag, SAFEARRAY** CReal, SAFEARRAY** CImag, DOUBLE alphaReal, DOUBLE alphaImag, DOUBLE betaReal, DOUBLE betaImag, BlasLayout layout, BlasSide side, BlasUplo uplo)
+{
+    IgnoreUnused(AReal, AImag, BReal, BImag, CReal, CImag, alphaReal, alphaImag, betaReal, betaImag, layout, side, uplo);
+    return E_NOTIMPL;
+}
+
+HRESULT __stdcall CBLAS::ZSyrkSimple(SAFEARRAY* AReal, SAFEARRAY* AImag, SAFEARRAY** CReal, SAFEARRAY** CImag, DOUBLE alphaReal, DOUBLE alphaImag, DOUBLE betaReal, DOUBLE betaImag, BlasLayout layout, BlasUplo uplo, BlasTranspose transA)
+{
+    IgnoreUnused(AReal, AImag, CReal, CImag, alphaReal, alphaImag, betaReal, betaImag, layout, uplo, transA);
+    return E_NOTIMPL;
+}
+
+HRESULT __stdcall CBLAS::ZSyr2kSimple(SAFEARRAY* AReal, SAFEARRAY* AImag, SAFEARRAY* BReal, SAFEARRAY* BImag, SAFEARRAY** CReal, SAFEARRAY** CImag, DOUBLE alphaReal, DOUBLE alphaImag, DOUBLE betaReal, DOUBLE betaImag, BlasLayout layout, BlasUplo uplo, BlasTranspose trans)
+{
+    IgnoreUnused(AReal, AImag, BReal, BImag, CReal, CImag, alphaReal, alphaImag, betaReal, betaImag, layout, uplo, trans);
+    return E_NOTIMPL;
+}
+
+HRESULT __stdcall CBLAS::ZHerkSimple(SAFEARRAY* AReal, SAFEARRAY* AImag, SAFEARRAY** CReal, SAFEARRAY** CImag, DOUBLE alphaReal, DOUBLE betaReal, BlasLayout layout, BlasUplo uplo, BlasTranspose transA)
+{
+    IgnoreUnused(AReal, AImag, CReal, CImag, alphaReal, betaReal, layout, uplo, transA);
+    return E_NOTIMPL;
+}
+
+HRESULT __stdcall CBLAS::ZHerk2kSimple(SAFEARRAY* AReal, SAFEARRAY* AImag, SAFEARRAY* BReal, SAFEARRAY* BImag, SAFEARRAY** CReal, SAFEARRAY** CImag, DOUBLE alphaReal, DOUBLE alphaImag, DOUBLE betaReal, BlasLayout layout, BlasUplo uplo, BlasTranspose transA)
+{
+    IgnoreUnused(AReal, AImag, BReal, BImag, CReal, CImag, alphaReal, alphaImag, betaReal, layout, uplo, transA);
+    return E_NOTIMPL;
+}
+
+HRESULT __stdcall CBLAS::ZTrmmSimple(SAFEARRAY* AReal, SAFEARRAY* AImag, SAFEARRAY** BReal, SAFEARRAY** BImag, DOUBLE alphaReal, DOUBLE alphaImag, BlasLayout layout, BlasSide side, BlasUplo uplo, BlasTranspose transA, BlasDiag diag)
+{
+    IgnoreUnused(AReal, AImag, BReal, BImag, alphaReal, alphaImag, layout, side, uplo, transA, diag);
+    return E_NOTIMPL;
+}
+
+HRESULT __stdcall CBLAS::ZTrsmSimple(SAFEARRAY* AReal, SAFEARRAY* AImag, SAFEARRAY** BReal, SAFEARRAY** BImag, DOUBLE alphaReal, DOUBLE alphaImag, BlasLayout layout, BlasSide side, BlasUplo uplo, BlasTranspose transA, BlasDiag diag)
+{
+    IgnoreUnused(AReal, AImag, BReal, BImag, alphaReal, alphaImag, layout, side, uplo, transA, diag);
+    return E_NOTIMPL;
+}
+
+HRESULT __stdcall CBLAS::ZGerSimple(SAFEARRAY* xReal, SAFEARRAY* xImag, SAFEARRAY* yReal, SAFEARRAY* yImag, SAFEARRAY** AReal, SAFEARRAY** AImag, DOUBLE alphaReal, DOUBLE alphaImag, BlasLayout layout, VARIANT_BOOL conjugateX)
+{
+    IgnoreUnused(xReal, xImag, yReal, yImag, AReal, AImag, alphaReal, alphaImag, layout, conjugateX);
+    return E_NOTIMPL;
+}
+
+HRESULT __stdcall CBLAS::ZHemvSimple(SAFEARRAY* AReal, SAFEARRAY* AImag, SAFEARRAY* xReal, SAFEARRAY* xImag, SAFEARRAY** yReal, SAFEARRAY** yImag, DOUBLE alphaReal, DOUBLE alphaImag, DOUBLE betaReal, DOUBLE betaImag, BlasLayout layout, BlasUplo uplo)
+{
+    IgnoreUnused(AReal, AImag, xReal, xImag, yReal, yImag, alphaReal, alphaImag, betaReal, betaImag, layout, uplo);
+    return E_NOTIMPL;
+}
+
+HRESULT __stdcall CBLAS::ZHerSimple(SAFEARRAY* xReal, SAFEARRAY* xImag, SAFEARRAY** AReal, SAFEARRAY** AImag, DOUBLE alphaReal, BlasLayout layout, BlasUplo uplo)
+{
+    IgnoreUnused(xReal, xImag, AReal, AImag, alphaReal, layout, uplo);
+    return E_NOTIMPL;
+}
+
+HRESULT __stdcall CBLAS::ZHer2Simple(SAFEARRAY* xReal, SAFEARRAY* xImag, SAFEARRAY* yReal, SAFEARRAY* yImag, SAFEARRAY** AReal, SAFEARRAY** AImag, DOUBLE alphaReal, DOUBLE alphaImag, BlasLayout layout, BlasUplo uplo)
+{
+    IgnoreUnused(xReal, xImag, yReal, yImag, AReal, AImag, alphaReal, alphaImag, layout, uplo);
+    return E_NOTIMPL;
+}
+
+HRESULT __stdcall CBLAS::ZTrmvSimple(SAFEARRAY* AReal, SAFEARRAY* AImag, SAFEARRAY** xReal, SAFEARRAY** xImag, BlasLayout layout, BlasUplo uplo, BlasTranspose transA, BlasDiag diag)
+{
+    IgnoreUnused(AReal, AImag, xReal, xImag, layout, uplo, transA, diag);
+    return E_NOTIMPL;
+}
+
+HRESULT __stdcall CBLAS::ZTrsvSimple(SAFEARRAY* AReal, SAFEARRAY* AImag, SAFEARRAY** xReal, SAFEARRAY** xImag, BlasLayout layout, BlasUplo uplo, BlasTranspose transA, BlasDiag diag)
+{
+    IgnoreUnused(AReal, AImag, xReal, xImag, layout, uplo, transA, diag);
+    return E_NOTIMPL;
+}
+
+HRESULT __stdcall CBLAS::ZNrm2(LONG n, SAFEARRAY* xReal, SAFEARRAY* xImag, LONG incX, DOUBLE* norm)
+{
+    IgnoreUnused(n, xReal, xImag, incX, norm);
+    return E_NOTIMPL;
+}
+
+HRESULT __stdcall CBLAS::ZAsum(LONG n, SAFEARRAY* xReal, SAFEARRAY* xImag, LONG incX, DOUBLE* result)
+{
+    IgnoreUnused(n, xReal, xImag, incX, result);
+    return E_NOTIMPL;
+}
+
+HRESULT __stdcall CBLAS::ZScal(LONG n, SAFEARRAY** xReal, SAFEARRAY** xImag, LONG incX, DOUBLE alphaReal, DOUBLE alphaImag)
+{
+    IgnoreUnused(n, xReal, xImag, incX, alphaReal, alphaImag);
+    return E_NOTIMPL;
+}
+
+HRESULT __stdcall CBLAS::ZScalReal(LONG n, DOUBLE alphaReal, SAFEARRAY** xReal, SAFEARRAY** xImag, LONG incX)
+{
+    IgnoreUnused(n, alphaReal, xReal, xImag, incX);
+    return E_NOTIMPL;
+}
+
+HRESULT __stdcall CBLAS::ZCopy(LONG n, SAFEARRAY* xReal, SAFEARRAY* xImag, LONG incX, SAFEARRAY** yReal, SAFEARRAY** yImag, LONG incY)
+{
+    IgnoreUnused(n, xReal, xImag, incX, yReal, yImag, incY);
+    return E_NOTIMPL;
+}
+
+HRESULT __stdcall CBLAS::ZSwap(LONG n, SAFEARRAY** xReal, SAFEARRAY** xImag, LONG incX, SAFEARRAY** yReal, SAFEARRAY** yImag, LONG incY)
+{
+    IgnoreUnused(n, xReal, xImag, incX, yReal, yImag, incY);
+    return E_NOTIMPL;
+}
+
+HRESULT __stdcall CBLAS::ZIamax(LONG n, SAFEARRAY* xReal, SAFEARRAY* xImag, LONG incX, LONG* index1based)
+{
+    IgnoreUnused(n, xReal, xImag, incX, index1based);
+    return E_NOTIMPL;
+}
+
+HRESULT __stdcall CBLAS::ZRot(LONG n, SAFEARRAY** xReal, SAFEARRAY** xImag, LONG incX, SAFEARRAY** yReal, SAFEARRAY** yImag, LONG incY, DOUBLE c, DOUBLE s)
+{
+    IgnoreUnused(n, xReal, xImag, incX, yReal, yImag, incY, c, s);
+    return E_NOTIMPL;
+}
+
+HRESULT __stdcall CBLAS::ZRotg(DOUBLE* aReal, DOUBLE* aImag, DOUBLE* bReal, DOUBLE* bImag, DOUBLE* c, DOUBLE* sReal, DOUBLE* sImag)
+{
+    IgnoreUnused(aReal, aImag, bReal, bImag, c, sReal, sImag);
+    return E_NOTIMPL;
+}
 

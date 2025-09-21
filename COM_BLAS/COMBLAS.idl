@@ -1,4 +1,4 @@
-// COM_BLAS.idl : COM_BLAS の IDL ソース
+﻿// COM_BLAS.idl : COM_BLAS の IDL ソース
 //
 
 // このファイルは、タイプ ライブラリ ([!output SAFE_IDL_NAME].tlb) およびマーシャリング コードを
@@ -371,6 +371,304 @@ interface IBLASComplex : IDispatch
         [out] DOUBLE* resultImag,
         [in, defaultvalue(0)] VARIANT_BOOL conjugate
     );
+    // ---------- Level 3 (complex) ----------
+    // C = alpha*op(A)*op(B) + beta*C with symmetric operands (side selects which matrix is symmetric)
+    HRESULT ZSymmSimple(
+        [in] SAFEARRAY(double) AReal,
+        [in] SAFEARRAY(double) AImag,
+        [in] SAFEARRAY(double) BReal,
+        [in] SAFEARRAY(double) BImag,
+        [in, out] SAFEARRAY(double)* CReal,
+        [in, out] SAFEARRAY(double)* CImag,
+        [in, defaultvalue(1.0)] DOUBLE alphaReal,
+        [in, defaultvalue(0.0)] DOUBLE alphaImag,
+        [in, defaultvalue(0.0)] DOUBLE betaReal,
+        [in, defaultvalue(0.0)] DOUBLE betaImag,
+        [in, defaultvalue(ColumnMajor)] BlasLayout layout,
+        [in, defaultvalue(Left)] BlasSide side,
+        [in, defaultvalue(Upper)] BlasUplo uplo
+    );
+
+    // C = alpha*op(A)*B + beta*C with Hermitian A
+    HRESULT ZHemmSimple(
+        [in] SAFEARRAY(double) AReal,
+        [in] SAFEARRAY(double) AImag,
+        [in] SAFEARRAY(double) BReal,
+        [in] SAFEARRAY(double) BImag,
+        [in, out] SAFEARRAY(double)* CReal,
+        [in, out] SAFEARRAY(double)* CImag,
+        [in, defaultvalue(1.0)] DOUBLE alphaReal,
+        [in, defaultvalue(0.0)] DOUBLE alphaImag,
+        [in, defaultvalue(0.0)] DOUBLE betaReal,
+        [in, defaultvalue(0.0)] DOUBLE betaImag,
+        [in, defaultvalue(ColumnMajor)] BlasLayout layout,
+        [in, defaultvalue(Left)] BlasSide side,
+        [in, defaultvalue(Upper)] BlasUplo uplo
+    );
+
+    // C = alpha*op(A)*op(A)^H + beta*C (symmetric update)
+    HRESULT ZSyrkSimple(
+        [in] SAFEARRAY(double) AReal,
+        [in] SAFEARRAY(double) AImag,
+        [in, out] SAFEARRAY(double)* CReal,
+        [in, out] SAFEARRAY(double)* CImag,
+        [in, defaultvalue(1.0)] DOUBLE alphaReal,
+        [in, defaultvalue(0.0)] DOUBLE alphaImag,
+        [in, defaultvalue(0.0)] DOUBLE betaReal,
+        [in, defaultvalue(0.0)] DOUBLE betaImag,
+        [in, defaultvalue(ColumnMajor)] BlasLayout layout,
+        [in, defaultvalue(Upper)] BlasUplo uplo,
+        [in, defaultvalue(NoTrans)] BlasTranspose transA
+    );
+
+    // C = alpha*op(A)*op(B)^T + alpha*op(B)*op(A)^T + beta*C (symmetric rank-2k update)
+    HRESULT ZSyr2kSimple(
+        [in] SAFEARRAY(double) AReal,
+        [in] SAFEARRAY(double) AImag,
+        [in] SAFEARRAY(double) BReal,
+        [in] SAFEARRAY(double) BImag,
+        [in, out] SAFEARRAY(double)* CReal,
+        [in, out] SAFEARRAY(double)* CImag,
+        [in, defaultvalue(1.0)] DOUBLE alphaReal,
+        [in, defaultvalue(0.0)] DOUBLE alphaImag,
+        [in, defaultvalue(0.0)] DOUBLE betaReal,
+        [in, defaultvalue(0.0)] DOUBLE betaImag,
+        [in, defaultvalue(ColumnMajor)] BlasLayout layout,
+        [in, defaultvalue(Upper)] BlasUplo uplo,
+        [in, defaultvalue(NoTrans)] BlasTranspose trans
+    );
+
+    // C = alpha*op(A)*op(A)^H + beta*C (Hermitian rank-k update, alpha/beta real)
+    HRESULT ZHerkSimple(
+        [in] SAFEARRAY(double) AReal,
+        [in] SAFEARRAY(double) AImag,
+        [in, out] SAFEARRAY(double)* CReal,
+        [in, out] SAFEARRAY(double)* CImag,
+        [in, defaultvalue(1.0)] DOUBLE alphaReal,
+        [in, defaultvalue(0.0)] DOUBLE betaReal,
+        [in, defaultvalue(ColumnMajor)] BlasLayout layout,
+        [in, defaultvalue(Upper)] BlasUplo uplo,
+        [in, defaultvalue(NoTrans)] BlasTranspose transA
+    );
+
+    // C = alpha*op(A)*op(B)^H + conj(alpha)*op(B)*op(A)^H + beta*C (Hermitian rank-2k update)
+    HRESULT ZHerk2kSimple(
+        [in] SAFEARRAY(double) AReal,
+        [in] SAFEARRAY(double) AImag,
+        [in] SAFEARRAY(double) BReal,
+        [in] SAFEARRAY(double) BImag,
+        [in, out] SAFEARRAY(double)* CReal,
+        [in, out] SAFEARRAY(double)* CImag,
+        [in, defaultvalue(1.0)] DOUBLE alphaReal,
+        [in, defaultvalue(0.0)] DOUBLE alphaImag,
+        [in, defaultvalue(0.0)] DOUBLE betaReal,
+        [in, defaultvalue(ColumnMajor)] BlasLayout layout,
+        [in, defaultvalue(Upper)] BlasUplo uplo,
+        [in, defaultvalue(NoTrans)] BlasTranspose transA
+    );
+
+    // B = alpha*op(A)*B or alpha*B*op(A), triangular A
+    HRESULT ZTrmmSimple(
+        [in] SAFEARRAY(double) AReal,
+        [in] SAFEARRAY(double) AImag,
+        [in, out] SAFEARRAY(double)* BReal,
+        [in, out] SAFEARRAY(double)* BImag,
+        [in, defaultvalue(1.0)] DOUBLE alphaReal,
+        [in, defaultvalue(0.0)] DOUBLE alphaImag,
+        [in, defaultvalue(ColumnMajor)] BlasLayout layout,
+        [in, defaultvalue(Left)] BlasSide side,
+        [in, defaultvalue(Upper)] BlasUplo uplo,
+        [in, defaultvalue(NoTrans)] BlasTranspose transA,
+        [in, defaultvalue(NonUnit)] BlasDiag diag
+    );
+
+    // Solve op(A)*X = alpha*B or X*op(A) = alpha*B, triangular A
+    HRESULT ZTrsmSimple(
+        [in] SAFEARRAY(double) AReal,
+        [in] SAFEARRAY(double) AImag,
+        [in, out] SAFEARRAY(double)* BReal,
+        [in, out] SAFEARRAY(double)* BImag,
+        [in, defaultvalue(1.0)] DOUBLE alphaReal,
+        [in, defaultvalue(0.0)] DOUBLE alphaImag,
+        [in, defaultvalue(ColumnMajor)] BlasLayout layout,
+        [in, defaultvalue(Left)] BlasSide side,
+        [in, defaultvalue(Upper)] BlasUplo uplo,
+        [in, defaultvalue(NoTrans)] BlasTranspose transA,
+        [in, defaultvalue(NonUnit)] BlasDiag diag
+    );
+
+    // ---------- Level 2 (complex) ----------
+    // A = A + alpha*x*y^H (optionally conjugate x)
+    HRESULT ZGerSimple(
+        [in] SAFEARRAY(double) xReal,
+        [in] SAFEARRAY(double) xImag,
+        [in] SAFEARRAY(double) yReal,
+        [in] SAFEARRAY(double) yImag,
+        [in, out] SAFEARRAY(double)* AReal,
+        [in, out] SAFEARRAY(double)* AImag,
+        [in, defaultvalue(1.0)] DOUBLE alphaReal,
+        [in, defaultvalue(0.0)] DOUBLE alphaImag,
+        [in, defaultvalue(ColumnMajor)] BlasLayout layout,
+        [in, defaultvalue(0)] VARIANT_BOOL conjugateX
+    );
+
+    // y = alpha*A*x + beta*y with Hermitian A
+    HRESULT ZHemvSimple(
+        [in] SAFEARRAY(double) AReal,
+        [in] SAFEARRAY(double) AImag,
+        [in] SAFEARRAY(double) xReal,
+        [in] SAFEARRAY(double) xImag,
+        [in, out] SAFEARRAY(double)* yReal,
+        [in, out] SAFEARRAY(double)* yImag,
+        [in, defaultvalue(1.0)] DOUBLE alphaReal,
+        [in, defaultvalue(0.0)] DOUBLE alphaImag,
+        [in, defaultvalue(0.0)] DOUBLE betaReal,
+        [in, defaultvalue(0.0)] DOUBLE betaImag,
+        [in, defaultvalue(ColumnMajor)] BlasLayout layout,
+        [in, defaultvalue(Upper)] BlasUplo uplo
+    );
+
+    // A = A + alpha*x*x^H (Hermitian rank-1, alpha real)
+    HRESULT ZHerSimple(
+        [in] SAFEARRAY(double) xReal,
+        [in] SAFEARRAY(double) xImag,
+        [in, out] SAFEARRAY(double)* AReal,
+        [in, out] SAFEARRAY(double)* AImag,
+        [in, defaultvalue(1.0)] DOUBLE alphaReal,
+        [in, defaultvalue(ColumnMajor)] BlasLayout layout,
+        [in, defaultvalue(Upper)] BlasUplo uplo
+    );
+
+    // A = A + alpha*x*y^H + conj(alpha)*y*x^H (Hermitian rank-2)
+    HRESULT ZHer2Simple(
+        [in] SAFEARRAY(double) xReal,
+        [in] SAFEARRAY(double) xImag,
+        [in] SAFEARRAY(double) yReal,
+        [in] SAFEARRAY(double) yImag,
+        [in, out] SAFEARRAY(double)* AReal,
+        [in, out] SAFEARRAY(double)* AImag,
+        [in, defaultvalue(1.0)] DOUBLE alphaReal,
+        [in, defaultvalue(0.0)] DOUBLE alphaImag,
+        [in, defaultvalue(ColumnMajor)] BlasLayout layout,
+        [in, defaultvalue(Upper)] BlasUplo uplo
+    );
+
+    // x = op(A)*x with triangular A
+    HRESULT ZTrmvSimple(
+        [in] SAFEARRAY(double) AReal,
+        [in] SAFEARRAY(double) AImag,
+        [in, out] SAFEARRAY(double)* xReal,
+        [in, out] SAFEARRAY(double)* xImag,
+        [in, defaultvalue(ColumnMajor)] BlasLayout layout,
+        [in, defaultvalue(Upper)] BlasUplo uplo,
+        [in, defaultvalue(NoTrans)] BlasTranspose transA,
+        [in, defaultvalue(NonUnit)] BlasDiag diag
+    );
+
+    // Solve op(A)*x = b with triangular A (overwrites x)
+    HRESULT ZTrsvSimple(
+        [in] SAFEARRAY(double) AReal,
+        [in] SAFEARRAY(double) AImag,
+        [in, out] SAFEARRAY(double)* xReal,
+        [in, out] SAFEARRAY(double)* xImag,
+        [in, defaultvalue(ColumnMajor)] BlasLayout layout,
+        [in, defaultvalue(Upper)] BlasUplo uplo,
+        [in, defaultvalue(NoTrans)] BlasTranspose transA,
+        [in, defaultvalue(NonUnit)] BlasDiag diag
+    );
+
+    // ---------- Level 1 (complex) ----------
+    // norm = ||x||_2 for complex vector
+    HRESULT ZNrm2(
+        [in] LONG n,
+        [in] SAFEARRAY(double) xReal,
+        [in] SAFEARRAY(double) xImag,
+        [in] LONG incX,
+        [out, retval] DOUBLE* norm
+    );
+
+    // result = sum |x_i|
+    HRESULT ZAsum(
+        [in] LONG n,
+        [in] SAFEARRAY(double) xReal,
+        [in] SAFEARRAY(double) xImag,
+        [in] LONG incX,
+        [out, retval] DOUBLE* result
+    );
+
+    // x = alpha*x (complex scaling)
+    HRESULT ZScal(
+        [in] LONG n,
+        [in, out] SAFEARRAY(double)* xReal,
+        [in, out] SAFEARRAY(double)* xImag,
+        [in] LONG incX,
+        [in, defaultvalue(1.0)] DOUBLE alphaReal,
+        [in, defaultvalue(0.0)] DOUBLE alphaImag
+    );
+
+    // x = alpha_real*x (real scaling)
+    HRESULT ZScalReal(
+        [in] LONG n,
+        [in] DOUBLE alphaReal,
+        [in, out] SAFEARRAY(double)* xReal,
+        [in, out] SAFEARRAY(double)* xImag,
+        [in] LONG incX
+    );
+
+    // y = x copy
+    HRESULT ZCopy(
+        [in] LONG n,
+        [in] SAFEARRAY(double) xReal,
+        [in] SAFEARRAY(double) xImag,
+        [in] LONG incX,
+        [in, out] SAFEARRAY(double)* yReal,
+        [in, out] SAFEARRAY(double)* yImag,
+        [in] LONG incY
+    );
+
+    // swap complex vectors
+    HRESULT ZSwap(
+        [in] LONG n,
+        [in, out] SAFEARRAY(double)* xReal,
+        [in, out] SAFEARRAY(double)* xImag,
+        [in] LONG incX,
+        [in, out] SAFEARRAY(double)* yReal,
+        [in, out] SAFEARRAY(double)* yImag,
+        [in] LONG incY
+    );
+
+    // index of max |x_i|
+    HRESULT ZIamax(
+        [in] LONG n,
+        [in] SAFEARRAY(double) xReal,
+        [in] SAFEARRAY(double) xImag,
+        [in] LONG incX,
+        [out, retval] LONG* index1based
+    );
+
+    // apply real Givens rotation to complex vectors
+    HRESULT ZRot(
+        [in] LONG n,
+        [in, out] SAFEARRAY(double)* xReal,
+        [in, out] SAFEARRAY(double)* xImag,
+        [in] LONG incX,
+        [in, out] SAFEARRAY(double)* yReal,
+        [in, out] SAFEARRAY(double)* yImag,
+        [in] LONG incY,
+        [in] DOUBLE c,
+        [in] DOUBLE s
+    );
+
+    // construct complex Givens rotation (a, b) -> (r, 0)
+    HRESULT ZRotg(
+        [in, out] DOUBLE* aReal,
+        [in, out] DOUBLE* aImag,
+        [in, out] DOUBLE* bReal,
+        [in, out] DOUBLE* bImag,
+        [out] DOUBLE* c,
+        [out] DOUBLE* sReal,
+        [out] DOUBLE* sImag
+    );
 };
 
 [
@@ -391,4 +689,5 @@ library COMBLASLib
 };
 
 import "shobjidl.idl";
+
 
