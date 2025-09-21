@@ -1,0 +1,51 @@
+# TEXT_FILE_OVERVIEW
+
+- `.gitattributes` : Git 属性設定ファイル。
+- `.gitignore` : 不要ファイルを Git 追跡から除外する定義。
+- `Agents.md` : エージェント運用に関するメモ。
+- `COM_BLAS.Setup/COM_BLAS.Setup.vdproj` : セットアッププロジェクト定義。
+- `COM_BLAS.sln` : ソリューションファイル。
+- `COM_BLAS/BLAS.cpp` : BLAS COM ラッパー本体実装。
+- `COM_BLAS/BLAS.h` : BLAS COM インターフェイス宣言。
+- `COM_BLAS/BLAS.rgs` : BLAS COM コンポーネント登録スクリプト。
+- `COM_BLAS/COMBLAS.idl` : COM インターフェイス IDL 定義。
+- `COM_BLAS/COMBLAS_i.h` : IDL から生成されたヘッダー。
+- `COM_BLAS/COM_BLAS.cpp` : COM DLL エントリーポイント実装。
+- `COM_BLAS/COM_BLAS.def` : エクスポート定義ファイル。
+- `COM_BLAS/COM_BLAS.rc` : リソーススクリプト。
+- `COM_BLAS/COM_BLAS.rgs` : COM 登録スクリプト（タイプライブラリ）。
+- `COM_BLAS/COM_BLAS.vcxproj` : COM_BLAS プロジェクトファイル。
+- `COM_BLAS/COM_BLAS.vcxproj.filters` : プロジェクト内フィルタ定義。
+- `COM_BLAS/COM_BLASps.def` : プロキシ／スタブ用エクスポート定義。
+- `COM_BLAS/dllmain.cpp` : DLL エントリーポイント処理。
+- `COM_BLAS/dllmain.h` : DLL エントリーポイント関連ヘッダー。
+- `COM_BLAS/framework.h` : Windows ヘッダー集約。
+- `COM_BLAS/pch.cpp` : プリコンパイル済みヘッダー源。
+- `COM_BLAS/pch.h` : プリコンパイル済みヘッダー定義。
+- `COM_BLAS/resource.h` : リソース識別子。
+- `COM_BLAS/targetver.h` : 対象 Windows バージョン設定。
+- `COM_BLASPS/COM_BLASPS.vcxproj` : プロキシ／スタブ プロジェクト。
+- `COM_BLASPS/COM_BLASPS.vcxproj.filters` : プロキシ／スタブ用フィルタ。
+- `COM_BLAS_UnitTest_Managed/COM_BLAS_UnitTest_Managed.csproj` : ユニットテスト プロジェクトファイル。
+- `COM_BLAS_UnitTest_Managed/ComplexBlasTests.Additional.cs` : 追加複素数 BLAS テスト。
+- `COM_BLAS_UnitTest_Managed/MSTestSettings.cs` : MSTest 設定。
+- `COM_BLAS_UnitTest_Managed/Test1.cs` : メインテスト群。
+- `IBLASComplex_new_api_definitions.md` : 複素数 BLAS 新 API 仕様メモ。
+- `Installer/COM_BLAS.Installer.wixproj` : WiX インストーラー プロジェクト。
+- `Installer/Package.wxs` : WiX インストール スクリプト。
+- `ReadMe.md` : プロジェクト概要ドキュメント。
+- `include/cblas.h` : CBLAS API ヘッダー。
+- `include/f77blas.h` : Fortran BLAS ヘッダー。
+- `include/lapack.h` : LAPACK ヘッダー。
+- `include/lapacke.h` : LAPACKE C API ヘッダー。
+- `include/lapacke_config.h` : LAPACKE 設定ヘッダー。
+- `include/lapacke_mangling.h` : LAPACKE 名前マングリング定義。
+- `include/lapacke_utils.h` : LAPACKE ユーティリティ。
+- `include/openblas_config.h` : OpenBLAS 設定ヘッダー。
+- `lib/cmake/openblas/OpenBLASConfig.cmake` : OpenBLAS CMake 構成ファイル。
+- `lib/cmake/openblas/OpenBLASConfigVersion.cmake` : OpenBLAS バージョン情報。
+- `lib/libopenblas.def` : OpenBLAS モジュール定義。
+- `lib/pkgconfig/openblas.pc` : pkg-config 用 OpenBLAS 設定。
+- `makingInstallerPlan.md` : インストーラー作業計画。
+- `PrepareMatrixView_fix_plan.md` : SAFEARRAY 軸整合対応の修正計画。
+- `TEXT_FILE_OVERVIEW.md` : 本ファイル。
