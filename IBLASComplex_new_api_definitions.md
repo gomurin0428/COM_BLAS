@@ -1,5 +1,6 @@
-﻿# IBLASComplex 新規API定義メモ
+# IBLASComplex 新規API定義メモ
 ## Progress Notes (2025-09-22)
+- Implemented ZHerk2kSimple and ZRotg in COM_BLAS, enabling managed coverage for hermitian rank-2k updates and complex Givens rotations.
 - Implemented ZTrmmSimple and ZTrsmSimple in COM_BLAS, wiring SAFEARRAY gather/scatter for triangular matrices and enabling the managed tests (ZTrmmSimple_LeftSideTriangularMultiply / ZTrsmSimple_SolvesTriangularSystem).
 
 - Implemented ZHer2Simple, ZTrmvSimple, and ZTrsvSimple in COM_BLAS with managed coverage and mirrored SAFEARRAY handling.
@@ -74,3 +75,4 @@
 - `BLAS.cpp` に OpenBLAS 呼び出し実装を追加し、共通検証ヘルパーを流用する。
 - マネージドテスト (`COM_BLAS_UnitTest_Managed/Test1.cs`) を拡張し、各メソッドに対するサイズ・境界・エラーケースをカバーする。
 - `ReadMe.md` や `complex_blas_implementation_plan.md` を更新し、クライアント向けの利用例とバージョン更新履歴を追記する。
+
