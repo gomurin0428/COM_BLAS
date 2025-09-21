@@ -1405,6 +1405,9 @@ namespace COM_BLAS_UnitTest_Managed
     public sealed class ComplexBlasTests
     {
         private const double Tol = 1e-9;
+        private const int EInvalidArg = unchecked((int)0x80070057);
+        private const int EPointer = unchecked((int)0x80004003);
+        private const int EBounds = unchecked((int)0x8000000B);
 
         [TestMethod]
         public void ZGemmSimple_ComputesAlphaABPlusBetaC()
@@ -1523,6 +1526,237 @@ namespace COM_BLAS_UnitTest_Managed
             Complex expected = ComputeZDotExpected(n, xReal, xImag, incX, yReal, yImag, incY, false);
             AssertNearlyEqual(expected.Real, resultReal);
             AssertNearlyEqual(expected.Imaginary, resultImag);
+        }
+
+        [TestMethod]
+        public void ZGemmSimple_ReturnsInvalidArgWhenComplexAHasMismatchedDimensions()
+        {
+            using var handle = new ComplexBlasHandle();
+            var blas = handle.Instance;
+
+            double[,] aReal = new double[,] { { 1.0, 0.0 }, { 0.0, 1.0 } };
+            double[,] aImag = new double[,] { { 0.0, 1.0 } };
+            double[,] bReal = new double[,] { { 1.0, 2.0 }, { 3.0, 4.0 } };
+            double[,] bImag = new double[,] { { 0.0, 0.0 }, { 0.0, 0.0 } };
+            double[,] cReal = new double[,] { { 0.0, 0.0 }, { 0.0, 0.0 } };
+            double[,] cImag = new double[,] { { 0.0, 0.0 }, { 0.0, 0.0 } };
+
+            AssertComException(EInvalidArg, () => blas.ZGemmSimple(aReal, aImag, bReal, bImag, ref cReal, ref cImag, 1.0, 0.0, 0.0, 0.0, BlasLayout.RowMajor, BlasTranspose.NoTrans, BlasTranspose.NoTrans));
+        }
+
+        [TestMethod]
+        public void ZGemmSimple_ReturnsInvalidArgWhenOutputShapeMismatch()
+        {
+            using var handle = new ComplexBlasHandle();
+            var blas = handle.Instance;
+
+            double[,] aReal = new double[,] { { 1.0 } };
+            double[,] aImag = new double[,] { { 0.0 } };
+            double[,] bReal = new double[,] { { 2.0 } };
+            double[,] bImag = new double[,] { { 0.0 } };
+            double[,] cReal = new double[,] { { 0.0, 0.0 } };
+            double[,] cImag = new double[,] { { 0.0, 0.0 } };
+
+            AssertComException(EInvalidArg, () => blas.ZGemmSimple(aReal, aImag, bReal, bImag, ref cReal, ref cImag, 1.0, 0.0, 0.0, 0.0, BlasLayout.RowMajor, BlasTranspose.NoTrans, BlasTranspose.NoTrans));
+        }
+
+        [TestMethod]
+        public void ZGemvSimple_ReturnsInvalidArgWhenMatrixPairMismatch()
+        {
+            using var handle = new ComplexBlasHandle();
+            var blas = handle.Instance;
+
+            double[,] aReal = new double[,] { { 1.0, 0.0 }, { 0.0, 1.0 } };
+            double[,] aImag = new double[,] { { 0.0, 0.0 } };
+            double[] xReal = new double[] { 1.0, 0.0 };
+            double[] xImag = new double[] { 0.0, 0.0 };
+            double[] yReal = new double[] { 0.0, 0.0 };
+            double[] yImag = new double[] { 0.0, 0.0 };
+
+            AssertComException(EInvalidArg, () => blas.ZGemvSimple(aReal, aImag, xReal, xImag, ref yReal, ref yImag, 1.0, 0.0, 0.0, 0.0, BlasLayout.RowMajor, BlasTranspose.NoTrans));
+        }
+
+        [TestMethod]
+        public void ZGemvSimple_ReturnsBoundsWhenXPartsTooShort()
+        {
+            using var handle = new ComplexBlasHandle();
+            var blas = handle.Instance;
+
+            double[,] aReal = new double[,] { { 1.0, 0.0 }, { 0.0, 1.0 } };
+            double[,] aImag = new double[,] { { 0.0, 0.0 }, { 0.0, 0.0 } };
+            double[] xReal = new double[] { 1.0, 0.0 };
+            double[] xImag = new double[] { 0.0 };
+            double[] yReal = new double[] { 0.0, 0.0 };
+            double[] yImag = new double[] { 0.0, 0.0 };
+
+            AssertComException(EBounds, () => blas.ZGemvSimple(aReal, aImag, xReal, xImag, ref yReal, ref yImag, 1.0, 0.0, 0.0, 0.0, BlasLayout.RowMajor, BlasTranspose.NoTrans));
+        }
+
+        [TestMethod]
+        public void ZGemvSimple_ReturnsBoundsWhenYPartsTooShort()
+        {
+            using var handle = new ComplexBlasHandle();
+            var blas = handle.Instance;
+
+            double[,] aReal = new double[,] { { 1.0, 0.0 }, { 0.0, 1.0 } };
+            double[,] aImag = new double[,] { { 0.0, 0.0 }, { 0.0, 0.0 } };
+            double[] xReal = new double[] { 1.0, 0.0 };
+            double[] xImag = new double[] { 0.0, 0.0 };
+            double[] yReal = new double[] { 0.0, 0.0 };
+            double[] yImag = new double[] { 0.0 };
+
+            AssertComException(EBounds, () => blas.ZGemvSimple(aReal, aImag, xReal, xImag, ref yReal, ref yImag, 1.0, 0.0, 0.0, 0.0, BlasLayout.RowMajor, BlasTranspose.NoTrans));
+        }
+
+        [TestMethod]
+        public void ZAxpy_ReturnsBoundsWhenXPartsTooShort()
+        {
+            using var handle = new ComplexBlasHandle();
+            var blas = handle.Instance;
+
+            int n = 2;
+            double[] xReal = new double[] { 1.0, 2.0 };
+            double[] xImag = new double[] { 0.0 };
+            double[] yReal = new double[] { 0.0, 0.0 };
+            double[] yImag = new double[] { 0.0, 0.0 };
+
+            AssertComException(EBounds, () => blas.ZAxpy(n, xReal, xImag, 1, ref yReal, ref yImag, 1, 1.0, 0.0));
+        }
+
+        [TestMethod]
+        public void ZAxpy_ReturnsBoundsWhenYPartsTooShort()
+        {
+            using var handle = new ComplexBlasHandle();
+            var blas = handle.Instance;
+
+            int n = 2;
+            double[] xReal = new double[] { 1.0, 2.0 };
+            double[] xImag = new double[] { 0.0, 0.0 };
+            double[] yReal = new double[] { 0.0, 0.0 };
+            double[] yImag = new double[] { 0.0 };
+
+            AssertComException(EBounds, () => blas.ZAxpy(n, xReal, xImag, 1, ref yReal, ref yImag, 1, 1.0, 0.0));
+        }
+
+        [TestMethod]
+        public void ZAxpy_ReturnsInvalidArgWhenIncXZero()
+        {
+            using var handle = new ComplexBlasHandle();
+            var blas = handle.Instance;
+
+            double[] xReal = new double[] { 1.0 };
+            double[] xImag = new double[] { 0.0 };
+            double[] yReal = new double[] { 0.0 };
+            double[] yImag = new double[] { 0.0 };
+
+            AssertComException(EInvalidArg, () => blas.ZAxpy(1, xReal, xImag, 0, ref yReal, ref yImag, 1, 1.0, 0.0));
+        }
+
+        [TestMethod]
+        public void ZAxpy_ReturnsInvalidArgWhenIncYZero()
+        {
+            using var handle = new ComplexBlasHandle();
+            var blas = handle.Instance;
+
+            double[] xReal = new double[] { 1.0 };
+            double[] xImag = new double[] { 0.0 };
+            double[] yReal = new double[] { 0.0 };
+            double[] yImag = new double[] { 0.0 };
+
+            AssertComException(EInvalidArg, () => blas.ZAxpy(1, xReal, xImag, 1, ref yReal, ref yImag, 0, 1.0, 0.0));
+        }
+
+        [TestMethod]
+        public void ZDot_ReturnsBoundsWhenXPartsTooShort()
+        {
+            using var handle = new ComplexBlasHandle();
+            var blas = handle.Instance;
+
+            int n = 2;
+            double[] xReal = new double[] { 1.0, 2.0 };
+            double[] xImag = new double[] { 0.0 };
+            double[] yReal = new double[] { 0.0, 0.0 };
+            double[] yImag = new double[] { 0.0, 0.0 };
+
+            AssertComException(EBounds, () => blas.ZDot(n, xReal, xImag, 1, yReal, yImag, 1, out double _, out double _, true));
+        }
+
+        [TestMethod]
+        public void ZDot_ReturnsBoundsWhenYPartsTooShort()
+        {
+            using var handle = new ComplexBlasHandle();
+            var blas = handle.Instance;
+
+            int n = 2;
+            double[] xReal = new double[] { 1.0, 2.0 };
+            double[] xImag = new double[] { 0.0, 0.0 };
+            double[] yReal = new double[] { 0.0, 0.0 };
+            double[] yImag = new double[] { 0.0 };
+
+            AssertComException(EBounds, () => blas.ZDot(n, xReal, xImag, 1, yReal, yImag, 1, out double _, out double _, true));
+        }
+
+        [TestMethod]
+        public void ZDot_ReturnsInvalidArgWhenIncXZero()
+        {
+            using var handle = new ComplexBlasHandle();
+            var blas = handle.Instance;
+
+            double[] xReal = new double[] { 1.0 };
+            double[] xImag = new double[] { 0.0 };
+            double[] yReal = new double[] { 0.0 };
+            double[] yImag = new double[] { 0.0 };
+
+            AssertComException(EInvalidArg, () => blas.ZDot(1, xReal, xImag, 0, yReal, yImag, 1, out double _, out double _, true));
+        }
+
+        [TestMethod]
+        public void ZDot_ReturnsInvalidArgWhenIncYZero()
+        {
+            using var handle = new ComplexBlasHandle();
+            var blas = handle.Instance;
+
+            double[] xReal = new double[] { 1.0 };
+            double[] xImag = new double[] { 0.0 };
+            double[] yReal = new double[] { 0.0 };
+            double[] yImag = new double[] { 0.0 };
+
+            AssertComException(EInvalidArg, () => blas.ZDot(1, xReal, xImag, 1, yReal, yImag, 0, out double _, out double _, true));
+        }
+
+        [TestMethod]
+        public void ZDot_ReturnsZeroWhenNZero()
+        {
+            using var handle = new ComplexBlasHandle();
+            var blas = handle.Instance;
+
+            double[] xReal = Array.Empty<double>();
+            double[] xImag = Array.Empty<double>();
+            double[] yReal = Array.Empty<double>();
+            double[] yImag = Array.Empty<double>();
+
+            blas.ZDot(0, xReal, xImag, 1, yReal, yImag, 1, out double resultReal, out double resultImag, true);
+
+            AssertNearlyEqual(0.0, resultReal);
+            AssertNearlyEqual(0.0, resultImag);
+        }
+
+        private static void AssertComException(int expectedHResult, Action action)
+        {
+            try
+            {
+                action();
+                Assert.Fail("Expected COM failure was not thrown.");
+            }
+            catch (Exception ex)
+            {
+                if (ex is not COMException && ex is not ArgumentException && ex is not NullReferenceException)
+                {
+                    throw;
+                }
+
+                Assert.AreEqual(expectedHResult, ex.HResult);
+            }
         }
 
         private static Complex[,] ToComplexMatrix(double[,] real, double[,] imag)
