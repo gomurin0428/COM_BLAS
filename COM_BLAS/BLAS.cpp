@@ -2821,14 +2821,180 @@ HRESULT __stdcall CBLAS::ZHerk2kSimple(SAFEARRAY* AReal, SAFEARRAY* AImag, SAFEA
 
 HRESULT __stdcall CBLAS::ZTrmmSimple(SAFEARRAY* AReal, SAFEARRAY* AImag, SAFEARRAY** BReal, SAFEARRAY** BImag, DOUBLE alphaReal, DOUBLE alphaImag, BlasLayout layout, BlasSide side, BlasUplo uplo, BlasTranspose transA, BlasDiag diag)
 {
-    IgnoreUnused(AReal, AImag, BReal, BImag, alphaReal, alphaImag, layout, side, uplo, transA, diag);
-    return E_NOTIMPL;
+    MatrixView aRealView;
+    HRESULT hr = PrepareMatrixView(AReal, L"AReal", aRealView);
+    if (FAILED(hr)) return hr;
+    MatrixView aImagView;
+    hr = PrepareMatrixView(AImag, L"AImag", aImagView);
+    if (FAILED(hr)) return hr;
+    hr = ValidateComplexMatrixPair(aRealView, aImagView, L"A");
+    if (FAILED(hr)) return hr;
+
+    hr = EnsureArrayPointer(BReal, L"BReal");
+    if (FAILED(hr)) return hr;
+    hr = EnsureArrayPointer(BImag, L"BImag");
+    if (FAILED(hr)) return hr;
+    MatrixView bRealView;
+    hr = PrepareMatrixView(*BReal, L"BReal", bRealView);
+    if (FAILED(hr)) return hr;
+    MatrixView bImagView;
+    hr = PrepareMatrixView(*BImag, L"BImag", bImagView);
+    if (FAILED(hr)) return hr;
+    hr = ValidateComplexMatrixPair(bRealView, bImagView, L"B");
+    if (FAILED(hr)) return hr;
+
+    CBLAS_LAYOUT order;
+    hr = ToLayout(L"layout", layout, order);
+    if (FAILED(hr)) return hr;
+    CBLAS_SIDE sideFlag;
+    hr = ToSide(L"side", side, sideFlag);
+    if (FAILED(hr)) return hr;
+    CBLAS_UPLO uploFlag;
+    hr = ToUplo(L"uplo", uplo, uploFlag);
+    if (FAILED(hr)) return hr;
+    CBLAS_TRANSPOSE transFlag;
+    hr = ToTranspose(L"transA", transA, transFlag);
+    if (FAILED(hr)) return hr;
+    CBLAS_DIAG diagFlag;
+    hr = ToDiag(L"diag", diag, diagFlag);
+    if (FAILED(hr)) return hr;
+
+    size_t m = bRealView.rows;
+    size_t n = bRealView.cols;
+    if (sideFlag == CblasLeft) {
+        if (aRealView.rows != m || aRealView.cols != m) {
+            return SetComError(L"Matrix A must be square with dimension matching rows of B.", E_INVALIDARG);
+        }
+    } else {
+        if (aRealView.rows != n || aRealView.cols != n) {
+            return SetComError(L"Matrix A must be square with dimension matching columns of B.", E_INVALIDARG);
+        }
+    }
+
+    int M, N, lda, ldb;
+    hr = ToIntChecked(m, L"M", M);
+    if (FAILED(hr)) return hr;
+    hr = ToIntChecked(n, L"N", N);
+    if (FAILED(hr)) return hr;
+    hr = ToIntChecked(GetLeadingDimension(order, aRealView), L"lda", lda);
+    if (FAILED(hr)) return hr;
+    hr = ToIntChecked(GetLeadingDimension(order, bRealView), L"ldb", ldb);
+    if (FAILED(hr)) return hr;
+
+    std::vector<std::complex<double>> aData;
+    std::vector<std::complex<double>> bData;
+    GatherComplexMatrix(aRealView, aImagView, aData);
+    GatherComplexMatrix(bRealView, bImagView, bData);
+
+    if (order == CblasRowMajor) {
+        ConvertColumnMajorToRowMajor(aRealView.rows, aRealView.cols, aData);
+        ConvertColumnMajorToRowMajor(bRealView.rows, bRealView.cols, bData);
+    }
+
+    if (M > 0 && N > 0) {
+        std::complex<double> alpha(alphaReal, alphaImag);
+        cblas_ztrmm(order, sideFlag, uploFlag, transFlag, diagFlag,
+            M, N,
+            reinterpret_cast<const void*>(&alpha),
+            aData.data(), lda,
+            bData.data(), ldb);
+    }
+
+    if (order == CblasRowMajor) {
+        ConvertRowMajorToColumnMajor(bRealView.rows, bRealView.cols, bData);
+    }
+
+    ScatterComplexMatrix(bData, bRealView, bImagView);
+    return S_OK;
 }
 
 HRESULT __stdcall CBLAS::ZTrsmSimple(SAFEARRAY* AReal, SAFEARRAY* AImag, SAFEARRAY** BReal, SAFEARRAY** BImag, DOUBLE alphaReal, DOUBLE alphaImag, BlasLayout layout, BlasSide side, BlasUplo uplo, BlasTranspose transA, BlasDiag diag)
 {
-    IgnoreUnused(AReal, AImag, BReal, BImag, alphaReal, alphaImag, layout, side, uplo, transA, diag);
-    return E_NOTIMPL;
+    MatrixView aRealView;
+    HRESULT hr = PrepareMatrixView(AReal, L"AReal", aRealView);
+    if (FAILED(hr)) return hr;
+    MatrixView aImagView;
+    hr = PrepareMatrixView(AImag, L"AImag", aImagView);
+    if (FAILED(hr)) return hr;
+    hr = ValidateComplexMatrixPair(aRealView, aImagView, L"A");
+    if (FAILED(hr)) return hr;
+
+    hr = EnsureArrayPointer(BReal, L"BReal");
+    if (FAILED(hr)) return hr;
+    hr = EnsureArrayPointer(BImag, L"BImag");
+    if (FAILED(hr)) return hr;
+    MatrixView bRealView;
+    hr = PrepareMatrixView(*BReal, L"BReal", bRealView);
+    if (FAILED(hr)) return hr;
+    MatrixView bImagView;
+    hr = PrepareMatrixView(*BImag, L"BImag", bImagView);
+    if (FAILED(hr)) return hr;
+    hr = ValidateComplexMatrixPair(bRealView, bImagView, L"B");
+    if (FAILED(hr)) return hr;
+
+    CBLAS_LAYOUT order;
+    hr = ToLayout(L"layout", layout, order);
+    if (FAILED(hr)) return hr;
+    CBLAS_SIDE sideFlag;
+    hr = ToSide(L"side", side, sideFlag);
+    if (FAILED(hr)) return hr;
+    CBLAS_UPLO uploFlag;
+    hr = ToUplo(L"uplo", uplo, uploFlag);
+    if (FAILED(hr)) return hr;
+    CBLAS_TRANSPOSE transFlag;
+    hr = ToTranspose(L"transA", transA, transFlag);
+    if (FAILED(hr)) return hr;
+    CBLAS_DIAG diagFlag;
+    hr = ToDiag(L"diag", diag, diagFlag);
+    if (FAILED(hr)) return hr;
+
+    size_t m = bRealView.rows;
+    size_t n = bRealView.cols;
+    if (sideFlag == CblasLeft) {
+        if (aRealView.rows != m || aRealView.cols != m) {
+            return SetComError(L"Matrix A must be square with dimension matching rows of B.", E_INVALIDARG);
+        }
+    } else {
+        if (aRealView.rows != n || aRealView.cols != n) {
+            return SetComError(L"Matrix A must be square with dimension matching columns of B.", E_INVALIDARG);
+        }
+    }
+
+    int M, N, lda, ldb;
+    hr = ToIntChecked(m, L"M", M);
+    if (FAILED(hr)) return hr;
+    hr = ToIntChecked(n, L"N", N);
+    if (FAILED(hr)) return hr;
+    hr = ToIntChecked(GetLeadingDimension(order, aRealView), L"lda", lda);
+    if (FAILED(hr)) return hr;
+    hr = ToIntChecked(GetLeadingDimension(order, bRealView), L"ldb", ldb);
+    if (FAILED(hr)) return hr;
+
+    std::vector<std::complex<double>> aData;
+    std::vector<std::complex<double>> bData;
+    GatherComplexMatrix(aRealView, aImagView, aData);
+    GatherComplexMatrix(bRealView, bImagView, bData);
+
+    if (order == CblasRowMajor) {
+        ConvertColumnMajorToRowMajor(aRealView.rows, aRealView.cols, aData);
+        ConvertColumnMajorToRowMajor(bRealView.rows, bRealView.cols, bData);
+    }
+
+    if (M > 0 && N > 0) {
+        std::complex<double> alpha(alphaReal, alphaImag);
+        cblas_ztrsm(order, sideFlag, uploFlag, transFlag, diagFlag,
+            M, N,
+            reinterpret_cast<const void*>(&alpha),
+            aData.data(), lda,
+            bData.data(), ldb);
+    }
+
+    if (order == CblasRowMajor) {
+        ConvertRowMajorToColumnMajor(bRealView.rows, bRealView.cols, bData);
+    }
+
+    ScatterComplexMatrix(bData, bRealView, bImagView);
+    return S_OK;
 }
 
 HRESULT __stdcall CBLAS::ZGerSimple(SAFEARRAY* xReal, SAFEARRAY* xImag, SAFEARRAY* yReal, SAFEARRAY* yImag, SAFEARRAY** AReal, SAFEARRAY** AImag, DOUBLE alphaReal, DOUBLE alphaImag, BlasLayout layout, VARIANT_BOOL conjugateX)
