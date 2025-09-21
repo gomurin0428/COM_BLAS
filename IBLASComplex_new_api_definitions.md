@@ -1,4 +1,7 @@
 # IBLASComplex 新規API定義メモ
+## Progress Notes (2025-09-21)
+- Implemented ZSwap, ZIamax, and ZRot in COM_BLAS along with managed tests, updating TEXT_FILE_OVERVIEW.md accordingly.
+
 
 ## 背景
 - 2025-09-21 時点で `IBLASComplex` が公開しているのは `ZGemmSimple` / `ZGemvSimple` / `ZAxpy` / `ZDot` / `ZSymmSimple` / `ZHemmSimple` / `ZSyrkSimple` の7件のみで、実数用 `IBLAS` が提供する残りの BLAS Level 1/2/3 に対応する複素数版が欠落している。
