@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
+    <VcpkgEnabled>false</VcpkgEnabled>
     <VCProjectVersion>17.0</VCProjectVersion>
     <ProjectGuid>{EA7698D7-DFB5-50D0-04F8-99D5A27E6BAF}</ProjectGuid>
     <Keyword>AtlProj</Keyword>

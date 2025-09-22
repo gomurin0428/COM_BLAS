@@ -7,9 +7,9 @@
 - `COM_BLAS.sln`: Visual Studio ソリューション。COM 本体、proxy/stub、MSTest、Installer を束ねる。
 - `IBLASComplex_new_api_definitions.md`: 複素数 BLAS API 拡張の進捗メモと仕様整理。
 - `PrepareMatrixView_fix_plan.md`: SAFEARRAY の行列ビュー周りの改善計画と検証ログ。
-- `ReadMe.md`: COM_BLAS の概要、提供 API、利用例をまとめた利用者向けドキュメント。
+- `ReadMe.md`: COM_BLAS の概要、公開 API、ビルドとセットアップ手順。
 - `TEXT_FILE_OVERVIEW.md`: 本ファイル。テキスト資産の一覧。
-- `TROUBLESHOOTING.md`: ビルド・テスト・依存 DLL に関する既知の落とし穴集。
+- `TROUBLESHOOTING.md`: ビルド・テスト・依存 DLL の既知の落とし穴と対処法。
 - `makingInstallerPlan.md`: Visual Studio Installer Projects を使った MSI 作成手順の詳細プラン。
 - `残作業.md`: リリース完了までに必要な TODO リスト。
 
@@ -23,7 +23,7 @@
 - `COM_BLAS/COM_BLAS.def`: エクスポートシンボルの定義。
 - `COM_BLAS/COM_BLAS.rc`: リソーススクリプト。バージョン情報・レジストリスクリプト関連を保持。
 - `COM_BLAS/COM_BLAS.rgs`: COM DLL 全体に対する追加レジストリ設定 (現状プレースホルダー)。
-- `COM_BLAS/COM_BLAS.vcxproj`: COM DLL プロジェクト設定。
+- `COM_BLAS/COM_BLAS.vcxproj`: COM DLL プロジェクト設定。OpenBLAS を同梱の lib/include から参照し、vcpkg 自動統合を無効化。
 - `COM_BLAS/COM_BLAS.vcxproj.filters`: プロジェクト内のフィルター構成。
 - `COM_BLAS/COM_BLASps.def`: proxy/stub DLL 用 DEF。
 - `COM_BLAS/dllmain.cpp`: DLL のエントリーポイント。
@@ -35,7 +35,7 @@
 - `COM_BLAS/targetver.h`: 対応 Windows バージョンの定義。
 
 ## COM_BLASPS ディレクトリ
-- `COM_BLASPS/COM_BLASPS.vcxproj`: proxy/stub DLL プロジェクト設定。
+- `COM_BLASPS/COM_BLASPS.vcxproj`: proxy/stub DLL プロジェクト設定。vcpkg 自動統合を無効化。
 - `COM_BLASPS/COM_BLASPS.vcxproj.filters`: proxy/stub プロジェクトのフィルター設定。
 
 ## COM_BLAS_UnitTest_Managed ディレクトリ

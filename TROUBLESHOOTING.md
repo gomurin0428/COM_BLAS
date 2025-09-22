@@ -4,6 +4,9 @@
 - 事象: `msbuild COM_BLAS.sln /p:Configuration=Release /p:Platform=x64` で `COM_BLAS.Setup.vdproj` が未サポートとして警告 (MSB4078) が表示される。
 - 対処: Visual Studio 2022 + Installer Projects 拡張で `devenv COM_BLAS.sln /Build "Release|x64" /Project COM_BLAS.Setup` を実行するか、WiX v4 など別形式へ移行する。CI で `vdproj` を扱う場合は Visual Studio のフルインストールを使う。
 
+## ビルドログに `COM_BigDecimal\vcpkg` が表示される
+- 原因: 過去に vcpkg をグローバル統合した環境のキャッシュが残っていると、古い cpkg.targets が呼び出されてログにパスが残ります。
+- 対処: プロジェクト側では VcpkgEnabled=false を設定しているので、msbuild /t:Clean 後に再ビルドしてください。あわせてユーザー プロファイル配下の旧 COM_BigDecimal\vcpkg ディレクトリや VCPKG_ROOT 環境変数を整理するとログから参照が消えます。
 ## Release|x64 で COM_BLASPS が生成されない
 - 事象: ソリューション構成 `Release|x64` に `COM_BLASPS` の Build フラグがなく、`msbuild` から 64bit proxy/stub DLL が出力されない。
 - 対処: Visual Studio の構成マネージャーで `COM_BLASPS` の Build チェックを有効化し、`.sln` に `Release|x64.Build.0` エントリを追加して再保存する。修正前は Visual Studio GUI で個別ビルドするか、`devenv /build` を利用する。

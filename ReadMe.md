@@ -4,6 +4,12 @@
 
 COM_BLASは、BLAS機能を提供するインターフェイスを公開するCOMコンポーネントです。
 
+## ビルド環境と依存関係
+- Visual Studio 2022 (v143) と Windows 10 SDK 10.0.26100.0 を利用してビルドします。
+- OpenBLAS のヘッダーとライブラリは `include/` と `lib/` に同梱済みで、追加のパッケージ マネージャーは不要です。
+- `COM_BLAS/COM_BLAS.vcxproj` と `COM_BLASPS/COM_BLASPS.vcxproj` では `VcpkgEnabled=false` を設定しており、グローバルな vcpkg 統合に依存しません。
+- Release ビルド時はポストビルドで `bin/libopenblas.dll` を出力ディレクトリへコピーするため、DLL を同じリポジトリから配布できます。
+
 ## COM_BLAS シンプルAPI
 
 COM_BLAS は BLAS の各ルーチンを COM として公開していますが、`GemmSimple` や `Axpy` のような命名とパラメーター構成は数値線形代数に不慣れな利用者には理解しづらいままです。`BLAS_` 接頭辞で元の BLAS API を区別しつつ、日常的な行列・ベクトル操作に直感的なシンプル API を以下のとおり確定版として公開します。

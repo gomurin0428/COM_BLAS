@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
+    <VcpkgEnabled>false</VcpkgEnabled>
     <VCProjectVersion>17.0</VCProjectVersion>
     <ProjectGuid>{8C4F257C-DD72-7ECC-6AB7-AB48382DE449}</ProjectGuid>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
