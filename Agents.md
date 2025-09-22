@@ -7,6 +7,6 @@
 - TEXT_FILE_OVERVIEWに、git管理されている全てのテキストファイルを一覧化して、簡単な概要を記すこと。なければ作ること
 - ファイルを追加・削除・編集したら、TEXT_FILE_OVERVIEW.mdも適宜編集すること。
 - 今後も別の作業者が引っ掛かりうる落とし穴があれば、TROUBLESHOOTING.mdに記載してください。なければ作ってください。
-- ファイルにアクセス(read/writeどちらでも)する場合は、常にdesktop-commander MCPサーバーを使ってください。
-- コマンドプロンプトやpowershellを使うときは、常にdesktop-commander MCPサーバーを使ってください。start_processなどのインターフェイスがあるはずです。
-- powershellでコマンドを投げる時は、必ず常にdesktop-commander MCPサーバーを使ってください。
+- ファイルにアクセス(read/writeどちらでも)する場合は、基本的にdesktop-commander MCPサーバーを使ってください。
+- Web検索をする場合は、desktop-commander MCPサーバーを使う必要はありません。
+- processのoutputを読むときのタイムアウトは10秒で十分です。もしも不足した時は増やしてください。
