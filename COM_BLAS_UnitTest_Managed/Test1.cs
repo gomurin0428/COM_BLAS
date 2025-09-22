@@ -1,679 +1,58 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
-using System.IO;
 using System.Numerics;
 using System.Runtime.InteropServices;
+using COMBLASLib;
 
 namespace COM_BLAS_UnitTest_Managed
 {
-    internal enum BlasLayout
-    {
-        RowMajor = 101,
-        ColumnMajor = 102,
-    }
-
-    internal enum BlasTranspose
-    {
-        NoTrans = 111,
-        Trans = 112,
-        ConjTrans = 113,
-    }
-
-    internal enum BlasUplo
-    {
-        Upper = 121,
-        Lower = 122,
-    }
-
-    internal enum BlasDiag
-    {
-        NonUnit = 131,
-        Unit = 132,
-    }
-
-    internal enum BlasSide
-    {
-        Left = 141,
-        Right = 142,
-    }
-
-    [ComImport]
-    [Guid("19ef5ee4-5e52-47fa-ba23-c9f70bef7faa")]
-    [InterfaceType(ComInterfaceType.InterfaceIsDual)]
-    internal interface IBLAS
-    {
-        void GemmSimple(
-            [MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] double[,] A,
-            [MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] double[,] B,
-            [In, Out, MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] ref double[,] C,
-            double alpha,
-            double beta,
-            BlasLayout layout,
-            BlasTranspose transA,
-            BlasTranspose transB);
-
-        void SymmSimple(
-            [MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] double[,] A,
-            [MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] double[,] B,
-            [In, Out, MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] ref double[,] C,
-            double alpha,
-            double beta,
-            BlasLayout layout,
-            BlasSide side,
-            BlasUplo uplo);
-
-        void SyrkSimple(
-            [MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] double[,] A,
-            [In, Out, MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] ref double[,] C,
-            double alpha,
-            double beta,
-            BlasLayout layout,
-            BlasUplo uplo,
-            BlasTranspose transA);
-
-        void Syr2kSimple(
-            [MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] double[,] A,
-            [MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] double[,] B,
-            [In, Out, MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] ref double[,] C,
-            double alpha,
-            double beta,
-            BlasLayout layout,
-            BlasUplo uplo,
-            BlasTranspose trans);
-
-        void TrmmSimple(
-            [MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] double[,] A,
-            [In, Out, MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] ref double[,] B,
-            double alpha,
-            BlasLayout layout,
-            BlasSide side,
-            BlasUplo uplo,
-            BlasTranspose transA,
-            BlasDiag diag);
-
-        void TrsmSimple(
-            [MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] double[,] A,
-            [In, Out, MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] ref double[,] B,
-            double alpha,
-            BlasLayout layout,
-            BlasSide side,
-            BlasUplo uplo,
-            BlasTranspose transA,
-            BlasDiag diag);
-
-        void GemvSimple(
-            [MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] double[,] A,
-            [MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] double[] x,
-            [In, Out, MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] ref double[] y,
-            double alpha,
-            double beta,
-            BlasLayout layout,
-            BlasTranspose transA);
-
-        void GerSimple(
-            [MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] double[] x,
-            [MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] double[] y,
-            [In, Out, MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] ref double[,] A,
-            double alpha,
-            BlasLayout layout);
-
-        void SymvSimple(
-            [MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] double[,] A,
-            [MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] double[] x,
-            [In, Out, MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] ref double[] y,
-            double alpha,
-            double beta,
-            BlasLayout layout,
-            BlasUplo uplo);
-
-        void SyrSimple(
-            [MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] double[] x,
-            [In, Out, MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] ref double[,] A,
-            double alpha,
-            BlasLayout layout,
-            BlasUplo uplo);
-
-        void Syr2Simple(
-            [MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] double[] x,
-            [MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] double[] y,
-            [In, Out, MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] ref double[,] A,
-            double alpha,
-            BlasLayout layout,
-            BlasUplo uplo);
-
-        void TrmvSimple(
-            [MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] double[,] A,
-            [In, Out, MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] ref double[] x,
-            BlasLayout layout,
-            BlasUplo uplo,
-            BlasTranspose transA,
-            BlasDiag diag);
-
-        void TrsvSimple(
-            [MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] double[,] A,
-            [In, Out, MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] ref double[] x,
-            BlasLayout layout,
-            BlasUplo uplo,
-            BlasTranspose transA,
-            BlasDiag diag);
-
-        void Axpy(
-            int n,
-            double alpha,
-            [MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] double[] x,
-            int incX,
-            [In, Out, MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] ref double[] y,
-            int incY);
-
-        double Dot(
-            int n,
-            [MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] double[] x,
-            int incX,
-            [MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] double[] y,
-            int incY);
-
-        double Nrm2(
-            int n,
-            [MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] double[] x,
-            int incX);
-
-        double Asum(
-            int n,
-            [MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] double[] x,
-            int incX);
-
-        void Scal(
-            int n,
-            double alpha,
-            [In, Out, MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] ref double[] x,
-            int incX);
-
-        void Copy(
-            int n,
-            [MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] double[] x,
-            int incX,
-            [In, Out, MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] ref double[] y,
-            int incY);
-
-        void Swap(
-            int n,
-            [In, Out, MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] ref double[] x,
-            int incX,
-            [In, Out, MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] ref double[] y,
-            int incY);
-
-        int Iamax(
-            int n,
-            [MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] double[] x,
-            int incX);
-
-        void Rot(
-            int n,
-            [In, Out, MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] ref double[] x,
-            int incX,
-            [In, Out, MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] ref double[] y,
-            int incY,
-            double c,
-            double s);
-
-        void Rotg(
-            ref double a,
-            ref double b,
-            out double c,
-            out double s);
-
-        void Rotm(
-            int n,
-            [In, Out, MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] ref double[] x,
-            int incX,
-            [In, Out, MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] ref double[] y,
-            int incY,
-            [MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] double[] param);
-
-        void Rotmg(
-            ref double d1,
-            ref double d2,
-            ref double x1,
-            double y1,
-            [Out, MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] out double[] param);
-    }
-
-
-[ComImport]
-[Guid("7795391b-e2f5-4f20-943e-14d2aeb5e8b8")]
-[InterfaceType(ComInterfaceType.InterfaceIsDual)]
-internal partial interface IBLASComplex
-{
-    void ZGemmSimple(
-        [MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] double[,] AReal,
-        [MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] double[,] AImag,
-        [MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] double[,] BReal,
-        [MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] double[,] BImag,
-        [In, Out, MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] ref double[,] CReal,
-        [In, Out, MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] ref double[,] CImag,
-        double alphaReal,
-        double alphaImag,
-        double betaReal,
-        double betaImag,
-        BlasLayout layout,
-        BlasTranspose transA,
-        BlasTranspose transB);
-
-    void ZGemvSimple(
-        [MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] double[,] AReal,
-        [MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] double[,] AImag,
-        [MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] double[] xReal,
-        [MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] double[] xImag,
-        [In, Out, MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] ref double[] yReal,
-        [In, Out, MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] ref double[] yImag,
-        double alphaReal,
-        double alphaImag,
-        double betaReal,
-        double betaImag,
-        BlasLayout layout,
-        BlasTranspose transA);
-
-    void ZAxpy(
-        int n,
-        [MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] double[] xReal,
-        [MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] double[] xImag,
-        int incX,
-        [In, Out, MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] ref double[] yReal,
-        [In, Out, MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] ref double[] yImag,
-        int incY,
-        double alphaReal,
-        double alphaImag);
-
-    void ZDot(
-        int n,
-        [MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] double[] xReal,
-        [MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] double[] xImag,
-        int incX,
-        [MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] double[] yReal,
-        [MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] double[] yImag,
-        int incY,
-        out double resultReal,
-        out double resultImag,
-        [MarshalAs(UnmanagedType.VariantBool)] bool conjugate);
-
-    void ZSymmSimple(
-        [MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] double[,] AReal,
-        [MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] double[,] AImag,
-        [MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] double[,] BReal,
-        [MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] double[,] BImag,
-        [In, Out, MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] ref double[,] CReal,
-        [In, Out, MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] ref double[,] CImag,
-        double alphaReal,
-        double alphaImag,
-        double betaReal,
-        double betaImag,
-        BlasLayout layout,
-        BlasSide side,
-        BlasUplo uplo);
-
-    void ZHemmSimple(
-        [MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] double[,] AReal,
-        [MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] double[,] AImag,
-        [MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] double[,] BReal,
-        [MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] double[,] BImag,
-        [In, Out, MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] ref double[,] CReal,
-        [In, Out, MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] ref double[,] CImag,
-        double alphaReal,
-        double alphaImag,
-        double betaReal,
-        double betaImag,
-        BlasLayout layout,
-        BlasSide side,
-        BlasUplo uplo);
-
-    void ZSyrkSimple(
-        [MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] double[,] AReal,
-        [MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] double[,] AImag,
-        [In, Out, MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] ref double[,] CReal,
-        [In, Out, MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] ref double[,] CImag,
-        double alphaReal,
-        double alphaImag,
-        double betaReal,
-        double betaImag,
-        BlasLayout layout,
-        BlasUplo uplo,
-        BlasTranspose transA);
-
-    void ZSyr2kSimple(
-        [MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] double[,] AReal,
-        [MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] double[,] AImag,
-        [MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] double[,] BReal,
-        [MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] double[,] BImag,
-        [In, Out, MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] ref double[,] CReal,
-        [In, Out, MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] ref double[,] CImag,
-        double alphaReal,
-        double alphaImag,
-        double betaReal,
-        double betaImag,
-        BlasLayout layout,
-        BlasUplo uplo,
-        BlasTranspose trans);
-
-    void ZHerkSimple(
-        [MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] double[,] AReal,
-        [MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] double[,] AImag,
-        [In, Out, MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] ref double[,] CReal,
-        [In, Out, MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] ref double[,] CImag,
-        double alphaReal,
-        double betaReal,
-        BlasLayout layout,
-        BlasUplo uplo,
-        BlasTranspose transA);
-
-    void ZHerk2kSimple(
-        [MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] double[,] AReal,
-        [MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] double[,] AImag,
-        [MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] double[,] BReal,
-        [MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] double[,] BImag,
-        [In, Out, MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] ref double[,] CReal,
-        [In, Out, MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] ref double[,] CImag,
-        double alphaReal,
-        double alphaImag,
-        double betaReal,
-        BlasLayout layout,
-        BlasUplo uplo,
-        BlasTranspose transA);
-
-    void ZTrmmSimple(
-        [MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] double[,] AReal,
-        [MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] double[,] AImag,
-        [In, Out, MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] ref double[,] BReal,
-        [In, Out, MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] ref double[,] BImag,
-        double alphaReal,
-        double alphaImag,
-        BlasLayout layout,
-        BlasSide side,
-        BlasUplo uplo,
-        BlasTranspose transA,
-        BlasDiag diag);
-
-    void ZTrsmSimple(
-        [MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] double[,] AReal,
-        [MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] double[,] AImag,
-        [In, Out, MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] ref double[,] BReal,
-        [In, Out, MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] ref double[,] BImag,
-        double alphaReal,
-        double alphaImag,
-        BlasLayout layout,
-        BlasSide side,
-        BlasUplo uplo,
-        BlasTranspose transA,
-        BlasDiag diag);
-
-    void ZGerSimple(
-        [MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] double[] xReal,
-        [MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] double[] xImag,
-        [MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] double[] yReal,
-        [MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] double[] yImag,
-        [In, Out, MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] ref double[,] AReal,
-        [In, Out, MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] ref double[,] AImag,
-        double alphaReal,
-        double alphaImag,
-        BlasLayout layout,
-        [MarshalAs(UnmanagedType.VariantBool)] bool conjugateX);
-
-    void ZHemvSimple(
-        [MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] double[,] AReal,
-        [MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] double[,] AImag,
-        [MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] double[] xReal,
-        [MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] double[] xImag,
-        [In, Out, MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] ref double[] yReal,
-        [In, Out, MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] ref double[] yImag,
-        double alphaReal,
-        double alphaImag,
-        double betaReal,
-        double betaImag,
-        BlasLayout layout,
-        BlasUplo uplo);
-
-    void ZHerSimple(
-        [MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] double[] xReal,
-        [MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] double[] xImag,
-        [In, Out, MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] ref double[,] AReal,
-        [In, Out, MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] ref double[,] AImag,
-        double alphaReal,
-        BlasLayout layout,
-        BlasUplo uplo);
-
-    void ZHer2Simple(
-        [MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] double[] xReal,
-        [MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] double[] xImag,
-        [MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] double[] yReal,
-        [MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] double[] yImag,
-        [In, Out, MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] ref double[,] AReal,
-        [In, Out, MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] ref double[,] AImag,
-        double alphaReal,
-        double alphaImag,
-        BlasLayout layout,
-        BlasUplo uplo);
-
-    void ZTrmvSimple(
-        [MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] double[,] AReal,
-        [MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] double[,] AImag,
-        [In, Out, MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] ref double[] xReal,
-        [In, Out, MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] ref double[] xImag,
-        BlasLayout layout,
-        BlasUplo uplo,
-        BlasTranspose transA,
-        BlasDiag diag);
-
-    void ZTrsvSimple(
-        [MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] double[,] AReal,
-        [MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] double[,] AImag,
-        [In, Out, MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] ref double[] xReal,
-        [In, Out, MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] ref double[] xImag,
-        BlasLayout layout,
-        BlasUplo uplo,
-        BlasTranspose transA,
-        BlasDiag diag);
-
-    double ZNrm2(
-        int n,
-        [MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] double[] xReal,
-        [MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] double[] xImag,
-        int incX);
-
-    double ZAsum(
-        int n,
-        [MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] double[] xReal,
-        [MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] double[] xImag,
-        int incX);
-
-    void ZScal(
-        int n,
-        [In, Out, MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] ref double[] xReal,
-        [In, Out, MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] ref double[] xImag,
-        int incX,
-        double alphaReal,
-        double alphaImag);
-
-    void ZScalReal(
-        int n,
-        double alphaReal,
-        [In, Out, MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] ref double[] xReal,
-        [In, Out, MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] ref double[] xImag,
-        int incX);
-
-    void ZCopy(
-        int n,
-        [MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] double[] xReal,
-        [MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] double[] xImag,
-        int incX,
-        [In, Out, MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] ref double[] yReal,
-        [In, Out, MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] ref double[] yImag,
-        int incY);
-
-    void ZSwap(
-        int n,
-        [In, Out, MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] ref double[] xReal,
-        [In, Out, MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] ref double[] xImag,
-        int incX,
-        [In, Out, MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] ref double[] yReal,
-        [In, Out, MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] ref double[] yImag,
-        int incY);
-
-    int ZIamax(
-        int n,
-        [MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] double[] xReal,
-        [MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] double[] xImag,
-        int incX);
-
-    void ZRot(
-        int n,
-        [In, Out, MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] ref double[] xReal,
-        [In, Out, MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] ref double[] xImag,
-        int incX,
-        [In, Out, MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] ref double[] yReal,
-        [In, Out, MarshalAs(UnmanagedType.SafeArray, SafeArraySubType = VarEnum.VT_R8)] ref double[] yImag,
-        int incY,
-        double c,
-        double s);
-
-    void ZRotg(
-        [In, Out] ref double aReal,
-        [In, Out] ref double aImag,
-        [In, Out] ref double bReal,
-        [In, Out] ref double bImag,
-        out double c,
-        out double sReal,
-        out double sImag);
-
-    }
-
-    internal static class ComBlasFactory
-    {
-        private static readonly string DllPath = ResolveDllPath();
-        private static readonly IntPtr ModuleHandle = NativeLibrary.Load(DllPath);
-        private static readonly DllGetClassObjectDelegate DllGetClassObject = Marshal.GetDelegateForFunctionPointer<DllGetClassObjectDelegate>(NativeLibrary.GetExport(ModuleHandle, "DllGetClassObject"));
-        private static readonly Guid CLSID_BLAS = new Guid("e8f3aed3-eec4-48ab-9925-c13253d4c396");
-        private static readonly Guid IID_IClassFactory = new Guid("00000001-0000-0000-C000-000000000046");
-        private static readonly Guid IID_IBLAS = typeof(IBLAS).GUID;
-        private static readonly Guid IID_IBLASComplex = typeof(IBLASComplex).GUID;
-
-        [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-        private delegate int DllGetClassObjectDelegate(ref Guid clsid, ref Guid iid, out IntPtr ppv);
-
-        [ComImport]
-        [Guid("00000001-0000-0000-C000-000000000046")]
-        [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
-        private interface IClassFactoryInternal
-        {
-            void CreateInstance([MarshalAs(UnmanagedType.IUnknown)] object? pUnkOuter, ref Guid riid, [MarshalAs(UnmanagedType.IUnknown)] out object ppvObject);
-            void LockServer(bool fLock);
-        }
-
-        internal static IBLAS Create()
-        {
-            return (IBLAS)CreateInternal(IID_IBLAS);
-        }
-
-        internal static IBLASComplex CreateComplex()
-        {
-            return (IBLASComplex)CreateInternal(IID_IBLASComplex);
-        }
-
-        private static object CreateInternal(Guid iid)
-        {
-            IntPtr factoryPtr = IntPtr.Zero;
-            Guid clsid = CLSID_BLAS;
-            Guid iidFactory = IID_IClassFactory;
-            int hr = DllGetClassObject(ref clsid, ref iidFactory, out factoryPtr);
-            if (hr < 0)
-            {
-                Marshal.ThrowExceptionForHR(hr);
-            }
-
-            try
-            {
-                var factory = (IClassFactoryInternal)Marshal.GetObjectForIUnknown(factoryPtr);
-                try
-                {
-                    Guid requestedIid = iid;
-                    factory.CreateInstance(null, ref requestedIid, out object instance);
-                    return instance;
-                }
-                finally
-                {
-                    Marshal.ReleaseComObject(factory);
-                }
-            }
-            finally
-            {
-                if (factoryPtr != IntPtr.Zero)
-                {
-                    Marshal.Release(factoryPtr);
-                }
-            }
-        }
-
-        private static string ResolveDllPath()
-        {
-            string baseDir = AppContext.BaseDirectory;
-            string root = Path.GetFullPath(Path.Combine(baseDir, "..", "..", "..", ".."));
-            string[] candidates = new[]
-            {
-                Path.Combine(root, "x64", "Debug", "COM_BLAS.dll"),
-                Path.Combine(root, "COM_BLAS", "x64", "Debug", "COM_BLAS.dll"),
-                Path.Combine(root, "COM_BLAS", "Debug", "COM_BLAS.dll"),
-                Path.Combine(root, "x64", "Release", "COM_BLAS.dll"),
-                Path.Combine(root, "COM_BLAS", "x64", "Release", "COM_BLAS.dll"),
-                Path.Combine(root, "COM_BLAS", "Release", "COM_BLAS.dll"),
-            };
-
-            foreach (var candidate in candidates)
-            {
-                if (File.Exists(candidate))
-                {
-                    return candidate;
-                }
-            }
-
-            throw new FileNotFoundException("Could not locate COM_BLAS.dll.", string.Join(Environment.NewLine, candidates));
-        }
-    }
-
     internal sealed class BlasHandle : IDisposable
     {
-        public IBLAS Instance { get; }
+        private IBLAS? _instance;
+
+        public dynamic Instance => _instance ?? throw new ObjectDisposedException(nameof(BlasHandle));
 
         public BlasHandle()
         {
-            Instance = ComBlasFactory.Create();
+            _instance = new BLASClass();
         }
 
         public void Dispose()
         {
-            if (Instance != null)
+            if (_instance != null)
             {
-                Marshal.ReleaseComObject(Instance);
+                Marshal.FinalReleaseComObject(_instance);
+                _instance = null;
             }
+
+            GC.SuppressFinalize(this);
         }
     }
 
     internal sealed class ComplexBlasHandle : IDisposable
     {
-        public IBLASComplex Instance { get; }
+        private IBLASComplex? _instance;
+
+        public dynamic Instance => _instance ?? throw new ObjectDisposedException(nameof(ComplexBlasHandle));
 
         public ComplexBlasHandle()
         {
-            Instance = ComBlasFactory.CreateComplex();
+            _instance = (IBLASComplex)new BLASClass();
         }
 
         public void Dispose()
         {
-            if (Instance != null)
+            if (_instance != null)
             {
-                Marshal.ReleaseComObject(Instance);
+                Marshal.FinalReleaseComObject(_instance);
+                _instance = null;
             }
+
+            GC.SuppressFinalize(this);
         }
     }
 
-    [TestClass]
+[TestClass]
     public sealed class BlasTests
     {
         private const double Tol = 1e-9;
@@ -686,7 +65,7 @@ internal partial interface IBLASComplex
         public void GemmSimple_ScalarCase()
         {
             using var handle = new BlasHandle();
-            var blas = handle.Instance;
+            dynamic blas = handle.Instance;
 
             double[,] A = new double[,] { { 2.0 } };
             double[,] B = new double[,] { { 3.0 } };
@@ -703,7 +82,7 @@ internal partial interface IBLASComplex
         public void GemmSimple_RowMajorRectangular()
         {
             using var handle = new BlasHandle();
-            var blas = handle.Instance;
+            dynamic blas = handle.Instance;
 
             double[,] A = new double[,]
             {

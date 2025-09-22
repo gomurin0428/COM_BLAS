@@ -23,10 +23,14 @@
 - 事象: `Platform=Win32` でビルドすると OpenBLAS の x64 向けライブラリしか存在しないため `cblas_*` が未解決になる。
 - 対処: 64bit のみサポートする。32bit を必要とする場合は OpenBLAS x86 ビルドを追加し、`.vcxproj` のライブラリ ディレクトリを切り替えるスクリプトを用意する。
 
+## COM 参照を含む MSTest プロジェクトを dotnet CLI でビルドできない
+- 事象: `dotnet test COM_BLAS_UnitTest_Managed` を実行すると `ResolveComReference` タスクが .NET Core 版 MSBuild で未対応のため MSB4803 で失敗する。
+- 対処: `msbuild COM_BLAS_UnitTest_Managed\COM_BLAS_UnitTest_Managed.csproj /restore /t:Build` のようにフル MSBuild (Visual Studio 付属の .NET Framework 版) を使ってビルド・テストを行う。CI でも `vswhere` で Visual Studio インストールを検出して `vsdevcmd` 環境で実行する。
 ## Managed テストが大量に失敗した場合
 - 事象: `dotnet test COM_BLAS_UnitTest_Managed` で複数の `AssertNearlyEqual` が落ちる。
 - 切り分け手順:
   1. `dotnet test COM_BLAS_UnitTest_Managed --filter FullyQualifiedName~Z` など対象 API を絞って再実行する。
   2. `TestResults/*/` 内の `.trx` を確認し、失敗している SAFEARRAY の下限・行列レイアウトを調査する。
   3. `COM_BLAS/BLAS.cpp` の `PrepareMatrixView` / `Gather*` / `Scatter*` にブレークポイントを置き、RowMajor/ColumnMajor や LBound の扱いをトレースする。
-- 備考: 2025-09-21 時点では 113 テストすべて成功しているため、直近の変更で退行していないかをまず疑うこと。
+  4. `oleview` などで `COMBLAS.tlb` 内の `IBLASComplex` を開き、期待するメソッドがエクスポートされているか確認し、もし欠けていれば `midl` 再実行と DLL 再登録を行う。
+- 備考: 2025-09-22 時点では配布 DLL に複素数 API が含まれておらず、41 件のテストが `RuntimeBinderException` で失敗する既知事象。Type Library を更新したビルドに差し替えることで解消可能。

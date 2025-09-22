@@ -5,6 +5,7 @@
 - `.gitignore`: ビルド生成物・VS のキャッシュ・TestResults などを無視する設定。
 - `Agents.md`: リポジトリ運用時の注意事項とガイドライン。
 - `COM_BLAS.sln`: Visual Studio ソリューション。COM 本体、proxy/stub、MSTest、Installer を束ねる。
+- `COMBLASComplex_recovery_plan.md`: 複素数 BLAS API がテストで欠落している事象に対する対応計画と検証チェックリスト。
 - `IBLASComplex_new_api_definitions.md`: 複素数 BLAS API 拡張の進捗メモと仕様整理。
 - `PrepareMatrixView_fix_plan.md`: SAFEARRAY の行列ビュー周りの改善計画と検証ログ。
 - `ReadMe.md`: COM_BLAS の概要、公開 API、ビルドとセットアップ手順。
@@ -39,10 +40,10 @@
 - `COM_BLASPS/COM_BLASPS.vcxproj.filters`: proxy/stub プロジェクトのフィルター設定。
 
 ## COM_BLAS_UnitTest_Managed ディレクトリ
-- `COM_BLAS_UnitTest_Managed/COM_BLAS_UnitTest_Managed.csproj`: MSTest プロジェクトの設定 (net8.0-windows x64)。
+- `COM_BLAS_UnitTest_Managed/COM_BLAS_UnitTest_Managed.csproj`: MSTest プロジェクト設定 (net8.0-windows x64)。COMBLASLib を COM 参照として解決し、Interop アセンブリを生成する。 
 - `COM_BLAS_UnitTest_Managed/ComplexBlasTests.Additional.cs`: 複素数 BLAS API 用の追加テスト。
 - `COM_BLAS_UnitTest_Managed/MSTestSettings.cs`: テスト実行時の共通設定ヘルパー。
-- `COM_BLAS_UnitTest_Managed/Test1.cs`: IBLAS/IBLASComplex を包括的に検証するメイン テスト群。
+- `COM_BLAS_UnitTest_Managed/Test1.cs`: COMBLASLib の IBLAS/IBLASComplex を直接 exercise する MSTest ケース。`BlasHandle`/`ComplexBlasHandle` で COM インスタンスの生成と解放を管理。
 
 ## Installer ディレクトリ
 - `Installer/COM_BLAS.Installer.wixproj`: WiX v4 用 MSBuild プロジェクト。Package.wxs をビルドする設定。

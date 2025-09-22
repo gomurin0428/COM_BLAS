@@ -1,13 +1,8 @@
 # IBLASComplex 新規API定義メモ
 ## Progress Notes (2025-09-22)
-- Implemented ZHerk2kSimple and ZRotg in COM_BLAS, enabling managed coverage for hermitian rank-2k updates and complex Givens rotations.
-- Implemented ZTrmmSimple and ZTrsmSimple in COM_BLAS, wiring SAFEARRAY gather/scatter for triangular matrices and enabling the managed tests (ZTrmmSimple_LeftSideTriangularMultiply / ZTrsmSimple_SolvesTriangularSystem).
-
-- Implemented ZHer2Simple, ZTrmvSimple, and ZTrsvSimple in COM_BLAS with managed coverage and mirrored SAFEARRAY handling.
-
-- Implemented ZGerSimple, ZHemvSimple, and ZHerSimple in COM_BLAS along with managed tests, keeping documentation in sync.
-- Implemented ZSwap, ZIamax, and ZRot in COM_BLAS along with managed tests, updating TEXT_FILE_OVERVIEW.md accordingly.
-- Implemented ZSyrkSimple, ZSyr2kSimple, and ZHerkSimple in COM_BLAS with symmetric/hermitian mirroring helpers and verified managed coverage.
+- MSTest (2025-09-22) の結果、`COMBLASLib.BLASClass` に `ZSymmSimple` など複素数 API が公開されておらず、41 件のテストが `RuntimeBinderException` で失敗している。
+- `COMBLAS.tlb` を `oleview` で確認したところ、IDL 上で追加済みの `IBLASComplex` メソッドがエクスポートされていない。Type Library の再生成と DLL 再登録が未実施と推測。
+- 2025-09-21 に「実装済み」と記録した内容はソース側の進捗メモであり、配布バイナリには反映されていない。以下の「追加対象API一覧」は引き続き対応が必要な項目として扱う。
 
 
 ## 背景

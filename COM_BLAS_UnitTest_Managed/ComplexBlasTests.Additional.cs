@@ -1,6 +1,7 @@
 using System;
 using System.Numerics;
 using System.Runtime.InteropServices;
+using COMBLASLib;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace COM_BLAS_UnitTest_Managed
@@ -27,7 +28,7 @@ namespace COM_BLAS_UnitTest_Managed
             double betaReal = -0.3;
             double betaImag = 0.2;
 
-            ExecuteOrInconclusive(nameof(IBLASComplex.ZSymmSimple), () =>
+            ExecuteOrInconclusive("ZSymmSimple", () =>
                 blas.ZSymmSimple(aReal, aImag, bReal, bImag, ref cReal, ref cImag,
                                  alphaReal, alphaImag, betaReal, betaImag,
                                  BlasLayout.RowMajor, BlasSide.Left, BlasUplo.Upper));
@@ -61,7 +62,7 @@ namespace COM_BLAS_UnitTest_Managed
             double betaReal = -0.6;
             double betaImag = 0.5;
 
-            ExecuteOrInconclusive(nameof(IBLASComplex.ZHemmSimple), () =>
+            ExecuteOrInconclusive("ZHemmSimple", () =>
                 blas.ZHemmSimple(aReal, aImag, bReal, bImag, ref cReal, ref cImag,
                                  alphaReal, alphaImag, betaReal, betaImag,
                                  BlasLayout.RowMajor, BlasSide.Left, BlasUplo.Upper));
@@ -93,7 +94,7 @@ namespace COM_BLAS_UnitTest_Managed
             double betaReal = -0.5;
             double betaImag = 0.2;
 
-            ExecuteOrInconclusive(nameof(IBLASComplex.ZSyrkSimple), () =>
+            ExecuteOrInconclusive("ZSyrkSimple", () =>
                 blas.ZSyrkSimple(aReal, aImag, ref cReal, ref cImag,
                                  alphaReal, alphaImag, betaReal, betaImag,
                                  BlasLayout.RowMajor, BlasUplo.Upper, BlasTranspose.NoTrans));
@@ -130,7 +131,7 @@ namespace COM_BLAS_UnitTest_Managed
             double betaReal = -0.2;
             double betaImag = 0.1;
 
-            ExecuteOrInconclusive(nameof(IBLASComplex.ZSyr2kSimple), () =>
+            ExecuteOrInconclusive("ZSyr2kSimple", () =>
                 blas.ZSyr2kSimple(aReal, aImag, bReal, bImag, ref cReal, ref cImag,
                                    alphaReal, alphaImag, betaReal, betaImag,
                                    BlasLayout.RowMajor, BlasUplo.Upper, BlasTranspose.NoTrans));
@@ -162,7 +163,7 @@ namespace COM_BLAS_UnitTest_Managed
             double alphaReal = 0.8;
             double betaReal = -0.3;
 
-            ExecuteOrInconclusive(nameof(IBLASComplex.ZHerkSimple), () =>
+            ExecuteOrInconclusive("ZHerkSimple", () =>
                 blas.ZHerkSimple(aReal, aImag, ref cReal, ref cImag,
                                   alphaReal, betaReal,
                                   BlasLayout.RowMajor, BlasUplo.Upper, BlasTranspose.NoTrans));
@@ -194,7 +195,7 @@ namespace COM_BLAS_UnitTest_Managed
             double alphaImag = -0.45;
             double betaReal = -0.4;
 
-            ExecuteOrInconclusive(nameof(IBLASComplex.ZHerk2kSimple), () =>
+            ExecuteOrInconclusive("ZHerk2kSimple", () =>
                 blas.ZHerk2kSimple(aReal, aImag, bReal, bImag, ref cReal, ref cImag,
                                     alphaReal, alphaImag, betaReal,
                                     BlasLayout.RowMajor, BlasUplo.Upper, BlasTranspose.NoTrans));
@@ -226,7 +227,7 @@ namespace COM_BLAS_UnitTest_Managed
             double alphaReal = 0.7;
             double alphaImag = 0.2;
 
-            ExecuteOrInconclusive(nameof(IBLASComplex.ZTrmmSimple), () =>
+            ExecuteOrInconclusive("ZTrmmSimple", () =>
                 blas.ZTrmmSimple(aReal, aImag, ref bReal, ref bImag,
                                   alphaReal, alphaImag,
                                   BlasLayout.RowMajor, BlasSide.Left, BlasUplo.Upper,
@@ -254,7 +255,7 @@ namespace COM_BLAS_UnitTest_Managed
             double alphaReal = -0.4;
             double alphaImag = 0.9;
 
-            ExecuteOrInconclusive(nameof(IBLASComplex.ZTrsmSimple), () =>
+            ExecuteOrInconclusive("ZTrsmSimple", () =>
                 blas.ZTrsmSimple(aReal, aImag, ref bReal, ref bImag,
                                   alphaReal, alphaImag,
                                   BlasLayout.RowMajor, BlasSide.Left, BlasUplo.Upper,
@@ -284,7 +285,7 @@ namespace COM_BLAS_UnitTest_Managed
             double alphaReal = 0.75;
             double alphaImag = -0.5;
 
-            ExecuteOrInconclusive(nameof(IBLASComplex.ZGerSimple), () =>
+            ExecuteOrInconclusive("ZGerSimple", () =>
                 blas.ZGerSimple(xReal, xImag, yReal, yImag, ref aReal, ref aImag,
                                  alphaReal, alphaImag, BlasLayout.RowMajor, conjugateX: false));
 
@@ -314,7 +315,7 @@ namespace COM_BLAS_UnitTest_Managed
             double betaReal = -0.3;
             double betaImag = 0.5;
 
-            ExecuteOrInconclusive(nameof(IBLASComplex.ZHemvSimple), () =>
+            ExecuteOrInconclusive("ZHemvSimple", () =>
                 blas.ZHemvSimple(aReal, aImag, xReal, xImag, ref yReal, ref yImag,
                                   alphaReal, alphaImag, betaReal, betaImag,
                                   BlasLayout.RowMajor, BlasUplo.Upper));
@@ -343,7 +344,7 @@ namespace COM_BLAS_UnitTest_Managed
 
             double alphaReal = 1.1;
 
-            ExecuteOrInconclusive(nameof(IBLASComplex.ZHerSimple), () =>
+            ExecuteOrInconclusive("ZHerSimple", () =>
                 blas.ZHerSimple(xReal, xImag, ref aReal, ref aImag,
                                 alphaReal, BlasLayout.RowMajor, BlasUplo.Upper));
 
@@ -372,7 +373,7 @@ namespace COM_BLAS_UnitTest_Managed
             double alphaReal = 0.6;
             double alphaImag = -0.45;
 
-            ExecuteOrInconclusive(nameof(IBLASComplex.ZHer2Simple), () =>
+            ExecuteOrInconclusive("ZHer2Simple", () =>
                 blas.ZHer2Simple(xReal, xImag, yReal, yImag, ref aReal, ref aImag,
                                  alphaReal, alphaImag,
                                  BlasLayout.RowMajor, BlasUplo.Upper));
@@ -401,7 +402,7 @@ namespace COM_BLAS_UnitTest_Managed
             double[] originalXReal = (double[])xReal.Clone();
             double[] originalXImag = (double[])xImag.Clone();
 
-            ExecuteOrInconclusive(nameof(IBLASComplex.ZTrmvSimple), () =>
+            ExecuteOrInconclusive("ZTrmvSimple", () =>
                 blas.ZTrmvSimple(aReal, aImag, ref xReal, ref xImag,
                                  BlasLayout.RowMajor, BlasUplo.Upper,
                                  BlasTranspose.NoTrans, BlasDiag.NonUnit));
@@ -429,7 +430,7 @@ namespace COM_BLAS_UnitTest_Managed
             double[] originalXReal = (double[])xReal.Clone();
             double[] originalXImag = (double[])xImag.Clone();
 
-            ExecuteOrInconclusive(nameof(IBLASComplex.ZTrsvSimple), () =>
+            ExecuteOrInconclusive("ZTrsvSimple", () =>
                 blas.ZTrsvSimple(aReal, aImag, ref xReal, ref xImag,
                                  BlasLayout.RowMajor, BlasUplo.Upper,
                                  BlasTranspose.NoTrans, BlasDiag.NonUnit));
@@ -452,7 +453,7 @@ namespace COM_BLAS_UnitTest_Managed
             double[] xReal = new double[] { 0.8, -1.2, 0.4, -0.9 };
             double[] xImag = new double[] { -0.5, 0.6, 1.3, -0.7 };
 
-            ExecuteOrInconclusive(nameof(IBLASComplex.ZNrm2), () =>
+            ExecuteOrInconclusive("ZNrm2", () =>
             {
                 double result = blas.ZNrm2(4, xReal, xImag, 1);
                 double expected = ComplexNorm2(ToComplexVector(xReal, xImag), 4, 1);
@@ -469,7 +470,7 @@ namespace COM_BLAS_UnitTest_Managed
             double[] xReal = new double[] { 0.8, -1.2, 0.4, -0.9 };
             double[] xImag = new double[] { -0.5, 0.6, 1.3, -0.7 };
 
-            ExecuteOrInconclusive(nameof(IBLASComplex.ZAsum), () =>
+            ExecuteOrInconclusive("ZAsum", () =>
             {
                 double result = blas.ZAsum(4, xReal, xImag, 1);
                 double expected = ComplexAsum(ToComplexVector(xReal, xImag), 4, 1);
@@ -491,7 +492,7 @@ namespace COM_BLAS_UnitTest_Managed
             double alphaReal = 1.1;
             double alphaImag = -0.6;
 
-            ExecuteOrInconclusive(nameof(IBLASComplex.ZScal), () =>
+            ExecuteOrInconclusive("ZScal", () =>
                 blas.ZScal(4, ref xReal, ref xImag, 1, alphaReal, alphaImag));
 
             Complex[] expected = ScaleVector(ToComplexVector(originalXReal, originalXImag), new Complex(alphaReal, alphaImag));
@@ -512,7 +513,7 @@ namespace COM_BLAS_UnitTest_Managed
 
             double alphaReal = -1.5;
 
-            ExecuteOrInconclusive(nameof(IBLASComplex.ZScalReal), () =>
+            ExecuteOrInconclusive("ZScalReal", () =>
                 blas.ZScalReal(3, alphaReal, ref xReal, ref xImag, 1));
 
             Complex[] expected = ScaleVector(ToComplexVector(originalXReal, originalXImag), new Complex(alphaReal, 0.0));
@@ -530,7 +531,7 @@ namespace COM_BLAS_UnitTest_Managed
             double[] yReal = new double[] { 0.0, 0.0, 0.0 };
             double[] yImag = new double[] { 0.0, 0.0, 0.0 };
 
-            ExecuteOrInconclusive(nameof(IBLASComplex.ZCopy), () =>
+            ExecuteOrInconclusive("ZCopy", () =>
                 blas.ZCopy(3, xReal, xImag, 1, ref yReal, ref yImag, 1));
 
             AssertComplexVectorEqual(ToComplexVector(xReal, xImag), yReal, yImag);
@@ -549,7 +550,7 @@ namespace COM_BLAS_UnitTest_Managed
             Complex[] originalX = ToComplexVector(xReal, xImag);
             Complex[] originalY = ToComplexVector(yReal, yImag);
 
-            ExecuteOrInconclusive(nameof(IBLASComplex.ZSwap), () =>
+            ExecuteOrInconclusive("ZSwap", () =>
                 blas.ZSwap(3, ref xReal, ref xImag, 1, ref yReal, ref yImag, 1));
 
             AssertComplexVectorEqual(originalY, xReal, xImag);
@@ -565,7 +566,7 @@ namespace COM_BLAS_UnitTest_Managed
             double[] xReal = new double[] { 0.5, -2.0, 1.0, 0.2 };
             double[] xImag = new double[] { -0.4, 1.5, -3.0, 0.1 };
 
-            ExecuteOrInconclusive(nameof(IBLASComplex.ZIamax), () =>
+            ExecuteOrInconclusive("ZIamax", () =>
             {
                 int result = blas.ZIamax(4, xReal, xImag, 1);
                 int expected = ComplexIamax(ToComplexVector(xReal, xImag), 4, 1);
@@ -590,7 +591,7 @@ namespace COM_BLAS_UnitTest_Managed
             double c = Math.Cos(0.6);
             double s = Math.Sin(0.6);
 
-            ExecuteOrInconclusive(nameof(IBLASComplex.ZRot), () =>
+            ExecuteOrInconclusive("ZRot", () =>
                 blas.ZRot(3, ref xReal, ref xImag, 1, ref yReal, ref yImag, 1, c, s));
 
             Complex[] originalX = ToComplexVector(originalXReal, originalXImag);
@@ -615,7 +616,7 @@ namespace COM_BLAS_UnitTest_Managed
             Complex originalA = new Complex(aReal, aImag);
             Complex originalB = new Complex(bReal, bImag);
 
-            ExecuteOrInconclusive(nameof(IBLASComplex.ZRotg), () =>
+            ExecuteOrInconclusive("ZRotg", () =>
             {
                 blas.ZRotg(ref aReal, ref aImag, ref bReal, ref bImag, out double c, out double sReal, out double sImag);
 
