@@ -39,7 +39,7 @@ public:
     BEGIN_COM_MAP(CBLAS)
         COM_INTERFACE_ENTRY(IBLAS)
         COM_INTERFACE_ENTRY(IBLASComplex)
-        COM_INTERFACE_ENTRY2(IDispatch, IBLAS)
+        COM_INTERFACE_ENTRY2(IDispatch, IBLASComplex)
         COM_INTERFACE_ENTRY(ISupportErrorInfo)
     END_COM_MAP()
 
@@ -60,6 +60,10 @@ public:
     }
 
 public:
+
+    // IDispatch: expose both IBLASComplex and legacy IBLAS entry points.
+    STDMETHOD(GetIDsOfNames)(REFIID riid, LPOLESTR* rgszNames, UINT cNames, LCID lcid, DISPID* rgdispid) override;
+    STDMETHOD(Invoke)(DISPID dispidMember, REFIID riid, LCID lcid, WORD wFlags, DISPPARAMS* pdispparams, VARIANT* pvarResult, EXCEPINFO* pexcepinfo, UINT* puArgErr) override;
 
 
 

@@ -14,16 +14,18 @@
 
 ## 対応方針
 1. **Type Library と IDL の同期**: 現行配布物の `COMBLAS.idl` と生成された `COMBLAS.tlb` を照合し、漏れている `IBLASComplex` メソッドを洗い出す。IDL 更新後は必ず MIDL を再実行し、`COMBLASLib` の登録を更新する。
-2. **IDL/実装/テストのインターフェース整合**: SAFEARRAY の次元・下限・`[in, out]` 指定、係数パラメータの並びをテスト仕様と突き合わせ、COM 実装 (`BLAS.cpp`) の marshaling ヘルパーを調整する。
-3. **エラーコード仕様の明文化**: HRESULT の返却条件を `ReadMe.md` / テストコメントで明記し、`E_POINTER` を期待するケースについて実装側と合意を取る。合意結果に合わせて実装またはテストを修正。
-4. **ドキュメント整備**: `IBLASComplex_new_api_definitions.md` と `ReadMe.md` を現状に合わせて更新し、進捗と既知の制限を明確化。
-5. **検証とリグレッション防止**: フル MSBuild で COM DLL とテストプロジェクトをビルドし、`COM_BLAS_UnitTest_Managed.exe` のフル実行で全 113 テストの成功を確認する。必要に応じて `dotnet test` 用の代替シナリオを `TROUBLESHOOTING.md` に追記。
+2. **COM マップの既定 IDispatch を `IBLASComplex` に切り替え**: `CBLAS` の `COM_INTERFACE_ENTRY2(IDispatch, ...)` を見直し、`IID_IDispatch` から `IBLASComplex` の型情報を返すよう ATL マップを修正する。これにより `tlbimp` 生成クラスや VBA などの Automation クライアントでも 27 メソッドが列挙可能になる。
+3. **IDL/実装/テストのインターフェース整合**: SAFEARRAY の次元・下限・`[in, out]` 指定、係数パラメータの並びをテスト仕様と突き合わせ、COM 実装 (`BLAS.cpp`) の marshaling ヘルパーを調整する。
+4. **エラーコード仕様の明文化**: HRESULT の返却条件を `ReadMe.md` / テストコメントで明記し、`E_POINTER` を期待するケースについて実装側と合意を取る。合意結果に合わせて実装またはテストを修正。
+5. **ドキュメント整備**: `IBLASComplex_new_api_definitions.md` と `ReadMe.md` を現状に合わせて更新し、進捗と既知の制限を明確化。
+6. **検証とリグレッション防止**: フル MSBuild で COM DLL とテストプロジェクトをビルドし、`COM_BLAS_UnitTest_Managed.exe` のフル実行で全 113 テストの成功を確認する。必要に応じて `dotnet test` 用の代替シナリオを `TROUBLESHOOTING.md` に追記。
 
 ## 手順詳細
 ### フェーズ 0: 現状の Type Library 解析
 - `oleview` もしくは `midl /tlb` を用いて現行 `COMBLAS.tlb` をダンプし、`IBLASComplex` のメソッド一覧を抽出。
 - `git` 上の `COM_BLAS/COMBLAS.idl` と差分比較し、未公開メソッドと署名差異を表にまとめる。
 - `IBLASComplex_new_api_definitions.md` に現状のギャップを追記し、進捗ログを刷新。
+- 2025-09-22 18:55 (JST): `midl COMBLAS.idl` → `tlbimp` の結果、`IBLASComplex` の公開メソッドが 4 件→27 件になったことを確認。旧バイナリ配布物との差分リストは `IBLASComplex_new_api_definitions.md` に反映済み。
 
 ### フェーズ 1: IDL/実装の同期
 - `COM_BLAS/COMBLAS.idl` を v1.3 仕様に更新し、必要な `[propget]` / `[propput]` 属性・`SAFEARRAY` 宣言を追加。
@@ -32,6 +34,7 @@
 
 ### フェーズ 2: 実装と marshaling 調整
 - `BLAS.cpp` に欠落している `IBLASComplex` 実装を追加 (既存の `GatherComplexMatrix` 等を流用)。
+- `BLAS.h` の COM マップを修正し、`IID_IDispatch` に対して `IBLASComplex` の `IDispatchImpl` を返すよう `COM_INTERFACE_ENTRY2` を更新。必要に応じて QueryInterface の拡張を検討。
 - Hermitian/Symmetric 系は `CompleteHermitianMatrix` などのヘルパーで反対側の三角を同期し、テスト期待値と一致させる。
 - `Rotmg` 系は `VARIANT` 変換ヘルパーを精査し、`0.0` を渡した際の `ChangeType` 失敗を解消。
 
@@ -54,7 +57,8 @@
 - 一時的にテストを `NotImplemented` マークで抑制する案は品質低下につながるため採用しない。
 
 ## 次のアクションチェックリスト
-- [ ] `COMBLAS.tlb` の実体をダンプし、欠落メソッド一覧を作成
+- [x] `COMBLAS.tlb` の実体をダンプし、欠落メソッド一覧を作成（2025-09-22 18:55 JST 時点で 27 メソッド公開を確認済み）
+- [x] COM マップの `IID_IDispatch` 対応を `IBLASComplex` に切り替え（2025-09-22 21:15 JST 適用）
 - [ ] IDL とドキュメントを v1.3 仕様に同期
 - [ ] `BLAS.cpp` の実装補完と HRESULT 整理
 - [ ] フル MSBuild + MSTest 実行で 113 件成功を確認

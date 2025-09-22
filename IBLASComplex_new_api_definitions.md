@@ -1,12 +1,14 @@
 # IBLASComplex 新規API定義メモ
 ## Progress Notes (2025-09-22)
-- MSTest (2025-09-22) の結果、`COMBLASLib.BLASClass` に `ZSymmSimple` など複素数 API が公開されておらず、41 件のテストが `RuntimeBinderException` で失敗している。
-- `COMBLAS.tlb` を `oleview` で確認したところ、IDL 上で追加済みの `IBLASComplex` メソッドがエクスポートされていない。Type Library の再生成と DLL 再登録が未実施と推測。
-- 2025-09-21 に「実装済み」と記録した内容はソース側の進捗メモであり、配布バイナリには反映されていない。以下の「追加対象API一覧」は引き続き対応が必要な項目として扱う。
+- 2025-09-22 18:50 (JST): `VsDevCmd` 経由で `midl COMBLAS.idl` を再実行し、`COM_BLAS/COMBLAS.tlb` を再生成。`tlbimp` の結果、`IBLASComplex` の 27 メソッドすべて（`ZAsum`〜`ZTrsvSimple` を含む）が公開されていることを確認した。
+- 2025-09-22 午前の MSTest では `COMBLASLib.BLASClass` に複素数 API が存在せず 41 件が `RuntimeBinderException` で失敗していたが、原因は旧タイプライブラリが `ZGemmSimple` / `ZGemvSimple` / `ZAxpy` / `ZDot` の4件しかエクスポートしていなかったため。新しい `COMBLAS.tlb` を登録・配布すればこのカテゴリの失敗は解消見込み。
+- 2025-09-22 21:15 (JST): `CBLAS` の COM マップを更新し、`IID_IDispatch` 要求時に `IBLASComplex` の `IDispatchImpl` を返すよう変更。ATL の `COM_INTERFACE_ENTRY2(IDispatch, IBLASComplex)` に切り替えつつ、`GetIDsOfNames`/`Invoke` をオーバーライドして従来の `IBLAS` もフォールバック解決することで、既存の実数 API 66 件と新規複素数 API 27 件のどちらも遅延バインディングから呼び出せることを PowerShell (`[COMBLASLib.IBLASComplex].GetMembers()`) と MSTest で確認。
+- 2025-09-21 に「実装済み」と記録した内容はソース側の進捗メモであり、配布バイナリには反映されていない。以下の「追加対象API一覧」は実装確認とテスト整備を継続する。
 
 
 ## 背景
-- 2025-09-21 時点で `IBLASComplex` が公開しているのは `ZGemmSimple` / `ZGemvSimple` / `ZAxpy` / `ZDot` / `ZSymmSimple` / `ZHemmSimple` / `ZSyrkSimple` の7件のみで、実数用 `IBLAS` が提供する残りの BLAS Level 1/2/3 に対応する複素数版が欠落している。
+- 2025-09-22 午前まで配布されていた `COMBLAS.tlb` では `IBLASComplex` の公開メソッドが `ZGemmSimple` / `ZGemvSimple` / `ZAxpy` / `ZDot` の4件に限定されており、残りの複素数 BLAS API が欠落していた。
+- 2025-09-22 18:50 (JST) に `midl` を再実行した結果、IDL 記述どおり 27 メソッドが生成された `COMBLAS.tlb` を確認済み。クライアント環境では DLL/TypeLib をセットで更新し `regsvr32 COM_BLAS.dll` をやり直す必要がある。
 - OpenBLAS には該当する `cblas_z*` 系関数が存在し、既に `GatherComplex*` / `ScatterComplex*` といった SAFEARRAY ヘルパーが揃っているため、追加のフォールバック実装は不要。
 - SAFEARRAY の次元 1 は列、次元 2 は行に相当するため、`PrepareMatrixView` / `ValidateComplexMatrixPair` で `[row, column]` 形式に正規化し、.NET の `double[,]` と一致させています。
 

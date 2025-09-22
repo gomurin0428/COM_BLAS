@@ -688,6 +688,4 @@ library COMBLASLib
     };
 };
 
-import "shobjidl.idl";
-
 

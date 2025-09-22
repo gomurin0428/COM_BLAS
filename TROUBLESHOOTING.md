@@ -15,6 +15,11 @@
 - 事象: `regsvr32 COM_BLAS.dll` 実行時に `libopenblas.dll` が見つからず `0x0000007E` (指定されたモジュールが見つかりません) で失敗する。
 - 対処: `COM_BLAS.dll` と同じフォルダー、または PATH に `libopenblas.dll` (x64) を配置する。インストーラーでは `libopenblas.dll` を payload に含め、VC++ 再頒布可能パッケージ (MSVCP140 など) を前提条件に設定する。
 
+## COM Automation で `Z*` 系メソッドが列挙されない
+- 事象: `dynamic blas = new COMBLASLib.BLASClass();` や VBA で `CreateObject("COMBLAS.BLAS")` した際、`ZGemmSimple` など 4 件しか表示されず他の複素数 API が見つからない。
+- 原因: 旧 DLL では `IID_IDispatch` が `IBLAS` の型情報を返しており、`IBLASComplex` 27 メソッドが列挙されなかった。
+- 対処: 2025-09-22 21:15 (JST) 適用のビルド以降では `CBLAS` の COM マップが `IBLASComplex` を返しつつ、`GetIDsOfNames`/`Invoke` で実数 API (IBLAS) にフォールバックするよう修正済み。`COM_BLAS.dll` と `COMBLAS.tlb` を最新に置き換え、`regsvr32 /s COM_BLAS.dll` で再登録する。既存の .NET プロジェクトは `tlbimp` 再実行や参照の再解決を行う。
+
 ## Hermitian / Symmetric 系 API で行列がミラーリングされない
 - 事象: `zher*` / `zsyr*` / `zhemv` などは片側三角のみを更新するため、SAFEARRAY に書き戻す前に対角線や反対側三角が未更新のまま残り、マネージド テストで失敗する。
 - 対処: `CompleteHermitianMatrix` / `CompleteSymmetricMatrix` を必ず呼び出して両側を同期し、複素対角をゼロ化してから `ScatterComplexMatrix` で SAFEARRAY へ戻す。新規 API 追加時も同じパターンを踏襲する。
@@ -33,4 +38,4 @@
   2. `TestResults/*/` 内の `.trx` を確認し、失敗している SAFEARRAY の下限・行列レイアウトを調査する。
   3. `COM_BLAS/BLAS.cpp` の `PrepareMatrixView` / `Gather*` / `Scatter*` にブレークポイントを置き、RowMajor/ColumnMajor や LBound の扱いをトレースする。
   4. `oleview` などで `COMBLAS.tlb` 内の `IBLASComplex` を開き、期待するメソッドがエクスポートされているか確認し、もし欠けていれば `midl` 再実行と DLL 再登録を行う。
-- 備考: 2025-09-22 時点では配布 DLL に複素数 API が含まれておらず、41 件のテストが `RuntimeBinderException` で失敗する既知事象。Type Library を更新したビルドに差し替えることで解消可能。
+- 備考: 2025-09-22 18:50 (JST) に `COM_BLAS/COMBLAS.idl` を再 MIDL したタイプライブラリでは `IBLASComplex` の 27 メソッドが公開される。旧 DLL/`COMBLAS.tlb` を参照している環境では `regsvr32 COM_BLAS.dll` で再登録し、タイムスタンプ 2025-09-22 18:50 以降のファイルに置き換えること。

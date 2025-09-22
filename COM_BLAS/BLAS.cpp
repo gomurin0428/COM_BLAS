@@ -25,8 +25,8 @@ namespace {
     }
 
     HRESULT Get1DLength(SAFEARRAY* sa, size_t& len) noexcept {
-        if (!sa) return SetComError(L"SAFEARRAY ‚ª NULL ‚Å‚·B", E_INVALIDARG);
-        if (sa->cDims != 1) return SetComError(L"1 ŸŒ³‚Ì SAFEARRAY ‚ğ“n‚µ‚Ä‚­‚¾‚³‚¢B", E_INVALIDARG);
+        if (!sa) return SetComError(L"SAFEARRAY ï¿½ï¿½ NULL ï¿½Å‚ï¿½ï¿½B", E_INVALIDARG);
+        if (sa->cDims != 1) return SetComError(L"1 ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ SAFEARRAY ï¿½ï¿½nï¿½ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½B", E_INVALIDARG);
 
         LONG lbound = 0, ubound = -1;
         HRESULT hr = SafeArrayGetLBound(sa, 1, &lbound);
@@ -171,7 +171,7 @@ namespace {
         if (sa->cDims != 2) {
             return ParameterError(name, L"SAFEARRAY must be two-dimensional.");
         }
-        // SAFEARRAY ‚ÌŸŒ³ 1 (index=1) ‚ÍsAŸŒ³ 2 ‚Í—ñ‚É‘Î‰‚·‚éB
+        // SAFEARRAY ï¿½Ìï¿½ï¿½ï¿½ 1 (index=1) ï¿½Ísï¿½Aï¿½ï¿½ï¿½ï¿½ 2 ï¿½Í—ï¿½É‘Î‰ï¿½ï¿½ï¿½ï¿½ï¿½B
         LONG lbRow = 0, ubRow = -1;
         LONG lbCol = 0, ubCol = -1;
         hr = SafeArrayGetLBound(sa, 1, &lbRow);
@@ -573,6 +573,63 @@ STDMETHODIMP CBLAS::InterfaceSupportsErrorInfo(REFIID riid)
 			return S_OK;
 	}
 	return S_FALSE;
+}
+
+STDMETHODIMP CBLAS::GetIDsOfNames(REFIID riid, LPOLESTR* rgszNames, UINT cNames, LCID lcid, DISPID* rgdispid)
+{
+    HRESULT hr = IDispatchImpl<IBLASComplex, &IID_IBLASComplex, &LIBID_COMBLASLib, 1, 3>::GetIDsOfNames(
+        riid, rgszNames, cNames, lcid, rgdispid);
+    if (hr == DISP_E_UNKNOWNNAME || hr == DISP_E_MEMBERNOTFOUND)
+    {
+        hr = IDispatchImpl<IBLAS, &IID_IBLAS, &LIBID_COMBLASLib, 1, 3>::GetIDsOfNames(
+            riid, rgszNames, cNames, lcid, rgdispid);
+    }
+    return hr;
+}
+
+STDMETHODIMP CBLAS::Invoke(DISPID dispidMember, REFIID riid, LCID lcid, WORD wFlags,
+    DISPPARAMS* pdispparams, VARIANT* pvarResult, EXCEPINFO* pexcepinfo, UINT* puArgErr)
+{
+    DISPPARAMS paramsCopy{};
+    std::vector<CComVariant> argCopy;
+    std::vector<DISPID> namedCopy;
+
+    if (pdispparams != nullptr)
+    {
+        paramsCopy = *pdispparams;
+        if (pdispparams->cArgs > 0 && pdispparams->rgvarg != nullptr)
+        {
+            argCopy.reserve(pdispparams->cArgs);
+            for (UINT i = 0; i < pdispparams->cArgs; ++i)
+            {
+                argCopy.emplace_back(pdispparams->rgvarg[i]);
+            }
+            paramsCopy.rgvarg = reinterpret_cast<VARIANT*>(argCopy.data());
+        }
+        if (pdispparams->cNamedArgs > 0 && pdispparams->rgdispidNamedArgs != nullptr)
+        {
+            namedCopy.assign(pdispparams->rgdispidNamedArgs,
+                pdispparams->rgdispidNamedArgs + pdispparams->cNamedArgs);
+            paramsCopy.rgdispidNamedArgs = namedCopy.data();
+        }
+    }
+
+    HRESULT hr = IDispatchImpl<IBLASComplex, &IID_IBLASComplex, &LIBID_COMBLASLib, 1, 3>::Invoke(
+        dispidMember, riid, lcid, wFlags,
+        (pdispparams != nullptr) ? &paramsCopy : pdispparams,
+        pvarResult, pexcepinfo, puArgErr);
+
+    if (hr == DISP_E_MEMBERNOTFOUND || hr == DISP_E_UNKNOWNNAME ||
+        hr == DISP_E_TYPEMISMATCH || hr == DISP_E_BADPARAMCOUNT)
+    {
+        if (puArgErr)
+        {
+            *puArgErr = 0;
+        }
+        hr = IDispatchImpl<IBLAS, &IID_IBLAS, &LIBID_COMBLASLib, 1, 3>::Invoke(
+            dispidMember, riid, lcid, wFlags, pdispparams, pvarResult, pexcepinfo, puArgErr);
+    }
+    return hr;
 }
 
 HRESULT __stdcall CBLAS::GemmSimple(SAFEARRAY* A, SAFEARRAY* B, SAFEARRAY** C, DOUBLE alpha, DOUBLE beta, BlasLayout layout, BlasTranspose transA, BlasTranspose transB)
@@ -1471,82 +1528,82 @@ HRESULT __stdcall CBLAS::Axpy(LONG n, DOUBLE alpha, SAFEARRAY* x, LONG incX, SAF
 
 HRESULT __stdcall CBLAS::Dot(LONG n, SAFEARRAY* x, LONG incX, SAFEARRAY* y, LONG incY, DOUBLE* result)
 {
-    // ƒ|ƒCƒ“ƒ^ŒŸØ
+    // ï¿½|ï¿½Cï¿½ï¿½ï¿½^ï¿½ï¿½ï¿½ï¿½
     if (!result) {
-        return SetComError(L"result ‚ª NULL ‚Å‚·B", E_POINTER);
+        return SetComError(L"result ï¿½ï¿½ NULL ï¿½Å‚ï¿½ï¿½B", E_POINTER);
     }
     *result = 0.0;
 
-    // n ŒŸØ
+    // n ï¿½ï¿½ï¿½ï¿½
     if (n < 0) {
-        return SetComError(L"n ‚Í 0 ˆÈã‚Å‚ ‚é•K—v‚ª‚ ‚è‚Ü‚·B", E_INVALIDARG);
+        return SetComError(L"n ï¿½ï¿½ 0 ï¿½Èï¿½Å‚ï¿½ï¿½ï¿½Kï¿½vï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ü‚ï¿½ï¿½B", E_INVALIDARG);
     }
     if (n == 0) {
-        // BLAS ‹K–ñFn==0 ‚Ì‚Æ‚«Œ‹‰Ê‚Í 0
+        // BLAS ï¿½Kï¿½ï¿½Fn==0 ï¿½Ì‚Æ‚ï¿½ï¿½ï¿½ï¿½Ê‚ï¿½ 0
         *result = 0.0;
         return S_OK;
     }
 
-    // ‘•ªŒŸØ
+    // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
     if (incX == 0 || incY == 0) {
-        return SetComError(L"incX ‚Æ incY ‚Í 0 ˆÈŠO‚Å‚ ‚é•K—v‚ª‚ ‚è‚Ü‚·B", E_INVALIDARG);
+        return SetComError(L"incX ï¿½ï¿½ incY ï¿½ï¿½ 0 ï¿½ÈŠOï¿½Å‚ï¿½ï¿½ï¿½Kï¿½vï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ü‚ï¿½ï¿½B", E_INVALIDARG);
     }
 
-    // SAFEARRAY ‚Ì’·‚³æ“¾
+    // SAFEARRAY ï¿½Ì’ï¿½ï¿½ï¿½ï¿½æ“¾
     size_t lenX = 0, lenY = 0;
     HRESULT hr = Get1DLength(x, lenX);
     if (FAILED(hr)) return hr;
     hr = Get1DLength(y, lenY);
     if (FAILED(hr)) return hr;
 
-    // ƒAƒNƒZƒX
+    // ï¿½Aï¿½Nï¿½Zï¿½X
     SafeArrayAccessor ax(x);
     SafeArrayAccessor ay(y);
     if (!ax.ptr || !ay.ptr) {
-        return SetComError(L"SAFEARRAY ‚Ìƒf[ƒ^ƒAƒNƒZƒX‚É¸”s‚µ‚Ü‚µ‚½B", E_FAIL);
+        return SetComError(L"SAFEARRAY ï¿½Ìƒfï¿½[ï¿½^ï¿½Aï¿½Nï¿½Zï¿½Xï¿½Éï¿½ï¿½sï¿½ï¿½ï¿½Ü‚ï¿½ï¿½ï¿½ï¿½B", E_FAIL);
     }
 
-    // •‰‚Ì‘•ª‚É‘Î‰FŠJnƒCƒ“ƒfƒbƒNƒX‚ğÅŒã‚Ì—v‘f‘¤‚ÉŠñ‚¹‚é
+    // ï¿½ï¿½ï¿½Ì‘ï¿½ï¿½ï¿½ï¿½É‘Î‰ï¿½ï¿½Fï¿½Jï¿½nï¿½Cï¿½ï¿½ï¿½fï¿½bï¿½Nï¿½Xï¿½ï¿½ï¿½ÅŒï¿½Ì—vï¿½fï¿½ï¿½ï¿½ÉŠñ‚¹‚ï¿½
     const long long nll = static_cast<long long>(n);
     const long long incXabs = static_cast<long long>(incX > 0 ? incX : -incX);
     const long long incYabs = static_cast<long long>(incY > 0 ? incY : -incY);
 
-    // g—p‚·‚éÅ‘åƒIƒtƒZƒbƒgi0-basedj
+    // ï¿½gï¿½pï¿½ï¿½ï¿½ï¿½Å‘ï¿½Iï¿½tï¿½Zï¿½bï¿½gï¿½i0-basedï¿½j
     // start = (inc<0) ? (n-1)*abs(inc) : 0
     const long long startX = (incX > 0) ? 0 : (nll - 1) * incXabs;
     const long long startY = (incY > 0) ? 0 : (nll - 1) * incYabs;
 
-    // ÅIƒAƒNƒZƒXˆÊ’u = start + (n-1)*abs(inc)
+    // ï¿½ÅIï¿½Aï¿½Nï¿½Zï¿½Xï¿½Ê’u = start + (n-1)*abs(inc)
     const long long lastX = startX + (nll - 1) * incXabs;
     const long long lastY = startY + (nll - 1) * incYabs;
 
-    // ‹«ŠEŒŸØilen ‚Í size_tAŒvZ‚Í long longj
+    // ï¿½ï¿½ï¿½Eï¿½ï¿½ï¿½Øilen ï¿½ï¿½ size_tï¿½Aï¿½vï¿½Zï¿½ï¿½ long longï¿½j
     if (!FitsInInt64(lenX) || !FitsInInt64(lenY)) {
-        return SetComError(L"SAFEARRAY ‚ª‘å‚«‚·‚¬‚Ü‚·B", E_INVALIDARG);
+        return SetComError(L"SAFEARRAY ï¿½ï¿½ï¿½å‚«ï¿½ï¿½ï¿½ï¿½ï¿½Ü‚ï¿½ï¿½B", E_INVALIDARG);
     }
     const long long lenXll = static_cast<long long>(lenX);
     const long long lenYll = static_cast<long long>(lenY);
 
     if (startX < 0 || lastX < 0 || startX >= lenXll || lastX >= lenXll) {
         std::wostringstream oss;
-        oss << L"x ‚Ì’·‚³ " << lenXll
-            << L" ‚É‘Î‚µ‚Ä (n=" << nll << L", incX=" << incX
-            << L") ‚ÌƒAƒNƒZƒX‚ª”ÍˆÍŠO‚Å‚·B";
+        oss << L"x ï¿½Ì’ï¿½ï¿½ï¿½ " << lenXll
+            << L" ï¿½É‘Î‚ï¿½ï¿½ï¿½ (n=" << nll << L", incX=" << incX
+            << L") ï¿½ÌƒAï¿½Nï¿½Zï¿½Xï¿½ï¿½ï¿½ÍˆÍŠOï¿½Å‚ï¿½ï¿½B";
         return SetComError(oss.str(), E_BOUNDS);
     }
     if (startY < 0 || lastY < 0 || startY >= lenYll || lastY >= lenYll) {
         std::wostringstream oss;
-        oss << L"y ‚Ì’·‚³ " << lenYll
-            << L" ‚É‘Î‚µ‚Ä (n=" << nll << L", incY=" << incY
-            << L") ‚ÌƒAƒNƒZƒX‚ª”ÍˆÍŠO‚Å‚·B";
+        oss << L"y ï¿½Ì’ï¿½ï¿½ï¿½ " << lenYll
+            << L" ï¿½É‘Î‚ï¿½ï¿½ï¿½ (n=" << nll << L", incY=" << incY
+            << L") ï¿½ÌƒAï¿½Nï¿½Zï¿½Xï¿½ï¿½ï¿½ÍˆÍŠOï¿½Å‚ï¿½ï¿½B";
         return SetComError(oss.str(), E_BOUNDS);
     }
 
-    // CBLAS ŒÄ‚Ño‚µiint ‚Ö‚ÌˆÀ‘SƒLƒƒƒXƒgŠm”Fj
+    // CBLAS ï¿½Ä‚Ñoï¿½ï¿½ï¿½iint ï¿½Ö‚Ìˆï¿½ï¿½Sï¿½Lï¿½ï¿½ï¿½Xï¿½gï¿½mï¿½Fï¿½j
     if (nll > (std::numeric_limits<int>::max)()
         || incXabs > (std::numeric_limits<int>::max)()
         || incYabs > (std::numeric_limits<int>::max)()) {
-        return SetComError(L"n ‚Ü‚½‚Í inc ‚ª‘å‚«‚·‚¬‚Ü‚·iint ‚Éû‚Ü‚è‚Ü‚¹‚ñjB", E_INVALIDARG);
+        return SetComError(L"n ï¿½Ü‚ï¿½ï¿½ï¿½ inc ï¿½ï¿½ï¿½å‚«ï¿½ï¿½ï¿½ï¿½ï¿½Ü‚ï¿½ï¿½iint ï¿½Éï¿½ï¿½Ü‚ï¿½Ü‚ï¿½ï¿½ï¿½jï¿½B", E_INVALIDARG);
     }
 
     const double* px = ax.ptr + static_cast<size_t>(startX);

@@ -5,20 +5,20 @@
 - `.gitignore`: ビルド生成物・VS のキャッシュ・TestResults などを無視する設定。
 - `Agents.md`: リポジトリ運用時の注意事項とガイドライン。
 - `COM_BLAS.sln`: Visual Studio ソリューション。COM 本体、proxy/stub、MSTest、Installer を束ねる。
-- `COMBLASComplex_recovery_plan.md`: 複素数 BLAS API がテストで欠落している事象に対する対応計画と検証チェックリスト。
-- `IBLASComplex_new_api_definitions.md`: 複素数 BLAS API 拡張の進捗メモと仕様整理。
+- `COMBLASComplex_recovery_plan.md`: 複素数 BLAS API がテストで欠落している事象に対する対応計画と検証チェックリスト。フェーズ0 (TypeLib ギャップ洗い出し) 完了ログに加えて、2025-09-22 の COM マップ修正 (IID_IDispatch→IBLASComplex) を対応方針へ反映。
+- `IBLASComplex_new_api_definitions.md`: 複素数 BLAS API 拡張の進捗メモと仕様整理。2025-09-22 に TypeLib 再生成状況と COM マップ更新ログ (IDispatch が 27 メソッドを返すことの検証結果) を追記。
 - `PrepareMatrixView_fix_plan.md`: SAFEARRAY の行列ビュー周りの改善計画と検証ログ。
-- `ReadMe.md`: COM_BLAS の概要、公開 API、ビルドとセットアップ手順。
+- `ReadMe.md`: COM_BLAS の概要、公開 API、ビルドとセットアップ手順。最新 TypeLib の再登録手順と、2025-09-22 時点で COM マップが `IBLASComplex` を既定 IDispatch に切り替えつつ `IBLAS` へフォールバックする旨を記載。
 - `TEXT_FILE_OVERVIEW.md`: 本ファイル。テキスト資産の一覧。
-- `TROUBLESHOOTING.md`: ビルド・テスト・依存 DLL の既知の落とし穴と対処法。
+- `TROUBLESHOOTING.md`: ビルド・テスト・依存 DLL の既知の落とし穴と対処法。TypeLib 再登録に加え、COM マップ更新後も複素数 API が列挙されない場合の対策を 2025-09-22 に追記。
 - `makingInstallerPlan.md`: Visual Studio Installer Projects を使った MSI 作成手順の詳細プラン。
 - `残作業.md`: リリース完了までに必要な TODO リスト。
 
 ## COM_BLAS ディレクトリ
 - `COM_BLAS/BLAS.cpp`: COM 実装の本体。SAFEARRAY マーシャリングと OpenBLAS 呼び出しを含む。
-- `COM_BLAS/BLAS.h`: `CBLAS` クラス宣言。`DECLARE_REGISTRY_RESOURCEID` 等の ATL マクロを定義。
+- `COM_BLAS/BLAS.h`: `CBLAS` クラス宣言。`DECLARE_REGISTRY_RESOURCEID` 等の ATL マクロに加え、2025-09-22 の `COM_INTERFACE_ENTRY2(IDispatch, IBLASComplex)` 変更を含む。
 - `COM_BLAS/BLAS.rgs`: BLAS クラスのレジストリ スクリプト (ProgID、CLSID、TypeLib)。
-- `COM_BLAS/COMBLAS.idl`: 公開インターフェース (IBLAS / IBLASComplex) と列挙体を定義する MIDL。
+- `COM_BLAS/COMBLAS.idl`: 公開インターフェース (IBLAS / IBLASComplex) と列挙体を定義する MIDL。2025-09-22 版では `midl` 再実行済みで TypeLib (27 メソッド) と同期済み。
 - `COM_BLAS/COMBLAS_i.h`: MIDL 自動生成のインターフェース定義ヘッダー。手動編集不可。
 - `COM_BLAS/COM_BLAS.cpp`: DLL エントリーポイントなど ATL のブートストラップ コード。
 - `COM_BLAS/COM_BLAS.def`: エクスポートシンボルの定義。

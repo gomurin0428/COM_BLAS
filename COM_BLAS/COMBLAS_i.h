@@ -81,7 +81,6 @@ typedef struct BLAS BLAS;
 /* header files for imported files */
 #include "oaidl.h"
 #include "ocidl.h"
-#include "shobjidl.h"
 
 #ifdef __cplusplus
 extern "C"{

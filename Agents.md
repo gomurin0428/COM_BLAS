@@ -9,4 +9,4 @@
 - 今後も別の作業者が引っ掛かりうる落とし穴があれば、TROUBLESHOOTING.mdに記載してください。なければ作ってください。
 - ファイルにアクセス(read/writeどちらでも)する場合は、常にdesktop-commander MCPサーバーを使ってください。
 - コマンドプロンプトやpowershellを使うときは、常にdesktop-commander MCPサーバーを使ってください。start_processなどのインターフェイスがあるはずです。
-- ビルドはC:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Current\Bin\MSBuild.exeを使ってください。
+- powershellでコマンドを投げる時は、必ず常にdesktop-commander MCPサーバーを使ってください。
