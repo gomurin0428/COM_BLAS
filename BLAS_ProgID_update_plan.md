@@ -1,20 +1,20 @@
 # BLAS ProgID を `Ckt.Com.Blas.BlasCore` に更新する計画
 
 ## 背景と目的
-- 現状の COM 登録スクリプト (`COM_BLAS/BLAS.rgs`) では ProgID が `MYBLAS` 系列のままで、ドキュメントやインストーラ計画も `COMBLAS.BLAS` を前提としている。
+- 当初は COM 登録スクリプト (`COM_BLAS/BLAS.rgs`) が `MYBLAS` 系列の ProgID を持ち、ドキュメントやインストーラ計画も `COMBLAS.BLAS` を前提としていたが、2025-09-23 の更新で `Ckt.Com.Blas.BlasCore` 系へ統一した。
 - 目標は、COM coclass `BLAS` の ProgID を製品命名規則に合わせて `Ckt.Com.Blas.BlasCore` へ統一し、ビルド・テスト・ドキュメント・インストーラのすべてで整合性を取ること。
 - 変更後も `CLSID_BLAS` や TypeLib GUID を変えずに既存クライアントとの互換性を保ちつつ、新 ProgID を優先する運用へ切り替える。
 
 ## 現状整理（2025-09-23 時点）
-- `COM_BLAS/BLAS.rgs` で VersionIndependentProgID/ProgID ともに `MYBLAS` 系列に固定されている。
-- 開発ドキュメント (`ReadMe.md`, `TROUBLESHOOTING.md`, `makingInstallerPlan.md`, `残作業.md`) が `COMBLAS.BLAS` を案内しており、新 ProgID への変更が伝わらない。
+- `COM_BLAS/BLAS.rgs` は 2025-09-23 更新で VersionIndependentProgID/ProgID ともに `Ckt.Com.Blas.BlasCore` 系へ切り替え済み (旧 `MYBLAS` 系の定義を解消)。
+- 開発ドキュメント (`ReadMe.md`, `TROUBLESHOOTING.md`, `makingInstallerPlan.md`, `残作業.md`) は 2025-09-23 時点ですべて `Ckt.Com.Blas.BlasCore` を案内する最新記述へ差し替え済み。
 - TypeLib (`COMBLAS.idl`) には `progid` 属性がなく、`BLASClass` という CoClass 名のみが露出している。Interop アセンブリ経由 (`new BLASClass()`) のテストは ProgID 変更の影響を受けない。
 - インストーラ関連 (WiX / VS Installer Projects) では具体的な ProgID をまだ配布物に書き込んでいないが、登録手順の記述は旧値を参照している。
 
 ## 対応方針と作業手順
 1. **仕様確認と名称定義**
    - ProgID を `Ckt.Com.Blas.BlasCore`（バージョン非依存）に固定し、必要ならバージョン付き ProgID `Ckt.Com.Blas.BlasCore.1` を定義する。
-   - 既存 ProgID を残すリダイレクトは不要という前提だが、互換要求があれば明示的に関係者へ確認する。
+   - 既存 ProgID を残すリダイレクトは不要という前提だが、互換要求があれば明示的に関係者へ確認する。->互換の必要なし。
 2. **レジストリスクリプト更新**
    - `COM_BLAS/BLAS.rgs` の `ProgID` / `VersionIndependentProgID` / ルートキー名をすべて `Ckt.Com.Blas.BlasCore` 系へ差し替える。
    - `CurVer` の値を最新のバージョン付き ProgID (`...BlasCore.1` など) に合わせて更新。

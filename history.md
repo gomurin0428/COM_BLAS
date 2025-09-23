@@ -5,3 +5,4 @@
 - 同ファイルの `CBLAS::Invoke` に `Rotmg` 専用のディスパッチを追加し、`dynamic` 呼び出し時に 5 番目の `param` が `VT_BYREF|VT_VARIANT` で渡されても SAFEARRAY を生成して返せるようにして `Rotmg_ScalarCase` の失敗を解消。
 - x64 構成で `COM_BLAS.vcxproj` を再ビルドし、`vstest.console` で `COM_BLAS_UnitTest_Managed` の全 113 テストが成功することを確認。
 - `BLAS_ProgID_update_plan.md` を作成し、ProgID を `Ckt.Com.Blas.BlasCore` へ切り替える際の手順・検証項目・リスクを整理。`TEXT_FILE_OVERVIEW.md` にも同計画を追記。
+- `COM_BLAS/BLAS.rgs` の ProgID/CurVer を `Ckt.Com.Blas.BlasCore` 系に更新し、関連ドキュメント (`ReadMe.md`, `makingInstallerPlan.md`, `TROUBLESHOOTING.md`, `残作業.md`, `TEXT_FILE_OVERVIEW.md`) を新 ProgID 前提へ統一。`msbuild COM_BLAS.sln /p:Configuration=Debug /p:Platform=x64` が成功することを確認。

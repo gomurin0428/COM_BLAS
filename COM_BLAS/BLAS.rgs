@@ -1,19 +1,19 @@
 HKCR
 {
-	MYBLAS.1 = s 'BLAS class'
+	Ckt.Com.Blas.BlasCore.1 = s 'BLAS class'
 	{
 		CLSID = s '{e8f3aed3-eec4-48ab-9925-c13253d4c396}'
 	}
-	MYBLAS = s 'BLAS class'
-	{		
-		CurVer = s 'MYBLAS.1'
+	Ckt.Com.Blas.BlasCore = s 'BLAS class'
+	{
+		CurVer = s 'Ckt.Com.Blas.BlasCore.1'
 	}
 	NoRemove CLSID
 	{
 		ForceRemove {e8f3aed3-eec4-48ab-9925-c13253d4c396} = s 'BLAS class'
 		{
-			ProgID = s 'MYBLAS.1'
-			VersionIndependentProgID = s 'MYBLAS'
+			ProgID = s 'Ckt.Com.Blas.BlasCore.1'
+			VersionIndependentProgID = s 'Ckt.Com.Blas.BlasCore'
 			ForceRemove Programmable
 			InprocServer32 = s '%MODULE%'
 			{

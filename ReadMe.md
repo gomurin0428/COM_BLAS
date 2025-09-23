@@ -73,7 +73,7 @@ COM_BLAS は BLAS の各ルーチンを COM として公開していますが、
 ## 代表的な利用イメージ
 ```csharp
 // C# から COM_BLAS を late binding で呼び出す例
-dynamic blas = Activator.CreateInstance(Type.GetTypeFromProgID("COMBLAS.BLAS"));
+dynamic blas = Activator.CreateInstance(Type.GetTypeFromProgID("Ckt.Com.Blas.BlasCore"));
 
 // 2x3 と 3x2 の行列乗算
 double[,] a = { { 1, 2, 3 }, { 4, 5, 6 } };
@@ -215,7 +215,7 @@ interface IBLASComplex : IDispatch {
 Sub TestComBlas()
     ' COM コンポーネントを生成
     Dim blas As Object
-    Set blas = CreateObject(""COMBLAS.BLAS"")
+    Set blas = CreateObject(""Ckt.Com.Blas.BlasCore"")
 
     ' 1x1 スカラーの GEMM: C = 1.5 * A*B + 0.2 * C
     Dim A(1 To 1, 1 To 1) As Double

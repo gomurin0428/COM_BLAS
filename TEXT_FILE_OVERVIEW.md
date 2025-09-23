@@ -18,7 +18,7 @@
 ## COM_BLAS ディレクトリ
 - `COM_BLAS/BLAS.cpp`: COM 実装の本体。SAFEARRAY マーシャリングと OpenBLAS 呼び出しに加え、2025-09-22 版で `EnsureDoubleSafeArray` の `NULL` 入力を `E_POINTER` に統一し、`CBLAS::Invoke` が `DISPPARAMS` を都度コピーして `IBLASComplex` → `IBLAS` の順で解決するようになった。2025-09-23 の修正では `TrmmSimple` へ `SAFEARRAY** B` が `NULL` のまま渡された場合に `E_POINTER` を返し直すガードと、`Rotmg` を COM Automation から呼び出した際に `VT_BYREF|VT_VARIANT` 経由の SAFEARRAY を正しく束ねる専用ディスパッチを追加。
 - `COM_BLAS/BLAS.h`: `CBLAS` クラス宣言。`DECLARE_REGISTRY_RESOURCEID` 等の ATL マクロに加え、2025-09-22 の `COM_INTERFACE_ENTRY2(IDispatch, IBLASComplex)` 変更を含む。
-- `COM_BLAS/BLAS.rgs`: BLAS クラスのレジストリ スクリプト (ProgID、CLSID、TypeLib)。
+- `COM_BLAS/BLAS.rgs`: BLAS クラスのレジストリ スクリプト。2025-09-23 更新で ProgID/VersionIndependentProgID を `Ckt.Com.Blas.BlasCore` 系へ統一し、`CurVer` も `...BlasCore.1` へ揃えた。
 - `COM_BLAS/COMBLAS.idl`: 公開インターフェース (IBLAS / IBLASComplex) と列挙体を定義する MIDL。2025-09-22 版では `midl` 再実行済みで TypeLib (27 メソッド) と同期済み。
 - `COM_BLAS/COMBLAS_i.h`: MIDL 自動生成のインターフェース定義ヘッダー。手動編集不可。
 - `COM_BLAS/COM_BLAS.cpp`: DLL エントリーポイントなど ATL のブートストラップ コード。

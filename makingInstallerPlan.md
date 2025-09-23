@@ -1,7 +1,7 @@
 # COM_BLAS インストーラ計画 (Visual Studio Installer Projects 版)
 
 ## 1. 前提と要件
-- 目的: Windows 10/11 (x64) の管理者ユーザーへ COM サーバー `COMBLAS.BLAS` を安定配布する。
+- 目的: Windows 10/11 (x64) の管理者ユーザーへ COM サーバー `Ckt.Com.Blas.BlasCore` を安定配布する。
 - 成果物: `COM_BLAS.dll`、`COMBLAS.tlb`、必要に応じて `ReadMe.md` の PDF や VBA サンプルなど。
 - 使用ツール: Visual Studio 2022 +「Microsoft Visual Studio Installer Projects 2022」拡張機能。
 - バージョン管理: `COM_BLAS.dll` のファイルバージョンと MSI のプロパティ (ProductVersion) を合わせ、UpgradeCode を固定してマイナーアップグレードに対応。
@@ -47,7 +47,7 @@
 - ビルド成果物 (`COM_BLAS.Setup\Release\COM_BLAS.Setup.msi` など) を `Installer\Artifacts` へコピーするスクリプトを作成し、CI で利用。
 
 ## 9. 検証手順
-- 手動インストール: `msiexec /i COM_BLAS.Setup.msi /l*v install.log` を実行し、完了後 `reg query HKCR\CLSID\{<CLSID>}` や `PowerShell: New-Object -ComObject COMBLAS.BLAS` で登録を確認。
+- 手動インストール: `msiexec /i COM_BLAS.Setup.msi /l*v install.log` を実行し、完了後 `reg query HKCR\CLSID\{<CLSID>}` や `PowerShell: New-Object -ComObject Ckt.Com.Blas.BlasCore` で登録を確認。
 - 単体テスト: `COM_BLAS_UnitTest_Managed` のテストをインストール済み環境で実行し、COM 経由で API が機能するか検証。
 - アンインストール: `msiexec /x {ProductCode}` を実行し、DLL やレジストリエントリが削除されることを確認。
 - サイレントインストール検証: `/qn`, `/l*v` オプションを使ってログ出力を確認し、企業配布向けの手順を固める。
