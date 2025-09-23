@@ -13,3 +13,6 @@
 - COM 参照を利用する MSTest プロジェクトを `CktComBlasLib` 参照＋`Ckt.Com.Blas.BlasCore` 生成に移行し、関連ドキュメント (`ReadMe.md`, `IBLASComplex_new_api_definitions.md`, `COMBLASComplex_recovery_plan.md`, `BLAS_ProgID_update_plan.md`, `TEXT_FILE_OVERVIEW.md`, `TROUBLESHOOTING.md`) を新命名規則で更新。
 - `COM_BLASPS/COM_BLASPS.vcxproj` の PreBuild と ModuleDefinitionFile を `..\COM_BLAS` 配下の `dlldata.c` / `COM_BLASps.def` を直接参照するよう調整し、Debug|x64 構成で単体ビルドが通ることを確認。
 - `msbuild COM_BLAS.sln /t:COM_BLAS /p:Configuration=Debug /p:Platform=x64` および `msbuild COM_BLASPS/COM_BLASPS.vcxproj /p:Configuration=Debug /p:Platform=x64` が警告のみで成功することを確認 (COM_BLAS 側は既存の C4819/C4267 警告のみ)。
+- Release|x64 のビルド後に `regsvr32` が `ExitCode=5` で失敗して登録できない事象を調査。`COM_BLAS\COM_BLAS\x64\Release\COM_BLAS.log` の `warning MSB3075`/`error MSB8011` と `Start-Process regsvr32` で再現し、管理者権限不足が原因と判明したため、対処法を `TROUBLESHOOTING.md`・`TEXT_FILE_OVERVIEW.md` に追記。
+- 管理者操作の要否を再確認するため、非昇格 PowerShell から `regsvr32 /s (x64\Release\COM_BLAS.dll)` を実行し、再度 `ExitCode=5` (アクセス拒否) を取得したことを確認。
+- 別の管理者権限操作として `New-Item HKLM:\SOFTWARE\CodexPrivilegeTest` を実行したところ成功し、当該キーが作成できることを確認 (作業後に `Remove-Item` で削除)。

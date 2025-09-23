@@ -15,6 +15,14 @@
 - 事象: `regsvr32 COM_BLAS.dll` 実行時に `libopenblas.dll` が見つからず `0x0000007E` (指定されたモジュールが見つかりません) で失敗する。
 - 対処: `COM_BLAS.dll` と同じフォルダー、または PATH に `libopenblas.dll` (x64) を配置する。インストーラーでは `libopenblas.dll` を payload に含め、VC++ 再頒布可能パッケージ (MSVCP140 など) を前提条件に設定する。
 
+## regsvr32 がコード 5 (アクセスが拒否されました) で失敗する
+- 事象: `msbuild COM_BLAS.sln /p:Configuration=Release /p:Platform=x64` や手動の `regsvr32 COM_BLAS.dll` が `ExitCode=5` となり、「アクセスが拒否されました」と表示される。`COM_BLAS\COM_BLAS\x64\Release\COM_BLAS.log` には `warning MSB3075` と `error MSB8011` が記録される。
+- 原因: `COM_BLAS.vcxproj` の `RegisterOutput=true` により、`HKLM\Software\Classes` への書き込みが必要になるが、昇格していないシェルから実行しているため管理者権限が不足している。
+- 対処:
+  1. 管理者 PowerShell / Developer Command Prompt を起動して `regsvr32 COM_BLAS.dll` を実行し、必要ならビルドも昇格セッションから行う。
+  2. per-user 登録で回避する場合は `regsvr32 /n /i:user COM_BLAS.dll` を実行するか、`msbuild ... /p:PerUserRedirection=true` を指定して HKCU 側に書き込む。
+  3. ビルド時の自動登録が不要であれば `COM_BLAS.vcxproj` の `RegisterOutput` を `false` に変更し、インストーラーや別途スクリプトで登録を行う。
+
 ## COM Automation で `Z*` 系メソッドが列挙されない
 - 事象: `dynamic blas = new Ckt.Com.Blas.BlasCore();` や VBA で `CreateObject("Ckt.Com.Blas.BlasCore")` した際、`ZGemmSimple` など 4 件しか表示されず他の複素数 API が見つからない。
 - 原因: 旧 DLL では `IID_IDispatch` が `IBLAS` の型情報を返しており、`IBLASComplex` 27 メソッドが列挙されなかった。
