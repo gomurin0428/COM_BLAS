@@ -199,6 +199,7 @@ interface IBLASComplex : IDispatch {
 - SAFEARRAY の検証は既存の `EnsureDoubleSafeArray` を流用し、実部/虚部で同じ境界になっていることを追加チェックする。
 - 2025-09-22 版の Type Library (COMBLASLib 1.3) では `IBLASComplex` の 27 メソッドが Automation から利用可能になった。旧バージョンの `COMBLAS.tlb` (4 メソッドのみ) を参照している環境では `regsvr32 COM_BLAS.dll` で DLL/TLB のペアを再登録すること。
 - 2025-09-22 21:15 (JST) 時点の `CBLAS` COM マップでは `IID_IDispatch` 要求時に `IBLASComplex` の `IDispatchImpl` を返すようになり、VBA や `dynamic` (C#) などの遅延バインディングでも複素数 API 27 件が列挙される。`GetIDsOfNames`/`Invoke` では `IBLAS` 側の型情報にフォールバックするため、実数 API も従来どおり同じ `IDispatch` ハンドルから呼び出せる。
+- 2025-09-22 22:40 (JST) 版以降では、`EnsureDoubleSafeArray` が `SAFEARRAY*` に `NULL` が渡された場合に `E_POINTER (0x80004003)` を返し、マネージド テストの `TrmmSimple_ReturnsPointerWhenBNull` と同じ期待値になる。また `CBLAS::Invoke` は `IBLASComplex` / `IBLAS` の各 `Invoke` 呼び出し前に `DISPPARAMS` をコピーし直すため、`Rotmg` など `[out] SAFEARRAY` を含む Automation 呼び出しでも `DISP_E_TYPEMISMATCH` で失敗しない。
 - `QueryInterface(IBLASComplex)` が失敗した場合は `E_NOINTERFACE` を返し、旧バージョンのクライアントは従来どおり `IBLAS` のみを利用できる。
 - `BlasTranspose.ConjTrans` は本インターフェースで初めて有効になるので、IDL コメントから「reserved」を削除し、動作を README に記述しておく。
 

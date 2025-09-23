@@ -15,7 +15,7 @@
 - `残作業.md`: リリース完了までに必要な TODO リスト。
 
 ## COM_BLAS ディレクトリ
-- `COM_BLAS/BLAS.cpp`: COM 実装の本体。SAFEARRAY マーシャリングと OpenBLAS 呼び出しを含む。
+- `COM_BLAS/BLAS.cpp`: COM 実装の本体。SAFEARRAY マーシャリングと OpenBLAS 呼び出しに加え、2025-09-22 版で `EnsureDoubleSafeArray` の `NULL` 入力を `E_POINTER` に統一し、`CBLAS::Invoke` が `DISPPARAMS` を都度コピーして `IBLASComplex` → `IBLAS` の順で解決するようになった。
 - `COM_BLAS/BLAS.h`: `CBLAS` クラス宣言。`DECLARE_REGISTRY_RESOURCEID` 等の ATL マクロに加え、2025-09-22 の `COM_INTERFACE_ENTRY2(IDispatch, IBLASComplex)` 変更を含む。
 - `COM_BLAS/BLAS.rgs`: BLAS クラスのレジストリ スクリプト (ProgID、CLSID、TypeLib)。
 - `COM_BLAS/COMBLAS.idl`: 公開インターフェース (IBLAS / IBLASComplex) と列挙体を定義する MIDL。2025-09-22 版では `midl` 再実行済みで TypeLib (27 メソッド) と同期済み。

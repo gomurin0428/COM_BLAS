@@ -20,6 +20,11 @@
 - 原因: 旧 DLL では `IID_IDispatch` が `IBLAS` の型情報を返しており、`IBLASComplex` 27 メソッドが列挙されなかった。
 - 対処: 2025-09-22 21:15 (JST) 適用のビルド以降では `CBLAS` の COM マップが `IBLASComplex` を返しつつ、`GetIDsOfNames`/`Invoke` で実数 API (IBLAS) にフォールバックするよう修正済み。`COM_BLAS.dll` と `COMBLAS.tlb` を最新に置き換え、`regsvr32 /s COM_BLAS.dll` で再登録する。既存の .NET プロジェクトは `tlbimp` 再実行や参照の再解決を行う。
 
+## PowerShell で `Internal Windows PowerShell error. Loading managed Windows PowerShell failed with error 8009001d.` が表示されビルドが開始しない
+- 事象: `vcvarsall.bat` 実行後に `MSBuild.exe COM_BLAS.sln`、`devenv.com /Build`、`vstest.console.exe` などを PowerShell から起動すると、DPAPI の初期化が失敗してコマンドが即終了しビルド/テストが走らない。
+- 原因: Windows 10/11 の一部環境で PowerShell 実行プロファイルが壊れており、CertificatePrivateKey の復号に失敗するケースがある。`vcvars64.bat` などバッチをネストすると再現しやすい。
+- 対処: `C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\Tools\VsDevCmd.bat -arch=x64` を `cmd.exe` から起動して VS Dev Command Prompt 上で `MSBuild.exe` / `vstest.console.exe` を実行するか、`cmd.exe` セッションで `dotnet` コマンドを呼び出す。また PowerShell を使う場合は `setx DOTNET_CLI_HOME %USERPROFILE%\.dotnet` で DPAPI が参照するプロファイルを明示し、`Remove-Item "$env:APPDATA\Microsoft\PowerShell\PSReadLine\ConsoleHost_history.txt" -Force` など壊れたファイルを再作成する。Windows Terminal を経由している場合は `powershell -NoProfile` で再実行し、必要に応じて `Enter-VsDevShell` を利用する。
+
 ## Hermitian / Symmetric 系 API で行列がミラーリングされない
 - 事象: `zher*` / `zsyr*` / `zhemv` などは片側三角のみを更新するため、SAFEARRAY に書き戻す前に対角線や反対側三角が未更新のまま残り、マネージド テストで失敗する。
 - 対処: `CompleteHermitianMatrix` / `CompleteSymmetricMatrix` を必ず呼び出して両側を同期し、複素対角をゼロ化してから `ScatterComplexMatrix` で SAFEARRAY へ戻す。新規 API 追加時も同じパターンを踏襲する。

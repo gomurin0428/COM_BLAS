@@ -103,6 +103,52 @@ namespace {
     template <typename... Args>
     void IgnoreUnused(Args&&...) noexcept {}
 
+    struct DispparamsCopy
+    {
+        DISPPARAMS params{};
+        std::vector<CComVariant> args;
+        std::vector<DISPID> named;
+    };
+
+    DISPPARAMS* PrepareDispparamsCopy(const DISPPARAMS* source, DispparamsCopy& copy)
+    {
+        if (!source)
+        {
+            return nullptr;
+        }
+
+        copy.params = *source;
+        copy.args.clear();
+        copy.named.clear();
+
+        if (source->cArgs > 0 && source->rgvarg != nullptr)
+        {
+            copy.args.reserve(source->cArgs);
+            for (UINT i = 0; i < source->cArgs; ++i)
+            {
+                copy.args.emplace_back(source->rgvarg[i]);
+            }
+            copy.params.rgvarg = reinterpret_cast<VARIANT*>(copy.args.data());
+        }
+        else
+        {
+            copy.params.rgvarg = nullptr;
+        }
+
+        if (source->cNamedArgs > 0 && source->rgdispidNamedArgs != nullptr)
+        {
+            copy.named.assign(source->rgdispidNamedArgs,
+                source->rgdispidNamedArgs + source->cNamedArgs);
+            copy.params.rgdispidNamedArgs = copy.named.data();
+        }
+        else
+        {
+            copy.params.rgdispidNamedArgs = nullptr;
+        }
+
+        return &copy.params;
+    }
+
     HRESULT ParameterError(const wchar_t* name, const wchar_t* message, HRESULT hr = E_INVALIDARG) noexcept {
         std::wostringstream oss;
         oss << L"[" << name << L"] " << message;
@@ -127,7 +173,7 @@ namespace {
 
     HRESULT EnsureDoubleSafeArray(SAFEARRAY* sa, const wchar_t* name) noexcept {
         if (!sa) {
-            return ParameterError(name, L"SAFEARRAY is NULL.");
+            return ParameterError(name, L"SAFEARRAY is NULL.", E_POINTER);
         }
         if ((sa->fFeatures & FADF_VARIANT) != 0) {
             return ParameterError(name, L"SAFEARRAY of VARIANT is not supported.", DISP_E_BADVARTYPE);
@@ -590,33 +636,12 @@ STDMETHODIMP CBLAS::GetIDsOfNames(REFIID riid, LPOLESTR* rgszNames, UINT cNames,
 STDMETHODIMP CBLAS::Invoke(DISPID dispidMember, REFIID riid, LCID lcid, WORD wFlags,
     DISPPARAMS* pdispparams, VARIANT* pvarResult, EXCEPINFO* pexcepinfo, UINT* puArgErr)
 {
-    DISPPARAMS paramsCopy{};
-    std::vector<CComVariant> argCopy;
-    std::vector<DISPID> namedCopy;
-
-    if (pdispparams != nullptr)
-    {
-        paramsCopy = *pdispparams;
-        if (pdispparams->cArgs > 0 && pdispparams->rgvarg != nullptr)
-        {
-            argCopy.reserve(pdispparams->cArgs);
-            for (UINT i = 0; i < pdispparams->cArgs; ++i)
-            {
-                argCopy.emplace_back(pdispparams->rgvarg[i]);
-            }
-            paramsCopy.rgvarg = reinterpret_cast<VARIANT*>(argCopy.data());
-        }
-        if (pdispparams->cNamedArgs > 0 && pdispparams->rgdispidNamedArgs != nullptr)
-        {
-            namedCopy.assign(pdispparams->rgdispidNamedArgs,
-                pdispparams->rgdispidNamedArgs + pdispparams->cNamedArgs);
-            paramsCopy.rgdispidNamedArgs = namedCopy.data();
-        }
-    }
+    DispparamsCopy complexCopy;
+    DISPPARAMS* complexParams = PrepareDispparamsCopy(pdispparams, complexCopy);
 
     HRESULT hr = IDispatchImpl<IBLASComplex, &IID_IBLASComplex, &LIBID_COMBLASLib, 1, 3>::Invoke(
         dispidMember, riid, lcid, wFlags,
-        (pdispparams != nullptr) ? &paramsCopy : pdispparams,
+        (complexParams != nullptr) ? complexParams : pdispparams,
         pvarResult, pexcepinfo, puArgErr);
 
     if (hr == DISP_E_MEMBERNOTFOUND || hr == DISP_E_UNKNOWNNAME ||
@@ -626,8 +651,13 @@ STDMETHODIMP CBLAS::Invoke(DISPID dispidMember, REFIID riid, LCID lcid, WORD wFl
         {
             *puArgErr = 0;
         }
+
+        DispparamsCopy fallbackCopy;
+        DISPPARAMS* fallbackParams = PrepareDispparamsCopy(pdispparams, fallbackCopy);
         hr = IDispatchImpl<IBLAS, &IID_IBLAS, &LIBID_COMBLASLib, 1, 3>::Invoke(
-            dispidMember, riid, lcid, wFlags, pdispparams, pvarResult, pexcepinfo, puArgErr);
+            dispidMember, riid, lcid, wFlags,
+            (fallbackParams != nullptr) ? fallbackParams : pdispparams,
+            pvarResult, pexcepinfo, puArgErr);
     }
     return hr;
 }
