@@ -1,4 +1,4 @@
-
+﻿
 
 #include "pch.h"
 #include "BLAS.h"
@@ -858,11 +858,11 @@ STDMETHODIMP CBLAS::InterfaceSupportsErrorInfo(REFIID riid)
 
 STDMETHODIMP CBLAS::GetIDsOfNames(REFIID riid, LPOLESTR* rgszNames, UINT cNames, LCID lcid, DISPID* rgdispid)
 {
-    HRESULT hr = IDispatchImpl<IBLASComplex, &IID_IBLASComplex, &LIBID_COMBLASLib, 1, 3>::GetIDsOfNames(
+    HRESULT hr = IDispatchImpl<IBLASComplex, &IID_IBLASComplex, &LIBID_CktComBlasLib, 1, 5>::GetIDsOfNames(
         riid, rgszNames, cNames, lcid, rgdispid);
     if (hr == DISP_E_UNKNOWNNAME || hr == DISP_E_MEMBERNOTFOUND)
     {
-        hr = IDispatchImpl<IBLAS, &IID_IBLAS, &LIBID_COMBLASLib, 1, 3>::GetIDsOfNames(
+        hr = IDispatchImpl<IBLAS, &IID_IBLAS, &LIBID_CktComBlasLib, 1, 5>::GetIDsOfNames(
             riid, rgszNames, cNames, lcid, rgdispid);
     }
     return hr;
@@ -903,7 +903,7 @@ STDMETHODIMP CBLAS::Invoke(DISPID dispidMember, REFIID riid, LCID lcid, WORD wFl
     DispparamsCopy complexCopy;
     DISPPARAMS* complexParams = PrepareDispparamsCopy(pdispparams, complexCopy);
 
-    HRESULT hr = IDispatchImpl<IBLASComplex, &IID_IBLASComplex, &LIBID_COMBLASLib, 1, 3>::Invoke(
+    HRESULT hr = IDispatchImpl<IBLASComplex, &IID_IBLASComplex, &LIBID_CktComBlasLib, 1, 5>::Invoke(
         dispidMember, riid, lcid, wFlags,
         (complexParams != nullptr) ? complexParams : pdispparams,
         pvarResult, pexcepinfo, puArgErr);
@@ -918,7 +918,7 @@ STDMETHODIMP CBLAS::Invoke(DISPID dispidMember, REFIID riid, LCID lcid, WORD wFl
 
         DispparamsCopy fallbackCopy;
         DISPPARAMS* fallbackParams = PrepareDispparamsCopy(pdispparams, fallbackCopy);
-        hr = IDispatchImpl<IBLAS, &IID_IBLAS, &LIBID_COMBLASLib, 1, 3>::Invoke(
+        hr = IDispatchImpl<IBLAS, &IID_IBLAS, &LIBID_CktComBlasLib, 1, 5>::Invoke(
             dispidMember, riid, lcid, wFlags,
             (fallbackParams != nullptr) ? fallbackParams : pdispparams,
             pvarResult, pexcepinfo, puArgErr);

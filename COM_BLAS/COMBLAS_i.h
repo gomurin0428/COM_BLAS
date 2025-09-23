@@ -66,16 +66,16 @@ typedef interface IBLASComplex IBLASComplex;
 #endif 	/* __IBLASComplex_FWD_DEFINED__ */
 
 
-#ifndef __BLAS_FWD_DEFINED__
-#define __BLAS_FWD_DEFINED__
+#ifndef __BlasCore_FWD_DEFINED__
+#define __BlasCore_FWD_DEFINED__
 
 #ifdef __cplusplus
-typedef class BLAS BLAS;
+typedef class BlasCore BlasCore;
 #else
-typedef struct BLAS BLAS;
+typedef struct BlasCore BlasCore;
 #endif /* __cplusplus */
 
-#endif 	/* __BLAS_FWD_DEFINED__ */
+#endif 	/* __BlasCore_FWD_DEFINED__ */
 
 
 /* header files for imported files */
@@ -1648,23 +1648,23 @@ EXTERN_C const IID IID_IBLASComplex;
 
 
 
-#ifndef __COMBLASLib_LIBRARY_DEFINED__
-#define __COMBLASLib_LIBRARY_DEFINED__
+#ifndef __CktComBlasLib_LIBRARY_DEFINED__
+#define __CktComBlasLib_LIBRARY_DEFINED__
 
-/* library COMBLASLib */
-/* [version][uuid] */ 
+/* library CktComBlasLib */
+/* [custom][version][uuid] */ 
 
 
-EXTERN_C const IID LIBID_COMBLASLib;
+EXTERN_C const IID LIBID_CktComBlasLib;
 
-EXTERN_C const CLSID CLSID_BLAS;
+EXTERN_C const CLSID CLSID_BlasCore;
 
 #ifdef __cplusplus
 
 class DECLSPEC_UUID("e8f3aed3-eec4-48ab-9925-c13253d4c396")
-BLAS;
+BlasCore;
 #endif
-#endif /* __COMBLASLib_LIBRARY_DEFINED__ */
+#endif /* __CktComBlasLib_LIBRARY_DEFINED__ */
 
 /* Additional Prototypes for ALL interfaces */
 

@@ -9,17 +9,18 @@
 - `BLAS_ProgID_update_plan.md`: COM coclass `BLAS` の ProgID を `Ckt.Com.Blas.BlasCore` に切り替えるための作業計画と検証項目。
 - `IBLASComplex_new_api_definitions.md`: 複素数 BLAS API 拡張の進捗メモと仕様整理。2025-09-22 に TypeLib 再生成状況と COM マップ更新ログ (IDispatch が 27 メソッドを返すことの検証結果) を追記。
 - `PrepareMatrixView_fix_plan.md`: SAFEARRAY の行列ビュー周りの改善計画と検証ログ。
-- `ReadMe.md`: COM_BLAS の概要、公開 API、ビルドとセットアップ手順。最新 TypeLib の再登録手順と、2025-09-22 時点で COM マップが `IBLASComplex` を既定 IDispatch に切り替えつつ `IBLAS` へフォールバックする旨を記載。
+- `CktComBlas_BlasCore_plan.md`: CoClass `BLAS` を .NET 側で `Ckt.Com.Blas.BlasCore` として公開するための調査・実装・検証計画を記載。
+- `ReadMe.md`: COM_BLAS の概要、公開 API、ビルドとセットアップ手順。2025-09-22 時点の `IBLASComplex` 既定 IDispatch 対応に加え、2025-09-23 版で TypeLib `CktComBlasLib` と `BlasCore` CoClass への改名手順を記載。
 - `TEXT_FILE_OVERVIEW.md`: 本ファイル。テキスト資産の一覧。
-- `TROUBLESHOOTING.md`: ビルド・テスト・依存 DLL の既知の落とし穴と対処法。TypeLib 再登録に加え、COM マップ更新後も複素数 API が列挙されない場合の対策を 2025-09-22 に追記。
+- `TROUBLESHOOTING.md`: ビルド・テスト・依存 DLL の既知の落とし穴と対処法。TypeLib 再登録に加え、COM マップ更新後も複素数 API が列挙されない場合の対策 (2025-09-22) と `Ckt.Com.Blas.BlasCore` を用いた再検証手順 (2025-09-23) を記録。
 - `makingInstallerPlan.md`: Visual Studio Installer Projects を使った MSI 作成手順の詳細プラン。
 - `残作業.md`: リリース完了までに必要な TODO リスト。
 
 ## COM_BLAS ディレクトリ
-- `COM_BLAS/BLAS.cpp`: COM 実装の本体。SAFEARRAY マーシャリングと OpenBLAS 呼び出しに加え、2025-09-22 版で `EnsureDoubleSafeArray` の `NULL` 入力を `E_POINTER` に統一し、`CBLAS::Invoke` が `DISPPARAMS` を都度コピーして `IBLASComplex` → `IBLAS` の順で解決するようになった。2025-09-23 の修正では `TrmmSimple` へ `SAFEARRAY** B` が `NULL` のまま渡された場合に `E_POINTER` を返し直すガードと、`Rotmg` を COM Automation から呼び出した際に `VT_BYREF|VT_VARIANT` 経由の SAFEARRAY を正しく束ねる専用ディスパッチを追加。
-- `COM_BLAS/BLAS.h`: `CBLAS` クラス宣言。`DECLARE_REGISTRY_RESOURCEID` 等の ATL マクロに加え、2025-09-22 の `COM_INTERFACE_ENTRY2(IDispatch, IBLASComplex)` 変更を含む。
+- `COM_BLAS/BLAS.cpp`: COM 実装の本体。SAFEARRAY マーシャリングと OpenBLAS 呼び出しに加え、2025-09-22 版で `EnsureDoubleSafeArray` の `NULL` 入力を `E_POINTER` に統一し、`CBLAS::Invoke` が `DISPPARAMS` を都度コピーして `IBLASComplex` → `IBLAS` の順で解決するようになった。2025-09-23 の修正では TypeLib 改名に伴い `IDispatchImpl` の `LIBID_CktComBlasLib` 参照へ更新しつつ、`TrmmSimple` の `SAFEARRAY** B` ガードと `Rotmg` の Automation 向けディスパッチ改善を継続適用。
+- `COM_BLAS/BLAS.h`: `CBLAS` クラス宣言。2025-09-22 の `COM_INTERFACE_ENTRY2(IDispatch, IBLASComplex)` 切り替えに加え、2025-09-23 で `CComCoClass`/`IDispatchImpl` を `CLSID_BlasCore` & `LIBID_CktComBlasLib` に差し替え、`OBJECT_ENTRY_AUTO(__uuidof(BlasCore), CBLAS)` とした。
 - `COM_BLAS/BLAS.rgs`: BLAS クラスのレジストリ スクリプト。2025-09-23 更新で ProgID/VersionIndependentProgID を `Ckt.Com.Blas.BlasCore` 系へ統一し、`CurVer` も `...BlasCore.1` へ揃えた。
-- `COM_BLAS/COMBLAS.idl`: 公開インターフェース (IBLAS / IBLASComplex) と列挙体を定義する MIDL。2025-09-22 版では `midl` 再実行済みで TypeLib (27 メソッド) と同期済み。
+- `COM_BLAS/COMBLAS.idl`: 公開インターフェース (IBLAS / IBLASComplex) と列挙体を定義する MIDL。2025-09-23 に `library CktComBlasLib` / `coclass BlasCore` へ改名し、`custom(… "Ckt.Com.Blas")` で .NET 名前空間を固定した。
 - `COM_BLAS/COMBLAS_i.h`: MIDL 自動生成のインターフェース定義ヘッダー。手動編集不可。
 - `COM_BLAS/COM_BLAS.cpp`: DLL エントリーポイントなど ATL のブートストラップ コード。
 - `COM_BLAS/COM_BLAS.def`: エクスポートシンボルの定義。
@@ -29,7 +30,7 @@
 - `COM_BLAS/COM_BLAS.vcxproj.filters`: プロジェクト内のフィルター構成。
 - `COM_BLAS/COM_BLASps.def`: proxy/stub DLL 用 DEF。
 - `COM_BLAS/dllmain.cpp`: DLL のエントリーポイント。
-- `COM_BLAS/dllmain.h`: `DllMain` の宣言と ATL モジュールのラッパー。
+- `COM_BLAS/dllmain.h`: `DllMain` の宣言と ATL モジュールのラッパー。2025-09-23 に `DECLARE_LIBID` を `LIBID_CktComBlasLib` へ更新。
 - `COM_BLAS/framework.h`: Windows ヘッダーの集約。
 - `COM_BLAS/pch.cpp`: プリコンパイル済みヘッダーのソース。
 - `COM_BLAS/pch.h`: PCH のヘッダー。
@@ -37,14 +38,14 @@
 - `COM_BLAS/targetver.h`: 対応 Windows バージョンの定義。
 
 ## COM_BLASPS ディレクトリ
-- `COM_BLASPS/COM_BLASPS.vcxproj`: proxy/stub DLL プロジェクト設定。vcpkg 自動統合を無効化。
+- `COM_BLASPS/COM_BLASPS.vcxproj`: proxy/stub DLL プロジェクト設定。vcpkg 自動統合を無効化し、2025-09-23 に `dlldata.c`/`COM_BLASps.def` を `..\COM_BLAS` から直接参照するよう PreBuild と `.def` パスを修正。
 - `COM_BLASPS/COM_BLASPS.vcxproj.filters`: proxy/stub プロジェクトのフィルター設定。
 
 ## COM_BLAS_UnitTest_Managed ディレクトリ
-- `COM_BLAS_UnitTest_Managed/COM_BLAS_UnitTest_Managed.csproj`: MSTest プロジェクト設定 (net8.0-windows x64)。COMBLASLib を COM 参照として解決し、Interop アセンブリを生成する。 
-- `COM_BLAS_UnitTest_Managed/ComplexBlasTests.Additional.cs`: 複素数 BLAS API 用の追加テスト。
+- `COM_BLAS_UnitTest_Managed/COM_BLAS_UnitTest_Managed.csproj`: MSTest プロジェクト設定 (net8.0-windows x64)。COM 参照は `CktComBlasLib` を指定し、`tlbimp` で生成した Interop を埋め込み参照する。
+- `COM_BLAS_UnitTest_Managed/ComplexBlasTests.Additional.cs`: 複素数 BLAS API 用の追加テスト。`Ckt.Com.Blas` の複素 CoClass を `ComplexBlasHandle` 経由で利用。
 - `COM_BLAS_UnitTest_Managed/MSTestSettings.cs`: テスト実行時の共通設定ヘルパー。
-- `COM_BLAS_UnitTest_Managed/Test1.cs`: COMBLASLib の IBLAS/IBLASComplex を直接 exercise する MSTest ケース。`BlasHandle`/`ComplexBlasHandle` で COM インスタンスの生成と解放を管理。
+- `COM_BLAS_UnitTest_Managed/Test1.cs`: `Ckt.Com.Blas` 名前空間の `IBLAS`/`IBLASComplex` を exercise する MSTest ケース。`BlasHandle`/`ComplexBlasHandle` が `new BlasCore()` で COM インスタンスを生成し管理。
 
 ## Installer ディレクトリ
 - `Installer/COM_BLAS.Installer.wixproj`: WiX v4 用 MSBuild プロジェクト。Package.wxs をビルドする設定。

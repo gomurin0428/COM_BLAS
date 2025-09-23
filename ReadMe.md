@@ -156,8 +156,8 @@ double[,] outer = (double[,])blas.OuterProduct(unitX, y);
 - 複素スカラーは実数引数と虚数引数を別々に受け取る。戻り値が複素数の場合は `[out] DOUBLE* realPart` と `[out] DOUBLE* imagPart` をセットで返す。
 
 ### インターフェース構成
-- タイプライブラリのバージョンを `library COMBLASLib version(1.3)` に上げ、既存 CoClass `BLAS` に新しい dual インターフェース `IBLASComplex` を実装させる。
-- `IBLASComplex` の IID は `uuid(7795391b-e2f5-4f20-943e-14d2aeb5e8b8)` を使用する。`LIBID_COMBLASLib` と CLSID (AppID) は変更しない。
+- タイプライブラリは `library CktComBlasLib version(1.3)` (出力ファイル `COMBLAS.tlb`) として公開し、既存 CoClass は `BlasCore` として `IBLAS` / `IBLASComplex` を実装する。
+- `IBLASComplex` の IID は `uuid(7795391b-e2f5-4f20-943e-14d2aeb5e8b8)` を使用し、`LIBID_CktComBlasLib` と CLSID (AppID) は従来と同じ GUID を継続利用する。
 - 新インターフェースは Automation 互換 (`dual`, `oleautomation`) で、従来の列挙型 (`BlasLayout`, `BlasTranspose` など) をそのまま再利用する。
 
 IDL スケルトン例:
@@ -197,7 +197,7 @@ interface IBLASComplex : IDispatch {
 
 ### エラーハンドリングと互換性
 - SAFEARRAY の検証は既存の `EnsureDoubleSafeArray` を流用し、実部/虚部で同じ境界になっていることを追加チェックする。
-- 2025-09-22 版の Type Library (COMBLASLib 1.3) では `IBLASComplex` の 27 メソッドが Automation から利用可能になった。旧バージョンの `COMBLAS.tlb` (4 メソッドのみ) を参照している環境では `regsvr32 COM_BLAS.dll` で DLL/TLB のペアを再登録すること。
+- 2025-09-22 版の Type Library (`CktComBlasLib` 1.3 / `COMBLAS.tlb`) では `IBLASComplex` の 27 メソッドが Automation から利用可能になった。旧バージョンの `COMBLAS.tlb` (4 メソッドのみ) を参照している環境では `regsvr32 COM_BLAS.dll` で DLL/TLB のペアを再登録すること。
 - 2025-09-22 21:15 (JST) 時点の `CBLAS` COM マップでは `IID_IDispatch` 要求時に `IBLASComplex` の `IDispatchImpl` を返すようになり、VBA や `dynamic` (C#) などの遅延バインディングでも複素数 API 27 件が列挙される。`GetIDsOfNames`/`Invoke` では `IBLAS` 側の型情報にフォールバックするため、実数 API も従来どおり同じ `IDispatch` ハンドルから呼び出せる。
 - 2025-09-22 22:40 (JST) 版以降では、`EnsureDoubleSafeArray` が `SAFEARRAY*` に `NULL` が渡された場合に `E_POINTER (0x80004003)` を返し、マネージド テストの `TrmmSimple_ReturnsPointerWhenBNull` と同じ期待値になる。また `CBLAS::Invoke` は `IBLASComplex` / `IBLAS` の各 `Invoke` 呼び出し前に `DISPPARAMS` をコピーし直すため、`Rotmg` など `[out] SAFEARRAY` を含む Automation 呼び出しでも `DISP_E_TYPEMISMATCH` で失敗しない。
 - `QueryInterface(IBLASComplex)` が失敗した場合は `E_NOINTERFACE` を返し、旧バージョンのクライアントは従来どおり `IBLAS` のみを利用できる。

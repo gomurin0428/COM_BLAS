@@ -673,15 +673,17 @@ interface IBLASComplex : IDispatch
 
 [
     uuid(5650ec59-f9dc-4d38-83b2-5828ff8c4d2a),
-    version(1.3),
+    version(1.5),
+    custom(0F21F359-AB84-41E8-9A78-36D110E6D2F9, "Ckt.Com.Blas")
 ]
-library COMBLASLib
+library CktComBlasLib
 {
     importlib("stdole2.tlb");
     [
-        uuid(e8f3aed3-eec4-48ab-9925-c13253d4c396)
+        uuid(e8f3aed3-eec4-48ab-9925-c13253d4c396),
+        custom(0F21F359-AB84-41E8-9A78-36D110E6D2F9, "Ckt.Com.Blas.BlasCore")
     ]
-        coclass BLAS
+        coclass BlasCore
     {
         [default] interface IBLAS;
         interface IBLASComplex;

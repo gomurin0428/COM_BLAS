@@ -6,3 +6,10 @@
 - x64 構成で `COM_BLAS.vcxproj` を再ビルドし、`vstest.console` で `COM_BLAS_UnitTest_Managed` の全 113 テストが成功することを確認。
 - `BLAS_ProgID_update_plan.md` を作成し、ProgID を `Ckt.Com.Blas.BlasCore` へ切り替える際の手順・検証項目・リスクを整理。`TEXT_FILE_OVERVIEW.md` にも同計画を追記。
 - `COM_BLAS/BLAS.rgs` の ProgID/CurVer を `Ckt.Com.Blas.BlasCore` 系に更新し、関連ドキュメント (`ReadMe.md`, `makingInstallerPlan.md`, `TROUBLESHOOTING.md`, `残作業.md`, `TEXT_FILE_OVERVIEW.md`) を新 ProgID 前提へ統一。`msbuild COM_BLAS.sln /p:Configuration=Debug /p:Platform=x64` が成功することを確認。
+- `CktComBlas_BlasCore_plan.md` を作成し、CoClass `BLAS` を .NET 側で `Ckt.Com.Blas.BlasCore` として公開するための調査・実装・検証の段取りを整理。`TEXT_FILE_OVERVIEW.md` に追記して共有。
+- 同計画の「現状調査」セクションを執筆し、`COMBLAS.idl`・`BLAS.rgs`・MSTest から得た現状と、TypeLib/ATL 側をどう改修するかの具体方針（TypeLib 名空間の `custom` 付与や `coclass` 改名等）を明文化。
+- `COM_BLAS/COMBLAS.idl` を `library CktComBlasLib` / `coclass BlasCore` へ改名し、`custom(0F21F359-AB84-41E8-9A78-36D110E6D2F9, "Ckt.Com.Blas")` を追加して .NET 相互運用アセンブリの名前空間を固定。MIDL 再生成で `COMBLAS_i.*` を更新。
+- ATL 実装 (`BLAS.h` / `BLAS.cpp` / `dllmain.h`) を `LIBID_CktComBlasLib` と `CLSID_BlasCore` に合わせて修正し、`OBJECT_ENTRY_AUTO(__uuidof(BlasCore), CBLAS)` に切り替え。
+- COM 参照を利用する MSTest プロジェクトを `CktComBlasLib` 参照＋`Ckt.Com.Blas.BlasCore` 生成に移行し、関連ドキュメント (`ReadMe.md`, `IBLASComplex_new_api_definitions.md`, `COMBLASComplex_recovery_plan.md`, `BLAS_ProgID_update_plan.md`, `TEXT_FILE_OVERVIEW.md`, `TROUBLESHOOTING.md`) を新命名規則で更新。
+- `COM_BLASPS/COM_BLASPS.vcxproj` の PreBuild と ModuleDefinitionFile を `..\COM_BLAS` 配下の `dlldata.c` / `COM_BLASps.def` を直接参照するよう調整し、Debug|x64 構成で単体ビルドが通ることを確認。
+- `msbuild COM_BLAS.sln /t:COM_BLAS /p:Configuration=Debug /p:Platform=x64` および `msbuild COM_BLASPS/COM_BLASPS.vcxproj /p:Configuration=Debug /p:Platform=x64` が警告のみで成功することを確認 (COM_BLAS 側は既存の C4819/C4267 警告のみ)。

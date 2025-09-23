@@ -2,7 +2,7 @@
 
 ## 背景と現状整理
 - 2025-09-22 の MSTest 実行では 113 件中 72 件成功、41 件失敗。失敗ログは `COM_BLAS_UnitTest_Managed/bin/Any CPU/Debug/net8.0-windows/TestResults/Codex.trx` に記録済み。
-- 失敗の大半が `RuntimeBinderException` に起因し、`COMBLASLib.BLASClass` に `ZSymmSimple` など複素数 API が存在しない、もしくは署名不一致であることが示唆される。
+- 失敗の大半が `RuntimeBinderException` に起因し、`Ckt.Com.Blas.BlasCore` に `ZSymmSimple` など複素数 API が存在しない、もしくは署名不一致であることが示唆される。
 - 一部テストでは HRESULT が仕様と異なる (`TrmmSimple_ReturnsPointerWhenBNull` で `E_POINTER` を期待するが `E_INVALIDARG` が返却)。また `Rotmg_ScalarCase` では COM 側が 0 値 VARIANT の変換に失敗している。
 - `IBLASComplex_new_api_definitions.md` などのドキュメントは実装済みと記載しているが、提供された DLL / TypeLib が未更新である可能性が高く、情報が乖離している。
 
@@ -13,7 +13,7 @@
 - **引数変換エラー**: `Rotmg_ScalarCase` では `VARIANT` → ネイティブ変換が想定通りになっておらず、IDispatch 層の `DISPID` 対応や `SAFEARRAY` 下限が影響している恐れ。
 
 ## 対応方針
-1. **Type Library と IDL の同期**: 現行配布物の `COMBLAS.idl` と生成された `COMBLAS.tlb` を照合し、漏れている `IBLASComplex` メソッドを洗い出す。IDL 更新後は必ず MIDL を再実行し、`COMBLASLib` の登録を更新する。
+1. **Type Library と IDL の同期**: 現行配布物の `COMBLAS.idl` と生成された `COMBLAS.tlb` を照合し、漏れている `IBLASComplex` メソッドを洗い出す。IDL 更新後は必ず MIDL を再実行し、`CktComBlasLib` の登録を更新する。
 2. **COM マップの既定 IDispatch を `IBLASComplex` に切り替え**: `CBLAS` の `COM_INTERFACE_ENTRY2(IDispatch, ...)` を見直し、`IID_IDispatch` から `IBLASComplex` の型情報を返すよう ATL マップを修正する。これにより `tlbimp` 生成クラスや VBA などの Automation クライアントでも 27 メソッドが列挙可能になる。
 3. **IDL/実装/テストのインターフェース整合**: SAFEARRAY の次元・下限・`[in, out]` 指定、係数パラメータの並びをテスト仕様と突き合わせ、COM 実装 (`BLAS.cpp`) の marshaling ヘルパーを調整する。
 4. **エラーコード仕様の明文化**: HRESULT の返却条件を `ReadMe.md` / テストコメントで明記し、`E_POINTER` を期待するケースについて実装側と合意を取る。合意結果に合わせて実装またはテストを修正。
@@ -30,7 +30,7 @@
 ### フェーズ 1: IDL/実装の同期
 - `COM_BLAS/COMBLAS.idl` を v1.3 仕様に更新し、必要な `[propget]` / `[propput]` 属性・`SAFEARRAY` 宣言を追加。
 - `midl.exe COMBLAS.idl` を実行し、`COMBLAS_i.c` / `.h` / `.tlb` / プロキシ スタブを再生成。
-- `COMBLAS.vcxproj` のビルド生成物 (`COMBLASLib.tlb`) を登録し直し、`regsvr32` で DLL を再登録。
+- `COMBLAS.vcxproj` のビルド生成物 (`CktComBlasLib.tlb` / `COMBLAS.tlb`) を登録し直し、`regsvr32` で DLL を再登録。
 
 ### フェーズ 2: 実装と marshaling 調整
 - `BLAS.cpp` に欠落している `IBLASComplex` 実装を追加 (既存の `GatherComplexMatrix` 等を流用)。

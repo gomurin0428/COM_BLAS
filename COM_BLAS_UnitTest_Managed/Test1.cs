@@ -2,7 +2,7 @@
 using System;
 using System.Numerics;
 using System.Runtime.InteropServices;
-using COMBLASLib;
+using Ckt.Com.Blas;
 
 namespace COM_BLAS_UnitTest_Managed
 {
@@ -14,7 +14,7 @@ namespace COM_BLAS_UnitTest_Managed
 
         public BlasHandle()
         {
-            _instance = new BLAS();
+            _instance = new BlasCore();
         }
 
         public void Dispose()
@@ -37,7 +37,7 @@ namespace COM_BLAS_UnitTest_Managed
 
         public ComplexBlasHandle()
         {
-            _instance = (IBLASComplex)new BLAS();
+            _instance = (IBLASComplex)new BlasCore();
         }
 
         public void Dispose()

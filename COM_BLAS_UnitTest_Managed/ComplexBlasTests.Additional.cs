@@ -1,7 +1,7 @@
 using System;
 using System.Numerics;
 using System.Runtime.InteropServices;
-using COMBLASLib;
+using Ckt.Com.Blas;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace COM_BLAS_UnitTest_Managed

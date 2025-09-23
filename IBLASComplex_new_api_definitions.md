@@ -1,8 +1,8 @@
 # IBLASComplex 新規API定義メモ
 ## Progress Notes (2025-09-22)
 - 2025-09-22 18:50 (JST): `VsDevCmd` 経由で `midl COMBLAS.idl` を再実行し、`COM_BLAS/COMBLAS.tlb` を再生成。`tlbimp` の結果、`IBLASComplex` の 27 メソッドすべて（`ZAsum`〜`ZTrsvSimple` を含む）が公開されていることを確認した。
-- 2025-09-22 午前の MSTest では `COMBLASLib.BLASClass` に複素数 API が存在せず 41 件が `RuntimeBinderException` で失敗していたが、原因は旧タイプライブラリが `ZGemmSimple` / `ZGemvSimple` / `ZAxpy` / `ZDot` の4件しかエクスポートしていなかったため。新しい `COMBLAS.tlb` を登録・配布すればこのカテゴリの失敗は解消見込み。
-- 2025-09-22 21:15 (JST): `CBLAS` の COM マップを更新し、`IID_IDispatch` 要求時に `IBLASComplex` の `IDispatchImpl` を返すよう変更。ATL の `COM_INTERFACE_ENTRY2(IDispatch, IBLASComplex)` に切り替えつつ、`GetIDsOfNames`/`Invoke` をオーバーライドして従来の `IBLAS` もフォールバック解決することで、既存の実数 API 66 件と新規複素数 API 27 件のどちらも遅延バインディングから呼び出せることを PowerShell (`[COMBLASLib.IBLASComplex].GetMembers()`) と MSTest で確認。
+- 2025-09-22 午前の MSTest では `Ckt.Com.Blas.BlasCore` に複素数 API が存在せず 41 件が `RuntimeBinderException` で失敗していたが、原因は旧タイプライブラリが `ZGemmSimple` / `ZGemvSimple` / `ZAxpy` / `ZDot` の4件しかエクスポートしていなかったため。新しい `COMBLAS.tlb` を登録・配布すればこのカテゴリの失敗は解消見込み。
+- 2025-09-22 21:15 (JST): `CBLAS` の COM マップを更新し、`IID_IDispatch` 要求時に `IBLASComplex` の `IDispatchImpl` を返すよう変更。ATL の `COM_INTERFACE_ENTRY2(IDispatch, IBLASComplex)` に切り替えつつ、`GetIDsOfNames`/`Invoke` をオーバーライドして従来の `IBLAS` もフォールバック解決することで、既存の実数 API 66 件と新規複素数 API 27 件のどちらも遅延バインディングから呼び出せることを PowerShell (`[Ckt.Com.Blas.IBLASComplex].GetMembers()`) と MSTest で確認。
 - 2025-09-21 に「実装済み」と記録した内容はソース側の進捗メモであり、配布バイナリには反映されていない。以下の「追加対象API一覧」は実装確認とテスト整備を継続する。
 
 

@@ -41,7 +41,7 @@
 ## 検証項目
 - 変更後の DLL を登録すると、レジストリ `HKCR\Ckt.Com.Blas.BlasCore` と `HKCR\Ckt.Com.Blas.BlasCore.1` が生成される。
 - PowerShell / VBScript などから新 ProgID で COM インスタンスが生成できる。
-- 既存の Interop アセンブリ参照 (`new BLASClass()`) は変更不要で動作する。
+- Interop アセンブリを再生成すると `Ckt.Com.Blas.BlasCore` CoClass が公開されるため、旧 `BLASClass` を参照しているプロジェクトは参照の再解決が必要 (GUID は従来どおり)。
 
 ## リスクとオープン事項
 - 現行利用者が `COMBLAS.BLAS` や `MYBLAS` を使っている場合、互換性が途切れるため移行ガイドが必要になる。必要に応じて旧 ProgID をサポートするか要確認。

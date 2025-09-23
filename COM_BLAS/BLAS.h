@@ -23,10 +23,10 @@ using namespace ATL;
 
 class ATL_NO_VTABLE CBLAS :
     public CComObjectRootEx<CComSingleThreadModel>,
-    public CComCoClass<CBLAS, &CLSID_BLAS>,
+    public CComCoClass<CBLAS, &CLSID_BlasCore>,
     public ISupportErrorInfo,
-    public IDispatchImpl<IBLAS, &IID_IBLAS, &LIBID_COMBLASLib, /*wMajor =*/ 1, /*wMinor =*/ 3>,
-    public IDispatchImpl<IBLASComplex, &IID_IBLASComplex, &LIBID_COMBLASLib, /*wMajor =*/ 1, /*wMinor =*/ 3>
+    public IDispatchImpl<IBLAS, &IID_IBLAS, &LIBID_CktComBlasLib, /*wMajor =*/ 1, /*wMinor =*/ 5>,
+    public IDispatchImpl<IBLASComplex, &IID_IBLASComplex, &LIBID_CktComBlasLib, /*wMajor =*/ 1, /*wMinor =*/ 5>
 {
 public:
     CBLAS()
@@ -173,6 +173,6 @@ public:
     HRESULT __stdcall ZRotg(DOUBLE* aReal, DOUBLE* aImag, DOUBLE* bReal, DOUBLE* bImag, DOUBLE* c, DOUBLE* sReal, DOUBLE* sImag) override;
 };
 
-OBJECT_ENTRY_AUTO(__uuidof(BLAS), CBLAS)
+OBJECT_ENTRY_AUTO(__uuidof(BlasCore), CBLAS)
 
 

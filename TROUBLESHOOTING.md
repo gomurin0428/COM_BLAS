@@ -16,9 +16,9 @@
 - 対処: `COM_BLAS.dll` と同じフォルダー、または PATH に `libopenblas.dll` (x64) を配置する。インストーラーでは `libopenblas.dll` を payload に含め、VC++ 再頒布可能パッケージ (MSVCP140 など) を前提条件に設定する。
 
 ## COM Automation で `Z*` 系メソッドが列挙されない
-- 事象: `dynamic blas = new COMBLASLib.BLASClass();` や VBA で `CreateObject("Ckt.Com.Blas.BlasCore")` した際、`ZGemmSimple` など 4 件しか表示されず他の複素数 API が見つからない。
+- 事象: `dynamic blas = new Ckt.Com.Blas.BlasCore();` や VBA で `CreateObject("Ckt.Com.Blas.BlasCore")` した際、`ZGemmSimple` など 4 件しか表示されず他の複素数 API が見つからない。
 - 原因: 旧 DLL では `IID_IDispatch` が `IBLAS` の型情報を返しており、`IBLASComplex` 27 メソッドが列挙されなかった。
-- 対処: 2025-09-22 21:15 (JST) 適用のビルド以降では `CBLAS` の COM マップが `IBLASComplex` を返しつつ、`GetIDsOfNames`/`Invoke` で実数 API (IBLAS) にフォールバックするよう修正済み。`COM_BLAS.dll` と `COMBLAS.tlb` を最新に置き換え、`regsvr32 /s COM_BLAS.dll` で再登録する。既存の .NET プロジェクトは `tlbimp` 再実行や参照の再解決を行う。
+- 対処: 2025-09-22 21:15 (JST) 適用のビルド以降では `CBLAS` の COM マップが `IBLASComplex` を返しつつ、`GetIDsOfNames`/`Invoke` で実数 API (IBLAS) にフォールバックするよう修正済み。`COM_BLAS.dll` と `COMBLAS.tlb` (Type Library `CktComBlasLib`) を最新に置き換え、`regsvr32 /s COM_BLAS.dll` で再登録する。既存の .NET プロジェクトは `tlbimp` 再実行や参照の再解決を行う。
 
 ## PowerShell で `Internal Windows PowerShell error. Loading managed Windows PowerShell failed with error 8009001d.` が表示されビルドが開始しない
 - 事象: `vcvarsall.bat` 実行後に `MSBuild.exe COM_BLAS.sln`、`devenv.com /Build`、`vstest.console.exe` などを PowerShell から起動すると、DPAPI の初期化が失敗してコマンドが即終了しビルド/テストが走らない。

@@ -11,17 +11,5 @@
       -->
     <TestingPlatformShowTestsFailure>true</TestingPlatformShowTestsFailure>
   </PropertyGroup>
-
-  <ItemGroup>
-    <COMReference Include="COMBLASLib">
-      <WrapperTool>tlbimp</WrapperTool>
-      <VersionMinor>3</VersionMinor>
-      <VersionMajor>1</VersionMajor>
-      <Guid>5650ec59-f9dc-4d38-83b2-5828ff8c4d2a</Guid>
-      <Lcid>0</Lcid>
-      <Isolated>false</Isolated>
-      <EmbedInteropTypes>true</EmbedInteropTypes>
-    </COMReference>
-  </ItemGroup>
 </Project>
 
