@@ -6,6 +6,7 @@
 - `Agents.md`: リポジトリ運用時の注意事項とガイドライン。
 - `COM_BLAS.sln`: Visual Studio ソリューション。COM 本体、proxy/stub、MSTest、Installer を束ねる。
 - `COMBLASComplex_recovery_plan.md`: 複素数 BLAS API がテストで欠落している事象に対する対応計画と検証チェックリスト。フェーズ0 (TypeLib ギャップ洗い出し) 完了ログに加えて、2025-09-22 の COM マップ修正 (IID_IDispatch→IBLASComplex) を対応方針へ反映。
+- `BLAS_ProgID_update_plan.md`: COM coclass `BLAS` の ProgID を `Ckt.Com.Blas.BlasCore` に切り替えるための作業計画と検証項目。
 - `IBLASComplex_new_api_definitions.md`: 複素数 BLAS API 拡張の進捗メモと仕様整理。2025-09-22 に TypeLib 再生成状況と COM マップ更新ログ (IDispatch が 27 メソッドを返すことの検証結果) を追記。
 - `PrepareMatrixView_fix_plan.md`: SAFEARRAY の行列ビュー周りの改善計画と検証ログ。
 - `ReadMe.md`: COM_BLAS の概要、公開 API、ビルドとセットアップ手順。最新 TypeLib の再登録手順と、2025-09-22 時点で COM マップが `IBLASComplex` を既定 IDispatch に切り替えつつ `IBLAS` へフォールバックする旨を記載。
