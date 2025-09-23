@@ -18,6 +18,7 @@
 2. **レジストリスクリプト更新**
    - `COM_BLAS/BLAS.rgs` の `ProgID` / `VersionIndependentProgID` / ルートキー名をすべて `Ckt.Com.Blas.BlasCore` 系へ差し替える。
    - `CurVer` の値を最新のバージョン付き ProgID (`...BlasCore.1` など) に合わせて更新。
+   - 旧 `COMBLASLib` / `COMBLAS.BLAS` 系の ProgID と `HKCR\TypeLib\{5650...}\1.*` を `ForceRemove` し、新しい `CktComBlas.tlb` のみが登録されるようにする。
    - 変更後に ATL のリソース ID (`DECLARE_REGISTRY_RESOURCEID(106)`) が指す `.rgs` に齟齬がないかを確認。
 3. **ATL プロジェクト資産の追随確認**
    - `COM_BLAS.rc` と `resource.h` に ProgID 文字列が埋め込まれていないか確認し、存在すれば更新。

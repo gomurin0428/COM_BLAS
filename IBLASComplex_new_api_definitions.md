@@ -1,14 +1,14 @@
 # IBLASComplex 新規API定義メモ
 ## Progress Notes (2025-09-22)
-- 2025-09-22 18:50 (JST): `VsDevCmd` 経由で `midl COMBLAS.idl` を再実行し、`COM_BLAS/COMBLAS.tlb` を再生成。`tlbimp` の結果、`IBLASComplex` の 27 メソッドすべて（`ZAsum`〜`ZTrsvSimple` を含む）が公開されていることを確認した。
-- 2025-09-22 午前の MSTest では `Ckt.Com.Blas.BlasCore` に複素数 API が存在せず 41 件が `RuntimeBinderException` で失敗していたが、原因は旧タイプライブラリが `ZGemmSimple` / `ZGemvSimple` / `ZAxpy` / `ZDot` の4件しかエクスポートしていなかったため。新しい `COMBLAS.tlb` を登録・配布すればこのカテゴリの失敗は解消見込み。
+- 2025-09-22 18:50 (JST): `VsDevCmd` 経由で `midl COMBLAS.idl` を再実行し、`COM_BLAS/CktComBlas.tlb`（旧 `COMBLAS.tlb`）を再生成。`tlbimp` の結果、`IBLASComplex` の 27 メソッドすべて（`ZAsum`〜`ZTrsvSimple` を含む）が公開されていることを確認した。
+- 2025-09-22 午前の MSTest では `Ckt.Com.Blas.BlasCore` に複素数 API が存在せず 41 件が `RuntimeBinderException` で失敗していたが、原因は旧タイプライブラリが `ZGemmSimple` / `ZGemvSimple` / `ZAxpy` / `ZDot` の4件しかエクスポートしていなかったため。新しい `CktComBlas.tlb`（旧 `COMBLAS.tlb`）を登録・配布すればこのカテゴリの失敗は解消見込み。
 - 2025-09-22 21:15 (JST): `CBLAS` の COM マップを更新し、`IID_IDispatch` 要求時に `IBLASComplex` の `IDispatchImpl` を返すよう変更。ATL の `COM_INTERFACE_ENTRY2(IDispatch, IBLASComplex)` に切り替えつつ、`GetIDsOfNames`/`Invoke` をオーバーライドして従来の `IBLAS` もフォールバック解決することで、既存の実数 API 66 件と新規複素数 API 27 件のどちらも遅延バインディングから呼び出せることを PowerShell (`[Ckt.Com.Blas.IBLASComplex].GetMembers()`) と MSTest で確認。
 - 2025-09-21 に「実装済み」と記録した内容はソース側の進捗メモであり、配布バイナリには反映されていない。以下の「追加対象API一覧」は実装確認とテスト整備を継続する。
 
 
 ## 背景
-- 2025-09-22 午前まで配布されていた `COMBLAS.tlb` では `IBLASComplex` の公開メソッドが `ZGemmSimple` / `ZGemvSimple` / `ZAxpy` / `ZDot` の4件に限定されており、残りの複素数 BLAS API が欠落していた。
-- 2025-09-22 18:50 (JST) に `midl` を再実行した結果、IDL 記述どおり 27 メソッドが生成された `COMBLAS.tlb` を確認済み。クライアント環境では DLL/TypeLib をセットで更新し `regsvr32 COM_BLAS.dll` をやり直す必要がある。
+- 2025-09-22 午前まで配布されていた `COMBLAS.tlb`（現 `CktComBlas.tlb` へ改名）では `IBLASComplex` の公開メソッドが `ZGemmSimple` / `ZGemvSimple` / `ZAxpy` / `ZDot` の4件に限定されており、残りの複素数 BLAS API が欠落していた。
+- 2025-09-22 18:50 (JST) に `midl` を再実行した結果、IDL 記述どおり 27 メソッドが生成された `CktComBlas.tlb`（旧 `COMBLAS.tlb`）を確認済み。クライアント環境では DLL/TypeLib をセットで更新し `regsvr32 COM_BLAS.dll` をやり直す必要がある。
 - OpenBLAS には該当する `cblas_z*` 系関数が存在し、既に `GatherComplex*` / `ScatterComplex*` といった SAFEARRAY ヘルパーが揃っているため、追加のフォールバック実装は不要。
 - SAFEARRAY の次元 1 は列、次元 2 は行に相当するため、`PrepareMatrixView` / `ValidateComplexMatrixPair` で `[row, column]` 形式に正規化し、.NET の `double[,]` と一致させています。
 
@@ -68,7 +68,7 @@
 - エラー時は既存の `SetComError` を使用し、引数不正は `E_INVALIDARG` などの標準 `HRESULT` で通知する。
 
 ## 今後のタスクリスト（概要）
-- `COM_BLAS/COMBLAS.idl` に上記メソッドを追加し、MIDL の再生成 (`COMBLAS_i.*`, `COMBLAS_p.c`, `COMBLAS.tlb`) を実施。
+- `COM_BLAS/COMBLAS.idl` に上記メソッドを追加し、MIDL の再生成 (`COMBLAS_i.*`, `COMBLAS_p.c`, `CktComBlas.tlb`) を実施。
 - `BLAS.cpp` に OpenBLAS 呼び出し実装を追加し、共通検証ヘルパーを流用する。
 - マネージドテスト (`COM_BLAS_UnitTest_Managed/Test1.cs`) を拡張し、各メソッドに対するサイズ・境界・エラーケースをカバーする。
 - `ReadMe.md` や `complex_blas_implementation_plan.md` を更新し、クライアント向けの利用例とバージョン更新履歴を追記する。

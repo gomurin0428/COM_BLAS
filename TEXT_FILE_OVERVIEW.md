@@ -19,12 +19,12 @@
 ## COM_BLAS ディレクトリ
 - `COM_BLAS/BLAS.cpp`: COM 実装の本体。SAFEARRAY マーシャリングと OpenBLAS 呼び出しに加え、2025-09-22 版で `EnsureDoubleSafeArray` の `NULL` 入力を `E_POINTER` に統一し、`CBLAS::Invoke` が `DISPPARAMS` を都度コピーして `IBLASComplex` → `IBLAS` の順で解決するようになった。2025-09-23 の修正では TypeLib 改名に伴い `IDispatchImpl` の `LIBID_CktComBlasLib` 参照へ更新しつつ、`TrmmSimple` の `SAFEARRAY** B` ガードと `Rotmg` の Automation 向けディスパッチ改善を継続適用。
 - `COM_BLAS/BLAS.h`: `CBLAS` クラス宣言。2025-09-22 の `COM_INTERFACE_ENTRY2(IDispatch, IBLASComplex)` 切り替えに加え、2025-09-23 で `CComCoClass`/`IDispatchImpl` を `CLSID_BlasCore` & `LIBID_CktComBlasLib` に差し替え、`OBJECT_ENTRY_AUTO(__uuidof(BlasCore), CBLAS)` とした。
-- `COM_BLAS/BLAS.rgs`: BLAS クラスのレジストリ スクリプト。2025-09-23 更新で ProgID/VersionIndependentProgID を `Ckt.Com.Blas.BlasCore` 系へ統一し、`CurVer` も `...BlasCore.1` へ揃えた。
+- `COM_BLAS/BLAS.rgs`: BLAS クラスのレジストリ スクリプト。2025-09-23 更新で ProgID/VersionIndependentProgID を `Ckt.Com.Blas.BlasCore` 系へ統一し、`CurVer` も `...BlasCore.1` へ揃えたうえで、旧 `COMBLASLib` / `COMBLAS.BLAS` の ProgID と `HKCR\TypeLib\{5650...}` (1.x) を ForceRemove してから `CktComBlas.tlb` を再登録する。
 - `COM_BLAS/COMBLAS.idl`: 公開インターフェース (IBLAS / IBLASComplex) と列挙体を定義する MIDL。2025-09-23 に `library CktComBlasLib` / `coclass BlasCore` へ改名し、`custom(… "Ckt.Com.Blas")` で .NET 名前空間を固定した。
 - `COM_BLAS/COMBLAS_i.h`: MIDL 自動生成のインターフェース定義ヘッダー。手動編集不可。
 - `COM_BLAS/COM_BLAS.cpp`: DLL エントリーポイントなど ATL のブートストラップ コード。
 - `COM_BLAS/COM_BLAS.def`: エクスポートシンボルの定義。
-- `COM_BLAS/COM_BLAS.rc`: リソーススクリプト。バージョン情報・レジストリスクリプト関連を保持。
+- `COM_BLAS/COM_BLAS.rc`: リソーススクリプト。バージョン情報・レジストリスクリプトに加え、`CktComBlas.tlb` の TYPELIB リソースを埋め込み、`TEXTINCLUDE` からの再同期に利用する。
 - `COM_BLAS/COM_BLAS.rgs`: COM DLL 全体に対する追加レジストリ設定 (現状プレースホルダー)。
 - `COM_BLAS/COM_BLAS.vcxproj`: COM DLL プロジェクト設定。OpenBLAS を同梱の lib/include から参照し、vcpkg 自動統合を無効化。
 - `COM_BLAS/COM_BLAS.vcxproj.filters`: プロジェクト内のフィルター構成。
@@ -52,7 +52,7 @@
 - `Installer/Package.wxs`: WiX 定義ファイル (現状はプレースホルダー構成)。
 
 ## COM_BLAS.Setup ディレクトリ
-- `COM_BLAS.Setup/COM_BLAS.Setup.vdproj`: Visual Studio Installer Projects による MSI 定義。
+- `COM_BLAS.Setup/COM_BLAS.Setup.vdproj`: Visual Studio Installer Projects による MSI 定義。Release 出力の `CktComBlas.tlb` を取り込み、COM 登録に `vsdrpCOM` を設定する。
 
 ## include ディレクトリ (OpenBLAS / LAPACKE ヘッダー)
 - `include/cblas.h`: CBLAS API ヘッダー。

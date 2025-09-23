@@ -1,5 +1,23 @@
-﻿HKCR
+HKCR
 {
+	ForceRemove COMBLAS.BLAS.1
+	{
+	}
+	ForceRemove COMBLAS.BLAS
+	{
+	}
+	ForceRemove COMBLASLib.BLAS.1
+	{
+	}
+	ForceRemove COMBLASLib.BLAS
+	{
+	}
+	ForceRemove TypeLib
+	{
+		ForceRemove {5650ec59-f9dc-4d38-83b2-5828ff8c4d2a}
+		{
+		}
+	}
 	Ckt.Com.Blas.BlasCore.1 = s 'BLAS class'
 	{
 		CLSID = s '{e8f3aed3-eec4-48ab-9925-c13253d4c396}'
@@ -8,6 +26,7 @@
 	{
 		CurVer = s 'Ckt.Com.Blas.BlasCore.1'
 	}
+
 	NoRemove CLSID
 	{
 		ForceRemove {e8f3aed3-eec4-48ab-9925-c13253d4c396} = s 'BLAS class'

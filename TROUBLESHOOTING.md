@@ -23,10 +23,16 @@
   2. per-user 登録で回避する場合は `regsvr32 /n /i:user COM_BLAS.dll` を実行するか、`msbuild ... /p:PerUserRedirection=true` を指定して HKCU 側に書き込む。
   3. ビルド時の自動登録が不要であれば `COM_BLAS.vcxproj` の `RegisterOutput` を `false` に変更し、インストーラーや別途スクリプトで登録を行う。
 
+## Release ビルドの `regsvr32` が 0x80020009 で失敗する
+- 事象: `x64/Release/COM_BLAS.dll` を `regsvr32` すると「DllRegisterServer への呼び出しはエラー コード 0x80020009 により失敗しました。」と表示される。自動登録 (`RegisterOutput=true`) 経由でも同じコードが返る。
+- 原因: `COM_BLAS/BLAS.rgs` が UTF-8 BOM 付きで保存されており、Release ビルドのリソースに `0xEF,0xBB,0xBF` がそのまま埋め込まれる。ATL Registrar は BOM で始まるスクリプトを解釈できず、DISP_E_EXCEPTION (0x80020009) を返す。
+- 切り分けメモ: `Add-Type` で `DllImport` した `DllRegisterServer` を直接呼び出すと Debug 版は 0x00000000、Release 版は 0x80020009 を返す。`ResourceBytes` で `REGISTRY` リソース ID 106 の先頭バイトを確認すると Release 版のみ `239, 187, 191` (BOM) が入っている。
+- 対処: `BLAS.rgs` を BOM なし (ANSI または UTF-8 (BOM なし)) で保存し直してからビルドする。既に生成された DLL を修正する場合は、リソース エディタで BOM を削除した `REGISTRY` リソースを書き戻したのち再登録する。CI では `git config core.autocrlf false` などで BOM が付与されないよう管理する。
+
 ## COM Automation で `Z*` 系メソッドが列挙されない
 - 事象: `dynamic blas = new Ckt.Com.Blas.BlasCore();` や VBA で `CreateObject("Ckt.Com.Blas.BlasCore")` した際、`ZGemmSimple` など 4 件しか表示されず他の複素数 API が見つからない。
 - 原因: 旧 DLL では `IID_IDispatch` が `IBLAS` の型情報を返しており、`IBLASComplex` 27 メソッドが列挙されなかった。
-- 対処: 2025-09-22 21:15 (JST) 適用のビルド以降では `CBLAS` の COM マップが `IBLASComplex` を返しつつ、`GetIDsOfNames`/`Invoke` で実数 API (IBLAS) にフォールバックするよう修正済み。`COM_BLAS.dll` と `COMBLAS.tlb` (Type Library `CktComBlasLib`) を最新に置き換え、`regsvr32 /s COM_BLAS.dll` で再登録する。既存の .NET プロジェクトは `tlbimp` 再実行や参照の再解決を行う。
+- 対処: 2025-09-22 21:15 (JST) 適用のビルド以降では `CBLAS` の COM マップが `IBLASComplex` を返しつつ、`GetIDsOfNames`/`Invoke` で実数 API (IBLAS) にフォールバックするよう修正済み。`COM_BLAS.dll` と `CktComBlas.tlb` (Type Library `CktComBlasLib` 1.5) を最新に置き換え、`regsvr32 /s COM_BLAS.dll` で再登録する。旧 `COMBLASLib` の ProgID/TypeLib が残っている場合は、最新版の `BLAS.rgs` が強制削除するため再登録後にキーが消えていることを確認する。既存の .NET プロジェクトは `tlbimp` 再実行や参照の再解決を行う。
 
 ## PowerShell で `Internal Windows PowerShell error. Loading managed Windows PowerShell failed with error 8009001d.` が表示されビルドが開始しない
 - 事象: `vcvarsall.bat` 実行後に `MSBuild.exe COM_BLAS.sln`、`devenv.com /Build`、`vstest.console.exe` などを PowerShell から起動すると、DPAPI の初期化が失敗してコマンドが即終了しビルド/テストが走らない。
@@ -50,5 +56,5 @@
   1. `dotnet test COM_BLAS_UnitTest_Managed --filter FullyQualifiedName~Z` など対象 API を絞って再実行する。
   2. `TestResults/*/` 内の `.trx` を確認し、失敗している SAFEARRAY の下限・行列レイアウトを調査する。
   3. `COM_BLAS/BLAS.cpp` の `PrepareMatrixView` / `Gather*` / `Scatter*` にブレークポイントを置き、RowMajor/ColumnMajor や LBound の扱いをトレースする。
-  4. `oleview` などで `COMBLAS.tlb` 内の `IBLASComplex` を開き、期待するメソッドがエクスポートされているか確認し、もし欠けていれば `midl` 再実行と DLL 再登録を行う。
-- 備考: 2025-09-22 18:50 (JST) に `COM_BLAS/COMBLAS.idl` を再 MIDL したタイプライブラリでは `IBLASComplex` の 27 メソッドが公開される。旧 DLL/`COMBLAS.tlb` を参照している環境では `regsvr32 COM_BLAS.dll` で再登録し、タイムスタンプ 2025-09-22 18:50 以降のファイルに置き換えること。
+  4. `oleview` などで `CktComBlas.tlb` 内の `IBLASComplex` を開き、期待するメソッドがエクスポートされているか確認し、もし欠けていれば `midl` 再実行と DLL 再登録を行う。
+- 備考: 2025-09-22 18:50 (JST) に `COM_BLAS/COMBLAS.idl` を再 MIDL したタイプライブラリでは `IBLASComplex` の 27 メソッドが公開される。旧 DLL/`COMBLAS.tlb` (登録名 `COMBLASLib`) を参照している環境では `regsvr32 COM_BLAS.dll` で DLL/TLB のペアを更新し、新しい `CktComBlas.tlb` が登録されているか確認する。2025-09-23 版以降では登録処理が旧 `COMBLASLib` のキーを強制削除する。

@@ -2,7 +2,7 @@
 //
 
 // このファイルは、タイプ ライブラリ ([!output SAFE_IDL_NAME].tlb) およびマーシャリング コードを
-// タイプ ライブラリ (COMBLAS.tlb) とマーシャリング コードを生成します。
+// タイプ ライブラリ (CktComBlas.tlb) とマーシャリング コードを生成します。
 
 import "oaidl.idl";
 import "ocidl.idl";

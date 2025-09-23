@@ -260,8 +260,8 @@
             }
             "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_BE4F206CC89248889A1B05D989C7123E"
             {
-            "SourcePath" = "8:..\\COM_BLAS\\x64\\Release\\COMBLAS.tlb"
-            "TargetName" = "8:COMBLAS.tlb"
+            "SourcePath" = "8:..\\COM_BLAS\\x64\\Release\\CktComBlas.tlb"
+            "TargetName" = "8:CktComBlas.tlb"
             "Tag" = "8:"
             "Folder" = "8:_1F6544DE7E5A4147B856B16BA7BAAB9A"
             "Condition" = "8:"

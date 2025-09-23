@@ -2,7 +2,7 @@
 
 ## 1. 前提と要件
 - 目的: Windows 10/11 (x64) の管理者ユーザーへ COM サーバー `Ckt.Com.Blas.BlasCore` を安定配布する。
-- 成果物: `COM_BLAS.dll`、`COMBLAS.tlb`、必要に応じて `ReadMe.md` の PDF や VBA サンプルなど。
+- 成果物: `COM_BLAS.dll`、`CktComBlas.tlb`、必要に応じて `ReadMe.md` の PDF や VBA サンプルなど。
 - 使用ツール: Visual Studio 2022 +「Microsoft Visual Studio Installer Projects 2022」拡張機能。
 - バージョン管理: `COM_BLAS.dll` のファイルバージョンと MSI のプロパティ (ProductVersion) を合わせ、UpgradeCode を固定してマイナーアップグレードに対応。
 
@@ -20,13 +20,13 @@
 ## 4. ファイルの取り込みと配置
 - Setup プロジェクトの Application Folder に以下を追加:
   - `COM_BLAS` プロジェクトの「Release/x64 プライマリ出力」(最初に COM DLL をビルドしておく)。
-  - `COMBLAS.tlb` など個別ファイル。
+  - `CktComBlas.tlb` など個別ファイル。
   - 付属ドキュメント (例: `ReadMe.pdf`、VBA サンプルなど)。
 - 必要に応じて「Program Menu」や「User’s Desktop」にショートカットを追加 (例: ReadMe を開くショートカット)。
 
 ## 5. COM 登録設定
 - Application Folder 内の `COM_BLAS.dll` を選択し、プロパティウィンドウで `Register` を `vsdrpCOM` に設定。
-- `COMBLAS.tlb` も登録が必要なら `Register` を `vsdrpCOM` に設定。
+- `CktComBlas.tlb` も登録が必要なら `Register` を `vsdrpCOM` に設定。
 - Self Registration (`vsdrpCOMSelfReg`) は使用せず、インストーラが生成するテーブル登録に依存する。
 - COM の CLSID や ProgID を確認する場合はセットアップ プロジェクトの「レジストリ」ビューで確認・編集可能。
 

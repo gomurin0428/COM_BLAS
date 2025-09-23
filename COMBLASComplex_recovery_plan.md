@@ -7,13 +7,13 @@
 - `IBLASComplex_new_api_definitions.md` などのドキュメントは実装済みと記載しているが、提供された DLL / TypeLib が未更新である可能性が高く、情報が乖離している。
 
 ## 失敗カテゴリと原因仮説
-- **Missing Method 定義**: Type Library (`COMBLAS.tlb`) が v1.3 仕様に追従しておらず、Interop 生成時に `ZGemmSimple` 以外の複素数 API が公開されていない。
+- **Missing Method 定義**: Type Library (`CktComBlas.tlb`、旧 `COMBLAS.tlb`) が v1.3 仕様に追従しておらず、Interop 生成時に `ZGemmSimple` 以外の複素数 API が公開されていない。
 - **署名不一致**: テストは実部・虚部の SAFEARRAY を別々に渡す前提だが、COM 側が複合構造体や異なる順序を期待している。IDL と実装の間で `SAFEARRAY` 属性や `[in, out]` 修飾が揃っていない可能性。
 - **エラーコード運用不整合**: 既存実装が `E_INVALIDARG` を返すところをテストでは `E_POINTER` を期待しており、仕様合意が取れていない。
 - **引数変換エラー**: `Rotmg_ScalarCase` では `VARIANT` → ネイティブ変換が想定通りになっておらず、IDispatch 層の `DISPID` 対応や `SAFEARRAY` 下限が影響している恐れ。
 
 ## 対応方針
-1. **Type Library と IDL の同期**: 現行配布物の `COMBLAS.idl` と生成された `COMBLAS.tlb` を照合し、漏れている `IBLASComplex` メソッドを洗い出す。IDL 更新後は必ず MIDL を再実行し、`CktComBlasLib` の登録を更新する。
+1. **Type Library と IDL の同期**: 現行配布物の `COMBLAS.idl` と生成された `CktComBlas.tlb`（旧 `COMBLAS.tlb`）を照合し、漏れている `IBLASComplex` メソッドを洗い出す。IDL 更新後は必ず MIDL を再実行し、`CktComBlasLib` の登録を更新する。
 2. **COM マップの既定 IDispatch を `IBLASComplex` に切り替え**: `CBLAS` の `COM_INTERFACE_ENTRY2(IDispatch, ...)` を見直し、`IID_IDispatch` から `IBLASComplex` の型情報を返すよう ATL マップを修正する。これにより `tlbimp` 生成クラスや VBA などの Automation クライアントでも 27 メソッドが列挙可能になる。
 3. **IDL/実装/テストのインターフェース整合**: SAFEARRAY の次元・下限・`[in, out]` 指定、係数パラメータの並びをテスト仕様と突き合わせ、COM 実装 (`BLAS.cpp`) の marshaling ヘルパーを調整する。
 4. **エラーコード仕様の明文化**: HRESULT の返却条件を `ReadMe.md` / テストコメントで明記し、`E_POINTER` を期待するケースについて実装側と合意を取る。合意結果に合わせて実装またはテストを修正。
@@ -22,7 +22,7 @@
 
 ## 手順詳細
 ### フェーズ 0: 現状の Type Library 解析
-- `oleview` もしくは `midl /tlb` を用いて現行 `COMBLAS.tlb` をダンプし、`IBLASComplex` のメソッド一覧を抽出。
+- `oleview` もしくは `midl /tlb` を用いて現行 `CktComBlas.tlb` (旧 `COMBLAS.tlb`) をダンプし、`IBLASComplex` のメソッド一覧を抽出。
 - `git` 上の `COM_BLAS/COMBLAS.idl` と差分比較し、未公開メソッドと署名差異を表にまとめる。
 - `IBLASComplex_new_api_definitions.md` に現状のギャップを追記し、進捗ログを刷新。
 - 2025-09-22 18:55 (JST): `midl COMBLAS.idl` → `tlbimp` の結果、`IBLASComplex` の公開メソッドが 4 件→27 件になったことを確認。旧バイナリ配布物との差分リストは `IBLASComplex_new_api_definitions.md` に反映済み。
@@ -30,7 +30,7 @@
 ### フェーズ 1: IDL/実装の同期
 - `COM_BLAS/COMBLAS.idl` を v1.3 仕様に更新し、必要な `[propget]` / `[propput]` 属性・`SAFEARRAY` 宣言を追加。
 - `midl.exe COMBLAS.idl` を実行し、`COMBLAS_i.c` / `.h` / `.tlb` / プロキシ スタブを再生成。
-- `COMBLAS.vcxproj` のビルド生成物 (`CktComBlasLib.tlb` / `COMBLAS.tlb`) を登録し直し、`regsvr32` で DLL を再登録。
+- `COMBLAS.vcxproj` のビルド生成物 (`CktComBlasLib.tlb` / `CktComBlas.tlb`) を登録し直し、`regsvr32` で DLL を再登録。
 
 ### フェーズ 2: 実装と marshaling 調整
 - `BLAS.cpp` に欠落している `IBLASComplex` 実装を追加 (既存の `GatherComplexMatrix` 等を流用)。
@@ -57,7 +57,7 @@
 - 一時的にテストを `NotImplemented` マークで抑制する案は品質低下につながるため採用しない。
 
 ## 次のアクションチェックリスト
-- [x] `COMBLAS.tlb` の実体をダンプし、欠落メソッド一覧を作成（2025-09-22 18:55 JST 時点で 27 メソッド公開を確認済み）
+- [x] `CktComBlas.tlb`（旧 `COMBLAS.tlb`）の実体をダンプし、欠落メソッド一覧を作成（2025-09-22 18:55 JST 時点で 27 メソッド公開を確認済み）
 - [x] COM マップの `IID_IDispatch` 対応を `IBLASComplex` に切り替え（2025-09-22 21:15 JST 適用）
 - [ ] IDL とドキュメントを v1.3 仕様に同期
 - [ ] `BLAS.cpp` の実装補完と HRESULT 整理

@@ -110,7 +110,7 @@
       <InterfaceIdentifierFileName>COMBLAS_i.c</InterfaceIdentifierFileName>
       <ProxyFileName>COMBLAS_p.c</ProxyFileName>
       <GenerateStublessProxies>true</GenerateStublessProxies>
-      <TypeLibraryName>$(IntDir)COMBLAS.tlb</TypeLibraryName>
+      <TypeLibraryName>$(IntDir)CktComBlas.tlb</TypeLibraryName>
       <DllDataFileName />
       <ValidateAllParameters>true</ValidateAllParameters>
     </Midl>
@@ -155,7 +155,7 @@
       <InterfaceIdentifierFileName>COMBLAS_i.c</InterfaceIdentifierFileName>
       <ProxyFileName>COMBLAS_p.c</ProxyFileName>
       <GenerateStublessProxies>true</GenerateStublessProxies>
-      <TypeLibraryName>$(IntDir)COMBLAS.tlb</TypeLibraryName>
+      <TypeLibraryName>$(IntDir)CktComBlas.tlb</TypeLibraryName>
       <DllDataFileName />
       <ValidateAllParameters>true</ValidateAllParameters>
     </Midl>
@@ -200,7 +200,7 @@
       <InterfaceIdentifierFileName>COMBLAS_i.c</InterfaceIdentifierFileName>
       <ProxyFileName>COMBLAS_p.c</ProxyFileName>
       <GenerateStublessProxies>true</GenerateStublessProxies>
-      <TypeLibraryName>$(IntDir)COMBLAS.tlb</TypeLibraryName>
+      <TypeLibraryName>$(IntDir)CktComBlas.tlb</TypeLibraryName>
       <DllDataFileName />
       <ValidateAllParameters>true</ValidateAllParameters>
     </Midl>
@@ -246,7 +246,7 @@
       <InterfaceIdentifierFileName>COMBLAS_i.c</InterfaceIdentifierFileName>
       <ProxyFileName>COMBLAS_p.c</ProxyFileName>
       <GenerateStublessProxies>true</GenerateStublessProxies>
-      <TypeLibraryName>$(IntDir)COMBLAS.tlb</TypeLibraryName>
+      <TypeLibraryName>$(IntDir)CktComBlas.tlb</TypeLibraryName>
       <DllDataFileName />
       <ValidateAllParameters>true</ValidateAllParameters>
     </Midl>
