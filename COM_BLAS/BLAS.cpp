@@ -103,6 +103,241 @@ namespace {
     template <typename... Args>
     void IgnoreUnused(Args&&...) noexcept {}
 
+    constexpr DISPID kDispidTrmmSimple = 0x60020004;
+    constexpr DISPID kDispidRotmg = 0x60020018;
+
+    struct OutArrayBinding
+    {
+        SAFEARRAY** target = nullptr;
+        VARIANT* ownerVariant = nullptr;
+        SAFEARRAY* temp = nullptr;
+        bool needsCommit = false;
+    };
+
+    bool TryGetByrefDouble(VARIANT& value, UINT argIndex, UINT* puArgErr, double*& outPtr)
+    {
+        if ((value.vt & VT_BYREF) != 0)
+        {
+            switch (value.vt & VT_TYPEMASK)
+            {
+            case VT_R8:
+                if (value.pdblVal)
+                {
+                    outPtr = value.pdblVal;
+                    return true;
+                }
+                break;
+            case VT_VARIANT:
+                if (value.pvarVal)
+                {
+                    VARIANT* inner = value.pvarVal;
+                    if ((inner->vt & VT_BYREF) != 0)
+                    {
+                        if ((inner->vt & VT_TYPEMASK) == VT_R8 && inner->pdblVal)
+                        {
+                            outPtr = inner->pdblVal;
+                            return true;
+                        }
+                    }
+                    else if ((inner->vt & VT_TYPEMASK) == VT_R8)
+                    {
+                        outPtr = &inner->dblVal;
+                        return true;
+                    }
+                }
+                break;
+            default:
+                break;
+            }
+        }
+        if (puArgErr)
+        {
+            *puArgErr = argIndex;
+        }
+        return false;
+    }
+
+    bool TryGetDoubleValue(const VARIANT& value, UINT argIndex, UINT* puArgErr, double& outValue)
+    {
+        VARIANT copy;
+        VariantInit(&copy);
+        HRESULT hr = VariantCopyInd(&copy, const_cast<VARIANT*>(&value));
+        if (SUCCEEDED(hr))
+        {
+            if ((copy.vt & VT_TYPEMASK) == VT_R8)
+            {
+                outValue = copy.dblVal;
+                VariantClear(&copy);
+                return true;
+            }
+            VariantClear(&copy);
+        }
+        if (puArgErr)
+        {
+            *puArgErr = argIndex;
+        }
+        return false;
+    }
+
+    bool TryBindOutDoubleArray(VARIANT& value, UINT argIndex, UINT* puArgErr, OutArrayBinding& binding)
+    {
+        if ((value.vt & VT_BYREF) != 0)
+        {
+            VARTYPE baseType = static_cast<VARTYPE>(value.vt & VT_TYPEMASK);
+            if (baseType == VT_ARRAY)
+            {
+                binding.target = value.pparray;
+                if (!binding.target)
+                {
+                    if (puArgErr) *puArgErr = argIndex;
+                    return false;
+                }
+                binding.needsCommit = false;
+                binding.ownerVariant = nullptr;
+                return true;
+            }
+            if (baseType == VT_VARIANT && value.pvarVal)
+            {
+                VARIANT* inner = value.pvarVal;
+                binding.ownerVariant = inner;
+                if (inner->vt == VT_EMPTY)
+                {
+                    binding.temp = nullptr;
+                    binding.target = &binding.temp;
+                    binding.needsCommit = true;
+                    return true;
+                }
+                if ((inner->vt & VT_ARRAY) != 0)
+                {
+                    if ((inner->vt & VT_BYREF) != 0)
+                    {
+                        if (!inner->pparray)
+                        {
+                            if (puArgErr) *puArgErr = argIndex;
+                            return false;
+                        }
+                        binding.target = inner->pparray;
+                    }
+                    else
+                    {
+                        binding.target = &inner->parray;
+                    }
+                    binding.needsCommit = false;
+                    return true;
+                }
+            }
+        }
+        if (puArgErr)
+        {
+            *puArgErr = argIndex;
+        }
+        return false;
+    }
+
+    bool IsNullSafeArrayReference(VARIANT& value)
+    {
+        if ((value.vt & VT_BYREF) == 0)
+        {
+            return false;
+        }
+        VARTYPE baseType = static_cast<VARTYPE>(value.vt & VT_TYPEMASK);
+        if (baseType == VT_ARRAY)
+        {
+            return (value.pparray == nullptr) || (*value.pparray == nullptr);
+        }
+        if (baseType == VT_VARIANT && value.pvarVal)
+        {
+            VARIANT* inner = value.pvarVal;
+            if (inner->vt == VT_EMPTY)
+            {
+                return true;
+            }
+            if ((inner->vt & VT_ARRAY) != 0)
+            {
+                if ((inner->vt & VT_BYREF) != 0)
+                {
+                    return (inner->pparray == nullptr) || (*inner->pparray == nullptr);
+                }
+                return inner->parray == nullptr;
+            }
+        }
+        return false;
+    }
+
+    HRESULT HandleRotmgInvoke(CBLAS* self, DISPPARAMS* params, UINT* puArgErr)
+    {
+        if (!params || params->cArgs != 5 || !params->rgvarg)
+        {
+            if (puArgErr)
+            {
+                *puArgErr = 0;
+            }
+            return DISP_E_BADPARAMCOUNT;
+        }
+
+        VARIANT& paramVar = params->rgvarg[0];
+        VARIANT& y1Var = params->rgvarg[1];
+        VARIANT& x1Var = params->rgvarg[2];
+        VARIANT& d2Var = params->rgvarg[3];
+        VARIANT& d1Var = params->rgvarg[4];
+
+        double* d1 = nullptr;
+        double* d2 = nullptr;
+        double* x1 = nullptr;
+        double y1 = 0.0;
+        OutArrayBinding binding;
+
+        if (!TryGetByrefDouble(d1Var, 4u, puArgErr, d1))
+        {
+            return DISP_E_TYPEMISMATCH;
+        }
+        if (!TryGetByrefDouble(d2Var, 3u, puArgErr, d2))
+        {
+            return DISP_E_TYPEMISMATCH;
+        }
+        if (!TryGetByrefDouble(x1Var, 2u, puArgErr, x1))
+        {
+            return DISP_E_TYPEMISMATCH;
+        }
+        if (!TryGetDoubleValue(y1Var, 1u, puArgErr, y1))
+        {
+            return DISP_E_TYPEMISMATCH;
+        }
+        if (!TryBindOutDoubleArray(paramVar, 0u, puArgErr, binding))
+        {
+            return DISP_E_TYPEMISMATCH;
+        }
+
+        if (!self)
+        {
+            return E_POINTER;
+        }
+
+        HRESULT hr = self->Rotmg(d1, d2, x1, y1, binding.target);
+        if (FAILED(hr))
+        {
+            if (binding.needsCommit && binding.temp)
+            {
+                SafeArrayDestroy(binding.temp);
+                binding.temp = nullptr;
+            }
+            return hr;
+        }
+
+        if (binding.needsCommit && binding.ownerVariant)
+        {
+            binding.ownerVariant->vt = VT_ARRAY | VT_R8;
+            binding.ownerVariant->parray = binding.temp;
+        }
+
+        if (binding.needsCommit && !binding.ownerVariant)
+        {
+            return E_FAIL;
+        }
+
+        return S_OK;
+    }
+
     struct DispparamsCopy
     {
         DISPPARAMS params{};
@@ -636,6 +871,35 @@ STDMETHODIMP CBLAS::GetIDsOfNames(REFIID riid, LPOLESTR* rgszNames, UINT cNames,
 STDMETHODIMP CBLAS::Invoke(DISPID dispidMember, REFIID riid, LCID lcid, WORD wFlags,
     DISPPARAMS* pdispparams, VARIANT* pvarResult, EXCEPINFO* pexcepinfo, UINT* puArgErr)
 {
+    if ((wFlags & DISPATCH_METHOD) != 0)
+    {
+        if (dispidMember == kDispidRotmg && pdispparams && pdispparams->cArgs == 5)
+        {
+            return HandleRotmgInvoke(this, pdispparams, puArgErr);
+        }
+        if (dispidMember == kDispidTrmmSimple)
+        {
+            if (!pdispparams || !pdispparams->rgvarg || pdispparams->cArgs < 2)
+            {
+                if (puArgErr)
+                {
+                    *puArgErr = 0;
+                }
+                return DISP_E_BADPARAMCOUNT;
+            }
+            UINT bIndex = pdispparams->cArgs >= 2 ? static_cast<UINT>(pdispparams->cArgs - 2) : 0u;
+            VARIANT& bArg = pdispparams->rgvarg[bIndex];
+            if (IsNullSafeArrayReference(bArg))
+            {
+                if (puArgErr)
+                {
+                    *puArgErr = bIndex;
+                }
+                return ParameterError(L"B", L"SAFEARRAY pointer is NULL.", E_POINTER);
+            }
+        }
+    }
+
     DispparamsCopy complexCopy;
     DISPPARAMS* complexParams = PrepareDispparamsCopy(pdispparams, complexCopy);
 
