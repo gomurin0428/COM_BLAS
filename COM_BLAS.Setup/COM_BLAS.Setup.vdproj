@@ -57,6 +57,12 @@
         }
         "Entry"
         {
+        "MsmKey" = "8:_B6E1C8D6CE19499DAF63D4E7D0296FB3"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
         "MsmKey" = "8:_BE4F206CC89248889A1B05D989C7123E"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
@@ -85,6 +91,14 @@
         "PrivateKeyFile" = "8:"
         "TimeStampServer" = "8:"
         "InstallerBootstrapper" = "3:2"
+            "BootstrapperCfg:{63ACBE69-63AA-4F98-B2B6-99F9E24495F2}"
+            {
+            "Enabled" = "11:TRUE"
+            "PromptEnabled" = "11:TRUE"
+            "PrerequisitesLocation" = "2:1"
+            "Url" = "8:"
+            "ComponentsUrl" = "8:"
+            }
         }
         "Release"
         {
@@ -258,6 +272,26 @@
             "IsDependency" = "11:TRUE"
             "IsolateTo" = "8:"
             }
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_B6E1C8D6CE19499DAF63D4E7D0296FB3"
+            {
+            "SourcePath" = "8:..\\..\\..\\..\\Downloads\\cktech_wp.ico"
+            "TargetName" = "8:cktech_wp.ico"
+            "Tag" = "8:"
+            "Folder" = "8:_1F6544DE7E5A4147B856B16BA7BAAB9A"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
             "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_BE4F206CC89248889A1B05D989C7123E"
             {
             "SourcePath" = "8:..\\COM_BLAS\\x64\\Release\\CktComBlas.tlb"
@@ -353,9 +387,9 @@
         "Product"
         {
         "Name" = "8:Microsoft Visual Studio"
-        "ProductName" = "8:COM_BLAS.Setup"
+        "ProductName" = "8:COM_BLAS"
         "ProductCode" = "8:{C359D55B-2D66-408D-A4A8-BA61D33CDF6B}"
-        "PackageCode" = "8:{78369F4E-1279-4F20-AB98-BDFB8E6703BC}"
+        "PackageCode" = "8:{93F7AD17-63A5-428D-B6A8-1D446FF16BF7}"
         "UpgradeCode" = "8:{C92EF052-3E95-45FA-8A4D-946869BF253F}"
         "AspNetVersion" = "8:4.0.30319.0"
         "RestartWWWService" = "11:FALSE"
@@ -363,16 +397,16 @@
         "DetectNewerInstalledVersion" = "11:TRUE"
         "InstallAllUsers" = "11:FALSE"
         "ProductVersion" = "8:1.0.0"
-        "Manufacturer" = "8:HP"
+        "Manufacturer" = "8:ComKomTech"
         "ARPHELPTELEPHONE" = "8:"
         "ARPHELPLINK" = "8:"
-        "Title" = "8:COM_BLAS.Setup"
+        "Title" = "8:COM_BLAS"
         "Subject" = "8:"
-        "ARPCONTACT" = "8:HP"
+        "ARPCONTACT" = "8:ComKomTech"
         "Keywords" = "8:"
-        "ARPCOMMENTS" = "8:"
+        "ARPCOMMENTS" = "8:COM Component Of BLAS API."
         "ARPURLINFOABOUT" = "8:"
-        "ARPPRODUCTICON" = "8:"
+        "ARPPRODUCTICON" = "8:_B6E1C8D6CE19499DAF63D4E7D0296FB3"
         "ARPIconIndex" = "3:0"
         "SearchPath" = "8:"
         "UseSystemSearchPath" = "11:TRUE"
