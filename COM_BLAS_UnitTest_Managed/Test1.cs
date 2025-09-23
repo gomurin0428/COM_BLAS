@@ -1,4 +1,4 @@
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Numerics;
 using System.Runtime.InteropServices;
@@ -14,7 +14,7 @@ namespace COM_BLAS_UnitTest_Managed
 
         public BlasHandle()
         {
-            _instance = new BLASClass();
+            _instance = new BLAS();
         }
 
         public void Dispose()
@@ -37,7 +37,7 @@ namespace COM_BLAS_UnitTest_Managed
 
         public ComplexBlasHandle()
         {
-            _instance = (IBLASComplex)new BLASClass();
+            _instance = (IBLASComplex)new BLAS();
         }
 
         public void Dispose()
