@@ -11,6 +11,7 @@
 - `PrepareMatrixView_fix_plan.md`: SAFEARRAY の行列ビュー周りの改善計画と検証ログ。
 - `CktComBlas_BlasCore_plan.md`: CoClass `BLAS` を .NET 側で `Ckt.Com.Blas.BlasCore` として公開するための調査・実装・検証計画を記載。
 - `ReadMe.md`: COM_BLAS の概要、公開 API、ビルドとセットアップ手順。2025-09-22 時点の `IBLASComplex` 既定 IDispatch 対応に加え、2025-09-23 版で TypeLib `CktComBlasLib` と `BlasCore` CoClass への改名手順を記載。
+- `manual.md`: ComponentSource で配布する利用者向けマニュアル。MSI インストーラ経由の導入手順と公開 API の完全一覧を記載。
 - `TEXT_FILE_OVERVIEW.md`: 本ファイル。テキスト資産の一覧。
 - `TROUBLESHOOTING.md`: ビルド・テスト・依存 DLL の既知の落とし穴と対処法。TypeLib 再登録や複素数 API 列挙問題 (2025-09-22〜23) に加え、`regsvr32` が `ExitCode=5` を返すアクセス権不足時の対処 (管理者実行 / per-user 登録 / RegisterOutput の無効化) を追記。
 - `makingInstallerPlan.md`: Visual Studio Installer Projects を使った MSI 作成手順の詳細プラン。

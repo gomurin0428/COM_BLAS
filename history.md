@@ -1,5 +1,11 @@
 # History
 
+## 2025-09-27
+- リポジトリ直下に `manual.md` を追加し、ComponentSource で配布する利用者向け手順・クイックスタート・トラブル事例への導線を整理。
+- 同マニュアルを MSI インストール前提の内容へ改訂し、公開 API を全件掲載した表へ更新。
+- `TEXT_FILE_OVERVIEW.md` に `manual.md` を追記し、新規ドキュメントの位置付けと内容概要を反映。
+- `msbuild COM_BLAS.sln /p:Configuration=Debug /p:Platform=x64` を実行し、警告 C4267 のみでビルドと `regsvr32` の自動登録が成功することを確認。
+
 ## 2025-09-23
 - `COM_BLAS/BLAS.cpp` にて `TrmmSimple` の `SAFEARRAY** B` が `null` だった場合に確実に `E_POINTER (0x80004003)` を返すガードを追加し、`EnsureArrayPointer` で捕捉できない COM Automation 経由の `VT_BYREF|VT_VARIANT` ケースも捕捉するよう修正。
 - 同ファイルの `CBLAS::Invoke` に `Rotmg` 専用のディスパッチを追加し、`dynamic` 呼び出し時に 5 番目の `param` が `VT_BYREF|VT_VARIANT` で渡されても SAFEARRAY を生成して返せるようにして `Rotmg_ScalarCase` の失敗を解消。
