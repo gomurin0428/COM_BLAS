@@ -3,6 +3,7 @@
 ## 2025-09-27
 - リポジトリ直下に `manual.md` を追加し、ComponentSource で配布する利用者向け手順・クイックスタート・トラブル事例への導線を整理。
 - 同マニュアルを MSI インストール前提の内容へ改訂し、公開 API を全件掲載した表とユーザー向け Q&A を整備。
+- `manual_en.md` を新規追加し、英語圏向けに同一内容を翻訳して公開。
 - `TEXT_FILE_OVERVIEW.md` に `manual.md` を追記し、新規ドキュメントの位置付けと内容概要を反映。
 - `msbuild COM_BLAS.sln /p:Configuration=Debug /p:Platform=x64` を実行し、警告 C4267 のみでビルドと `regsvr32` の自動登録が成功することを確認。
 
