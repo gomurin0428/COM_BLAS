@@ -5,18 +5,11 @@
 - `.gitignore`: ビルド生成物・VS のキャッシュ・TestResults などを無視する設定。
 - `Agents.md`: リポジトリ運用時の注意事項とガイドライン。
 - `COM_BLAS.sln`: Visual Studio ソリューション。COM 本体、proxy/stub、MSTest、Installer を束ねる。
-- `COMBLASComplex_recovery_plan.md`: 複素数 BLAS API がテストで欠落している事象に対する対応計画と検証チェックリスト。フェーズ0 (TypeLib ギャップ洗い出し) 完了ログに加えて、2025-09-22 の COM マップ修正 (IID_IDispatch→IBLASComplex) を対応方針へ反映。
-- `BLAS_ProgID_update_plan.md`: COM coclass `BLAS` の ProgID を `Ckt.Com.Blas.BlasCore` に切り替えるための作業計画と検証項目。
-- `IBLASComplex_new_api_definitions.md`: 複素数 BLAS API 拡張の進捗メモと仕様整理。2025-09-22 に TypeLib 再生成状況と COM マップ更新ログ (IDispatch が 27 メソッドを返すことの検証結果) を追記。
-- `PrepareMatrixView_fix_plan.md`: SAFEARRAY の行列ビュー周りの改善計画と検証ログ。
-- `CktComBlas_BlasCore_plan.md`: CoClass `BLAS` を .NET 側で `Ckt.Com.Blas.BlasCore` として公開するための調査・実装・検証計画を記載。
-- `ReadMe.md`: COM_BLAS の概要、公開 API、ビルドとセットアップ手順。2025-09-22 時点の `IBLASComplex` 既定 IDispatch 対応に加え、2025-09-23 版で TypeLib `CktComBlasLib` と `BlasCore` CoClass への改名手順を記載。
+- `ReadMe.md`: COM_BLAS の概要、公開 API、ビルドとセットアップ手順。
 - `manual.md`: ComponentSource で配布する利用者向けマニュアル。MSI インストーラ経由の導入手順と公開 API の完全一覧、ユーザー向け Q&A を記載。
 - `manual_en.md`: 上記マニュアルの英語版。インストーラ導線と API 一覧、英語 Q&A を掲載。
 - `TEXT_FILE_OVERVIEW.md`: 本ファイル。テキスト資産の一覧。
 - `TROUBLESHOOTING.md`: ビルド・テスト・依存 DLL の既知の落とし穴と対処法。TypeLib 再登録や複素数 API 列挙問題 (2025-09-22〜23) に加え、`regsvr32` が `ExitCode=5` を返すアクセス権不足時の対処 (管理者実行 / per-user 登録 / RegisterOutput の無効化) を追記。
-- `makingInstallerPlan.md`: Visual Studio Installer Projects を使った MSI 作成手順の詳細プラン。
-- `残作業.md`: リリース完了までに必要な TODO リスト。
 
 ## COM_BLAS ディレクトリ
 - `COM_BLAS/BLAS.cpp`: COM 実装の本体。SAFEARRAY マーシャリングと OpenBLAS 呼び出しに加え、2025-09-22 版で `EnsureDoubleSafeArray` の `NULL` 入力を `E_POINTER` に統一し、`CBLAS::Invoke` が `DISPPARAMS` を都度コピーして `IBLASComplex` → `IBLAS` の順で解決するようになった。2025-09-23 の修正では TypeLib 改名に伴い `IDispatchImpl` の `LIBID_CktComBlasLib` 参照へ更新しつつ、`TrmmSimple` の `SAFEARRAY** B` ガードと `Rotmg` の Automation 向けディスパッチ改善を継続適用。

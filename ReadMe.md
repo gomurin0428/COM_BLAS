@@ -4,6 +4,12 @@
 
 COM_BLASは、BLAS機能を提供するインターフェイスを公開するCOMコンポーネントです。
 
+## ドキュメント
+- ユーザーマニュアル (日本語): [manual.md](./manual.md)
+- User Manual (English): [manual_en.md](./manual_en.md)
+- トラブルシューティング: [TROUBLESHOOTING.md](./TROUBLESHOOTING.md)
+- テキストファイル一覧: [TEXT_FILE_OVERVIEW.md](./TEXT_FILE_OVERVIEW.md)
+
 ## ビルド環境と依存関係
 - Visual Studio 2022 (v143) と Windows 10 SDK 10.0.26100.0 を利用してビルドします。
 - OpenBLAS のヘッダーとライブラリは `include/` と `lib/` に同梱済みで、追加のパッケージ マネージャーは不要です。
